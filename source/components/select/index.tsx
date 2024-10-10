@@ -33,6 +33,7 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
     showSearch = true,
     onSelect,
     selectedItem: initialSelectedItem,
+    error = undefined,
   } = props;
 
   const [showPopover, setShowPopover] = useState(false);
@@ -145,11 +146,14 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
   }));
 
   return (
-    <div className="relative" ref={selectRef}>
-      <div className="w-[200px] relative">
+    <div className="relative w-full" ref={selectRef}>
+      <div className="w-full relative">
         <button
-          className="flex items-center border px-4 py-2 w-[200px] justify-between rounded-lg font-medium text-sm dark:bg-black dark:border-white dark:text-white"
+          className={`flex items-center ${
+            error ? "border border-red-600" : "border"
+          } px-4 py-2 w-full justify-between rounded-lg font-medium text-sm dark:bg-black dark:border-white dark:text-white`}
           onClick={togglePopover}
+          type="button"
         >
           {selectedDisplay || placeholder}
           <Icon
@@ -168,10 +172,11 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
             />
           </button>
         )}
+        <p className="text-xs text-red-500">{error && error}</p>
       </div>
 
       {showPopover && (
-        <div className="w-[200px] absolute overflow-y-auto border px-2 rounded-lg mt-[1px] scrollbar bg-white z-50 scrollbar h-auto dark:bg-black dark:text-white">
+        <div className="w-full absolute overflow-y-auto border px-2 rounded-lg mt-[1px] scrollbar bg-white z-50 scrollbar h-auto dark:bg-black dark:text-white">
           {showSearch && (
             <div className="flex p-2 gap-1 items-center sticky top-0 bg-white border-b dark:bg-black">
               <Icon

@@ -17,13 +17,16 @@ export const Input = ({
   OTPLength = 4,
   OTPClass = "w-8 h-10 m-1 border border-gray-600 rounded-lg text-center",
   onOTPValueChange,
+  error = undefined,
   ...props
 }: InputProps) => {
   const [otpValues, setOtpValues] = useState(new Array(OTPLength).fill(""));
   const [showPassword, setShowPassword] = useState(false);
   const inputRefs = useRef<any>([]);
 
-  const defaultClass = "bg-gray-100 p-2 rounded-lg";
+  const defaultClass = `bg-gray-100 p-2 rounded-lg ${
+    error ? "border border-red-600" : ""
+  }`;
 
   // This will update the OTP Field Value
   const updateOtpValue = (index: number, e: any) => {
@@ -60,7 +63,7 @@ export const Input = ({
   return (
     <div>
       {!OTPField ? (
-        <div className="text-input-container w-60 relative">
+        <div className="text-input-container w-full relative">
           <input
             className={twMerge(defaultClass, "w-full focus:outline-blue-400")}
             {...props}
@@ -80,6 +83,7 @@ export const Input = ({
               />
             </button>
           )}
+          <div className="text-xs text-red-500">{error && error}</div>
         </div>
       ) : (
         <div className="otp-container">
@@ -94,7 +98,7 @@ export const Input = ({
                 value={otpValues[index]}
                 onChange={(e) => updateOtpValue(index, e)}
                 onKeyDown={(e) => handleKeydown(index, e)}
-                ref={(ref) => (inputRefs.current[index] = ref)}
+                // ref={(ref) => (inputRefs.current[index] = ref)}
                 className={OTPClass}
               />
             ))}
