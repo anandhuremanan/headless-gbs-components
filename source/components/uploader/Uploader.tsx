@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Grampro Business Services and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import React, { useState, useRef, useEffect } from "react";
 import { upload, x } from "../../icon/iconPaths";
 import Icon from "../../icon/Icon";
@@ -13,57 +20,102 @@ export const FileUploader = ({
 }: any) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<any>(null);
+  const dropZoneRef = useRef<any>(null);
 
-  console.log(files);
-
+  // For Binding values on edit
   useEffect(() => {
     if (selectedFiles && selectedFiles.length > 0) {
-      setFiles(selectedFiles);
+      setFiles(multiple ? selectedFiles : [selectedFiles[0]]);
     }
-  }, [selectedFiles]);
+  }, [selectedFiles, multiple]);
 
-  // adds files to file array
-  const handleFileChange = (e: any) => {
-    const selectedFiles = Array.from(e.target.files);
-    const newPreviewUrls = { ...previewUrls };
+  // Adds files to file array
+  const handleFileChange = (newFiles: File[]) => {
+    let updatedFiles: File[];
+    if (multiple) {
+      updatedFiles = [...files, ...newFiles];
+    } else {
+      updatedFiles = [newFiles[0]];
+    }
+    setFiles(updatedFiles);
 
-    selectedFiles.forEach((file: any) => {
+    // Clear previous preview URLs if not multiple
+    if (!multiple) {
+      setPreviewUrls({});
+    }
+
+    newFiles.forEach((file) => {
       if (showImagePreview && file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onload = () => {
-          newPreviewUrls[file.name] = reader.result as string;
-          setPreviewUrls(newPreviewUrls);
+          setPreviewUrls((prev) => ({
+            ...prev,
+            [file.name]: reader.result as string,
+          }));
         };
         reader.readAsDataURL(file);
       }
     });
 
-    const updatedFiles = [...files, ...selectedFiles];
-    setFiles(updatedFiles);
-
     if (onChange) onChange(updatedFiles);
   };
 
-  // remove file from the file array
-  const removeFile = (index: any) => {
-    const fileToRemove = files[index];
+  // Removes the file from file array
+  const removeFile = (index: number) => {
     const updatedFiles = files.filter((_, i) => i !== index);
-
     setFiles(updatedFiles);
     setPreviewUrls((prevPreviews) => {
-      const { [fileToRemove.name]: _, ...rest } = prevPreviews;
+      const { [files[index].name]: _, ...rest } = prevPreviews;
       return rest;
     });
 
     if (onChange) onChange(updatedFiles);
   };
 
+  // *** Code to handle Drag and drop functionalities Starts here
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    handleFileChange(multiple ? droppedFiles : [droppedFiles[0]]);
+  };
+  // Code to handle Drag and drop functionalities Ends here ***
+
   return (
     <div className="w-full max-w-md mx-auto">
       <div
-        className="flex flex-col items-center border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-gray-400 transition-colors"
+        ref={dropZoneRef}
+        className={`flex flex-col items-center border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+          isDragging
+            ? "border-blue-500 bg-blue-50"
+            : "border-gray-300 hover:border-gray-400"
+        }`}
         onClick={() => fileInputRef.current.click()}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <Icon
           dimensions={{ width: "36", height: "36" }}
@@ -73,17 +125,17 @@ export const FileUploader = ({
         <p className="mt-2 text-sm text-gray-500">
           Click to upload or drag and drop
         </p>
-        {multiple && (
-          <p className="text-xs text-gray-400">
-            Supports multiple file uploads
-          </p>
-        )}
+        <p className="text-xs text-gray-400">
+          {multiple
+            ? "Supports multiple file uploads"
+            : "Single file upload only"}
+        </p>
       </div>
       <input
         type="file"
         ref={fileInputRef}
         className="hidden"
-        onChange={handleFileChange}
+        onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
         multiple={multiple}
       />
 
