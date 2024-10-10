@@ -1,0 +1,35 @@
+import React from "react";
+
+const AestheticProcessingAnimation = () => {
+  return (
+    <div className="w-full max-w-md mx-auto p-2">
+      <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-full w-1/3 bg-black rounded-full animate-processing"></div>
+      </div>
+      <p className="text-xs mt-2 text-center">
+        Uploading in Progress, Please Wait...
+      </p>
+    </div>
+  );
+};
+
+const AestheticProcessingAnimationWithStyles = () => (
+  <>
+    <style jsx global>{`
+      @keyframes processing {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(300%);
+        }
+      }
+      .animate-processing {
+        animation: processing 2s ease-in-out infinite;
+      }
+    `}</style>
+    <AestheticProcessingAnimation />
+  </>
+);
+
+export default AestheticProcessingAnimationWithStyles;

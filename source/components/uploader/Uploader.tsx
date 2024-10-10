@@ -1,12 +1,27 @@
-import React, { useState, useRef } from "react";
-import { upload, x } from "@/src/component-lib/icon/iconPaths";
-import Icon from "@/src/component-lib/icon/Icon";
+import React, { useState, useRef, useEffect } from "react";
+import { upload, x } from "../../icon/iconPaths";
+import Icon from "../../icon/Icon";
 import { GetFileIcon } from "./uploaderIcon";
+import AestheticProcessingAnimationWithStyles from "./ProgressAnimation";
 
-export const FileUploader = ({ showImagePreview = false }: any) => {
+export const FileUploader = ({
+  showImagePreview = false,
+  multiple = true,
+  onChange,
+  startsUpload = false,
+  selectedFiles = [],
+}: any) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
   const fileInputRef = useRef<any>(null);
+
+  console.log(files);
+
+  useEffect(() => {
+    if (selectedFiles && selectedFiles.length > 0) {
+      setFiles(selectedFiles);
+    }
+  }, [selectedFiles]);
 
   // adds files to file array
   const handleFileChange = (e: any) => {
@@ -24,17 +39,24 @@ export const FileUploader = ({ showImagePreview = false }: any) => {
       }
     });
 
-    setFiles((prevFiles: any) => [...prevFiles, ...selectedFiles]);
+    const updatedFiles = [...files, ...selectedFiles];
+    setFiles(updatedFiles);
+
+    if (onChange) onChange(updatedFiles);
   };
 
   // remove file from the file array
   const removeFile = (index: any) => {
     const fileToRemove = files[index];
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    const updatedFiles = files.filter((_, i) => i !== index);
+
+    setFiles(updatedFiles);
     setPreviewUrls((prevPreviews) => {
       const { [fileToRemove.name]: _, ...rest } = prevPreviews;
       return rest;
     });
+
+    if (onChange) onChange(updatedFiles);
   };
 
   return (
@@ -51,15 +73,21 @@ export const FileUploader = ({ showImagePreview = false }: any) => {
         <p className="mt-2 text-sm text-gray-500">
           Click to upload or drag and drop
         </p>
-        <p className="text-xs text-gray-400">Supports multiple file uploads</p>
+        {multiple && (
+          <p className="text-xs text-gray-400">
+            Supports multiple file uploads
+          </p>
+        )}
       </div>
       <input
         type="file"
         ref={fileInputRef}
         className="hidden"
         onChange={handleFileChange}
-        multiple
+        multiple={multiple}
       />
+
+      {startsUpload && <AestheticProcessingAnimationWithStyles />}
 
       {files.length > 0 && (
         <div className="mt-4 space-y-2">

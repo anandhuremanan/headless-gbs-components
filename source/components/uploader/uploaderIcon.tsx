@@ -4,8 +4,6 @@ import {
   filetext,
   film,
   music,
-  upload,
-  x,
 } from "../../icon/iconPaths";
 import Icon from "../../icon/Icon";
 
