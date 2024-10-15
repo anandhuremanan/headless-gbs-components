@@ -17,10 +17,13 @@ export const FileUploader = ({
   onChange,
   startsUpload = false,
   selectedFiles = [],
+  accept,
+  fileCount,
 }: any) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
   const [isDragging, setIsDragging] = useState(false);
+  const [fileCountError, setFileCountError] = useState(false);
   const fileInputRef = useRef<any>(null);
   const dropZoneRef = useRef<any>(null);
 
@@ -31,14 +34,27 @@ export const FileUploader = ({
     }
   }, [selectedFiles, multiple]);
 
+  // Shows Error when filecount is higher
+  useEffect(() => {
+    if (files.length > fileCount) {
+      setFileCountError(true);
+    }
+  }, [files, fileCount]);
+
   // Adds files to file array
   const handleFileChange = (newFiles: File[]) => {
-    let updatedFiles: File[];
-    if (multiple) {
-      updatedFiles = [...files, ...newFiles];
+    let updatedFiles: File[] = multiple
+      ? [...files, ...newFiles]
+      : [newFiles[0]];
+
+    // Ensure the total number of files doesn't exceed the fileCount limit
+    if (updatedFiles.length > fileCount) {
+      setFileCountError(true);
+      updatedFiles = updatedFiles.slice(0, fileCount); // Limit the number of files to fileCount
     } else {
-      updatedFiles = [newFiles[0]];
+      setFileCountError(false);
     }
+
     setFiles(updatedFiles);
 
     // Clear previous preview URLs if not multiple
@@ -137,7 +153,14 @@ export const FileUploader = ({
         className="hidden"
         onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
         multiple={multiple}
+        accept={accept}
       />
+
+      {fileCountError && (
+        <span className="text-xs text-red-500">
+          Maximum file count is set to {fileCount}
+        </span>
+      )}
 
       {startsUpload && <AestheticProcessingAnimationWithStyles />}
 

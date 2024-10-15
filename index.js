@@ -17,6 +17,7 @@ const COMPONENTS = [
   "Modal",
   "Spinner",
   "Toast",
+  "Uploader"
 ];
 const SOURCE_PATH = path.join(__dirname, "source", "components");
 const DEST_PATH = path.join(process.cwd(), "src", "component-lib");
