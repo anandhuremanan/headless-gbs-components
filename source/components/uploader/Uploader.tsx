@@ -19,11 +19,14 @@ export const FileUploader = ({
   selectedFiles = [],
   accept,
   fileCount,
+  disabled = false,
+  inputFileSize, // Max file size in MB
 }: any) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
   const [isDragging, setIsDragging] = useState(false);
   const [fileCountError, setFileCountError] = useState(false);
+  const [fileSizeErrors, setFileSizeErrors] = useState<string[]>([]); // Array for file size errors
   const fileInputRef = useRef<any>(null);
   const dropZoneRef = useRef<any>(null);
 
@@ -33,13 +36,6 @@ export const FileUploader = ({
       setFiles(multiple ? selectedFiles : [selectedFiles[0]]);
     }
   }, [selectedFiles, multiple]);
-
-  // Shows Error when filecount is higher
-  useEffect(() => {
-    if (files.length > fileCount) {
-      setFileCountError(true);
-    }
-  }, [files, fileCount]);
 
   // Adds files to file array
   const handleFileChange = (newFiles: File[]) => {
@@ -55,27 +51,42 @@ export const FileUploader = ({
       setFileCountError(false);
     }
 
-    setFiles(updatedFiles);
+    // File size validation
+    const validFiles: File[] = [];
+    const newErrors: string[] = [];
 
-    // Clear previous preview URLs if not multiple
-    if (!multiple) {
-      setPreviewUrls({});
-    }
-
-    newFiles.forEach((file) => {
-      if (showImagePreview && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setPreviewUrls((prev) => ({
-            ...prev,
-            [file.name]: reader.result as string,
-          }));
-        };
-        reader.readAsDataURL(file);
+    updatedFiles.forEach((file) => {
+      const fileSizeInMB = file.size / 1024 / 1024; // Convert bytes to MB
+      if (inputFileSize && fileSizeInMB > inputFileSize) {
+        newErrors.push(
+          `File ${file.name} exceeds the size limit of ${inputFileSize} MB`
+        );
+      } else {
+        validFiles.push(file);
       }
     });
 
-    if (onChange) onChange(updatedFiles);
+    // Update state with valid files and set errors for oversized files
+    if (validFiles.length > 0) {
+      setFiles(validFiles);
+      setPreviewUrls({});
+      validFiles.forEach((file) => {
+        if (showImagePreview && file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            setPreviewUrls((prev) => ({
+              ...prev,
+              [file.name]: reader.result as string,
+            }));
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+      if (onChange) onChange(validFiles);
+    }
+
+    // Set file size errors
+    setFileSizeErrors(newErrors);
   };
 
   // Removes the file from file array
@@ -90,7 +101,7 @@ export const FileUploader = ({
     if (onChange) onChange(updatedFiles);
   };
 
-  // *** Code to handle Drag and drop functionalities Starts here
+  // Drag and drop handling
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -116,7 +127,6 @@ export const FileUploader = ({
     const droppedFiles = Array.from(e.dataTransfer.files);
     handleFileChange(multiple ? droppedFiles : [droppedFiles[0]]);
   };
-  // Code to handle Drag and drop functionalities Ends here ***
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -146,6 +156,17 @@ export const FileUploader = ({
             ? "Supports multiple file uploads"
             : "Single file upload only"}
         </p>
+
+        {/* Display file size errors */}
+        {fileSizeErrors.length > 0 && (
+          <div className="mt-2 space-y-1">
+            {fileSizeErrors.map((error, index) => (
+              <span key={index} className="text-xs text-red-500">
+                {error}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
       <input
         type="file"
@@ -154,8 +175,10 @@ export const FileUploader = ({
         onChange={(e) => handleFileChange(Array.from(e.target.files || []))}
         multiple={multiple}
         accept={accept}
+        disabled={disabled}
       />
 
+      {/* Display file count error */}
       {fileCountError && (
         <span className="text-xs text-red-500">
           Maximum file count is set to {fileCount}
