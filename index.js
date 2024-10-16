@@ -17,7 +17,7 @@ const COMPONENTS = [
   "Modal",
   "Spinner",
   "Toast",
-  "Uploader"
+  "Uploader",
 ];
 const SOURCE_PATH = path.join(__dirname, "source", "components");
 const DEST_PATH = path.join(process.cwd(), "src", "component-lib");
@@ -30,7 +30,17 @@ const rl = readline.createInterface({
 let isFirstCopy = true;
 
 function listComponents() {
+  console.log(
+    ` _____   ____     _____ 
+/ ____|  |    \\  /  ___|
+| |  __  | |_) | | (___  
+| | |_ | |    <   \\ __ \\ 
+| |__| | | |_) |  ____) |
+ \\_____| |____/  |_____/ `
+  );
+  console.log(" ");
   console.log("Available components:");
+  console.log(" ");
   COMPONENTS.forEach((component, index) => {
     console.log(`${index + 1}. ${component}`);
   });
@@ -60,7 +70,13 @@ function copyComponent(component) {
   }
 
   fs.copySync(componentSrc, componentDest, { overwrite: true });
+  console.log("");
   console.log(`Component ${component} copied successfully to ${componentDest}`);
+  console.log("");
+  console.log(
+    "For Props and Usage Guides Visit : https://blackmax-designs.gitbook.io/building-block-v2.0"
+  );
+  console.log("");
 
   if (isFirstCopy) {
     copyCommonFiles();
