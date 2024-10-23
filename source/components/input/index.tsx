@@ -74,6 +74,7 @@ export const Input = ({
           {/* If Type is password, this will show a password visible toggle button */}
           {props.type && props.type === "password" && (
             <button
+              type="button"
               className="absolute inset-y-0 right-0 flex items-center pr-2"
               onClick={toggleTypeForPassword}
             >
@@ -98,7 +99,9 @@ export const Input = ({
                 value={otpValues[index]}
                 onChange={(e) => updateOtpValue(index, e)}
                 onKeyDown={(e) => handleKeydown(index, e)}
-                // ref={(ref) => (inputRefs.current[index] = ref)}
+                ref={(ref) => {
+                  inputRefs.current[index] = ref;
+                }}
                 className={OTPClass}
               />
             ))}

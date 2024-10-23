@@ -8,6 +8,7 @@
 import React, {
   forwardRef,
   memo,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -51,10 +52,6 @@ const MultiSelect = forwardRef<any, MultiSelectProps>((props, ref) => {
   }, [items]);
 
   useEffect(() => {
-    if (onSelect) onSelect(selected);
-  }, [selected, onSelect]);
-
-  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         selectRef.current &&
@@ -87,13 +84,16 @@ const MultiSelect = forwardRef<any, MultiSelectProps>((props, ref) => {
     setShowPopover(!showPopover);
   };
 
-  const handleSelect = (value: string) => {
-    setSelected((prev) =>
-      prev.includes(value)
-        ? prev.filter((item) => item !== value)
-        : [...prev, value]
-    );
-  };
+  const handleSelect = useCallback(
+    (value: string) => {
+      const newSelected = selected.includes(value)
+        ? selected.filter((item) => item !== value)
+        : [...selected, value];
+      setSelected(newSelected);
+      onSelect?.(newSelected);
+    },
+    [selected, onSelect]
+  );
 
   const getSelectedDisplay = () => {
     if (selected.length === 0) return placeholder;
@@ -127,6 +127,7 @@ const MultiSelect = forwardRef<any, MultiSelectProps>((props, ref) => {
   const clearSelected = () => {
     setSelected([]);
     setShowPopover(false);
+    if (onSelect) onSelect([]);
   };
 
   useImperativeHandle(ref, () => ({
@@ -142,19 +143,27 @@ const MultiSelect = forwardRef<any, MultiSelectProps>((props, ref) => {
   return (
     <div className="relative w-[200px]" ref={selectRef}>
       <div className="relative border w-[200px] flex items-center px-4 py-2 rounded-lg">
-        <button onClick={togglePopover} className="flex-grow text-sm text-left">
+        <button
+          onClick={togglePopover}
+          className="flex-grow text-sm text-left"
+          type="button"
+        >
           {getSelectedDisplay()}
         </button>
         <div className="flex items-center space-x-2">
           {selected.length > 0 && (
-            <button className="flex items-center px-2" onClick={clearSelected}>
+            <button
+              className="flex items-center px-2"
+              onClick={clearSelected}
+              type="button"
+            >
               <Icon
                 elements={x}
                 svgClass="h-4 w-4 stroke-gray-500 fill-none dark:stroke-white"
               />
             </button>
           )}
-          <button onClick={togglePopover}>
+          <button onClick={togglePopover} type="button">
             <Icon
               elements={upDown}
               svgClass="h-4 w-4 stroke-gray-500 fill-none dark:stroke-white"
@@ -187,6 +196,7 @@ const MultiSelect = forwardRef<any, MultiSelectProps>((props, ref) => {
           {filteredItems.length > 0 ? (
             filteredItems.map(({ value, label }) => (
               <button
+                type="button"
                 key={value}
                 className="flex items-center w-full px-2 py-1 text-left hover:bg-blue-100 gap-2 rounded-lg mt-1 text-sm dark:hover:bg-blue-600"
                 onClick={() => handleSelect(value)}
