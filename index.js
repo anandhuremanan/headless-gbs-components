@@ -19,8 +19,14 @@ const COMPONENTS = [
   "Toast",
   "Uploader",
 ];
+
+const FRAMEWORKS = {
+  next: "Next.js",
+  vite: "Vite",
+};
+
 const SOURCE_PATH = path.join(__dirname, "source", "components");
-const DEST_PATH = path.join(process.cwd(), "src", "component-lib");
+let DEST_PATH;
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -29,15 +35,15 @@ const rl = readline.createInterface({
 
 let isFirstCopy = true;
 
+function listFrameworks() {
+  console.log("Available frameworks:");
+  console.log("");
+  Object.entries(FRAMEWORKS).forEach(([key, name], index) => {
+    console.log(`${index + 1}. ${name}`);
+  });
+}
+
 function listComponents() {
-  console.log(
-    ` _____   ____     _____ 
-/ ____|  |    \\  /  ___|
-| |  __  | |_) | | (___  
-| | |_ | |    <   \\ __ \\ 
-| |__| | | |_) |  ____) |
- \\_____| |____/  |_____/ `
-  );
   console.log(" ");
   console.log("Available components:");
   console.log(" ");
@@ -84,6 +90,35 @@ function copyComponent(component) {
   }
 }
 
+function promptForFramework() {
+  listFrameworks();
+  rl.question("Select your framework (enter the number): ", (answer) => {
+    const index = parseInt(answer) - 1;
+    const frameworks = Object.keys(FRAMEWORKS);
+
+    if (isNaN(index) || index < 0 || index >= frameworks.length) {
+      console.log("Invalid selection. Please try again.");
+      promptForFramework();
+      return;
+    }
+
+    const selectedFramework = frameworks[index];
+
+    // Set destination path based on framework
+    if (selectedFramework === "next") {
+      DEST_PATH = path.join(process.cwd(), "app", "component-lib");
+    } else {
+      DEST_PATH = path.join(process.cwd(), "src", "component-lib");
+    }
+
+    // Ensure the destination directory exists
+    fs.ensureDirSync(DEST_PATH);
+
+    // Continue with component selection
+    promptForComponent();
+  });
+}
+
 function promptForComponent() {
   listComponents();
   rl.question(
@@ -118,8 +153,5 @@ function promptForComponent() {
   );
 }
 
-// Ensure the destination directory exists
-fs.ensureDirSync(DEST_PATH);
-
-// Start the component selection process
-promptForComponent();
+// Start with framework selection
+promptForFramework();
