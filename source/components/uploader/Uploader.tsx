@@ -6,8 +6,8 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { upload, x } from "../../icon/iconPaths";
-import Icon from "../../icon/Icon";
+import { upload, x } from "@/src/component-lib/icon/iconPaths";
+import Icon from "@/src/component-lib/icon/Icon";
 import { GetFileIcon } from "./uploaderIcon";
 import AestheticProcessingAnimationWithStyles from "./ProgressAnimation";
 
@@ -163,6 +163,7 @@ export const FileUploader = ({
             {fileSizeErrors.map((error, index) => (
               <span key={index} className="text-xs text-red-500">
                 {error}
+                <br />
               </span>
             ))}
           </div>
