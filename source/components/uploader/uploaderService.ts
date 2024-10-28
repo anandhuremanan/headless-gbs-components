@@ -20,7 +20,13 @@ function processFiles(files: File[], chunkSize: number) {
 export async function sendFiles(
   files: File[],
   chunkSize: number,
-  apiUrl = "http://localhost:8080/upload"
+  apiUrl = "http://localhost:8080/upload",
+  isUploading = (status: {
+    uploading: boolean;
+    progress?: number;
+    file?: string;
+    uploadedFileIds?: string[];
+  }) => {}
 ) {
   const processedFiles = processFiles(files, chunkSize);
 
@@ -32,6 +38,10 @@ export async function sendFiles(
 
   // To track chunk index per file
   const chunkIndexTracker: { [key: string]: number } = {};
+
+  let totalChunks = processedFiles.length;
+  let uploadedChunks = 0;
+  const uploadedFileIds: string[] = [];
 
   for (let i = 0; i < processedFiles.length; i++) {
     const { file, originalFile } = processedFiles[i];
@@ -59,13 +69,12 @@ export async function sendFiles(
       chunkIndexTracker[originalFile.name]++;
     }
 
-    // Don't Remove the following console
-    // console.log("FormData contents:");
-    // formData.forEach((value, key) => {
-    //   console.log(`${key}: ${value}`);
-    // });
-
     try {
+      isUploading({
+        uploading: true,
+        progress: (uploadedChunks / totalChunks) * 100,
+        file: originalFile.name,
+      });
       const response = await fetch(apiUrl, {
         method: "POST",
         body: formData,
@@ -76,18 +85,40 @@ export async function sendFiles(
       }
 
       const data = await response.json();
+      if (data.documentId) uploadedFileIds.push(data.documentId);
 
-      if (data.documentId) {
-        console.log(
-          `File uploaded successfully. Document ID: ${data.documentId}`
-        );
-      } else {
-        console.log(
-          `Chunk ${chunkIndexTracker[originalFile.name]}/${chunkCount} uploaded`
-        );
-      }
+      uploadedChunks++;
+      isUploading({
+        uploading: true,
+        progress: (uploadedChunks / totalChunks) * 100,
+        file: originalFile.name,
+      });
     } catch (error) {
       console.error("Error uploading file chunk:", error);
+      isUploading({
+        uploading: false,
+        progress: (uploadedChunks / totalChunks) * 100,
+        file: originalFile.name,
+      });
     }
   }
+
+  // Indicate that the upload is complete
+  isUploading({
+    uploading: false,
+    progress: 100,
+    uploadedFileIds: uploadedFileIds,
+  });
+}
+
+// returns all files
+export async function getAllFiles(apiUrl: string) {
+  let files: any[] = [];
+  return files;
+}
+
+// returns files by ID
+export async function getFilesById(apiUrl: string, documentId: string) {
+  let files: any[] = [];
+  return files;
 }

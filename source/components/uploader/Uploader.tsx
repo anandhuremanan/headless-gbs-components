@@ -1,4 +1,7 @@
 /**
+ * Important!!!!
+ * Work In Progress Code
+ * 
  * Copyright (c) Grampro Business Services and affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -6,29 +9,67 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { upload, x } from "@/src/component-lib/icon/iconPaths";
-import Icon from "@/src/component-lib/icon/Icon";
+import { upload, x, circleCheck } from "../icon/iconPaths";
+import Icon from "../icon/Icon";
 import { GetFileIcon } from "./uploaderIcon";
 import AestheticProcessingAnimationWithStyles from "./ProgressAnimation";
+import { sendFiles } from "./uploaderService";
 
 export const FileUploader = ({
   showImagePreview = false,
   multiple = true,
   onChange,
-  startsUpload = false,
   selectedFiles = [],
   accept,
   fileCount,
   disabled = false,
   inputFileSize, // Max file size in MB
+  documentId = undefined,
+  startUpload = false,
+  apiURL = "",
+  chunk_size = "",
+  uploadedFileIdArray = () => {},
 }: any) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
   const [isDragging, setIsDragging] = useState(false);
   const [fileCountError, setFileCountError] = useState(false);
   const [fileSizeErrors, setFileSizeErrors] = useState<string[]>([]); // Array for file size errors
+  const [isUploading, setIsUploading] = useState(false);
+  const [fileUploadStatus, setFileUploadStatus] = useState<string | undefined>(
+    undefined
+  );
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<any>(null);
   const dropZoneRef = useRef<any>(null);
+
+  // Upload Handler
+  const handleUpload = async () => {
+    if (files.length > 0) {
+      setFileUploadStatus(undefined);
+      await sendFiles(
+        files,
+        chunk_size,
+        apiURL,
+        ({ uploading, progress, uploadedFileIds }) => {
+          setIsUploading(uploading);
+          if (progress !== undefined) setProgress(progress);
+          // Returns Uploaded File ID's
+          if (uploadedFileIds) uploadedFileIdArray(uploadedFileIds);
+        }
+      );
+      setFileUploadStatus("Upload completed");
+    } else {
+      setFileUploadStatus("No files selected");
+    }
+  };
+
+  // Starts uploads to server
+  useEffect(() => {
+    if (startUpload) {
+      handleUpload();
+    }
+  }, [startUpload]);
 
   // For Binding values on edit
   useEffect(() => {
@@ -157,6 +198,18 @@ export const FileUploader = ({
             : "Single file upload only"}
         </p>
 
+        {/* Shows FileUpload Status Here */}
+        {fileUploadStatus && (
+          <p className="text-xs mt-2 text-green-500 flex gap-1">
+            <Icon
+              dimensions={{ width: "16", height: "16" }}
+              elements={circleCheck}
+              svgClass={"stroke-green-500 fill-none dark:stroke-white"}
+            />
+            {fileUploadStatus}
+          </p>
+        )}
+
         {/* Display file size errors */}
         {fileSizeErrors.length > 0 && (
           <div className="mt-2 space-y-1">
@@ -186,7 +239,10 @@ export const FileUploader = ({
         </span>
       )}
 
-      {startsUpload && <AestheticProcessingAnimationWithStyles />}
+      {/* Loading Animation */}
+      {isUploading && (
+        <AestheticProcessingAnimationWithStyles progressPercentage={progress} />
+      )}
 
       {files.length > 0 && (
         <div className="mt-4 space-y-2">
