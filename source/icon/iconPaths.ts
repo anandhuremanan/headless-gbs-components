@@ -166,3 +166,14 @@ export const filespreadsheet: any = [
   { type: "path", d: "M8 17h2", key: "2yhykz" },
   { type: "path", d: "M14 17h2", key: "10kma7" },
 ];
+
+export const cloudDownload: any = [
+  { type: "path", d: "m12 21 4-4", key: "1lfcce" },
+  { type: "path", d: "M12 13v8l-4-4", key: "1f5nwf" },
+  {
+    type: "path",
+
+    d: "M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284",
+    key: "ui1hmy",
+  },
+];

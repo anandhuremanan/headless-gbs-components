@@ -1,7 +1,7 @@
 /**
  * Important!!!!
  * Work In Progress Code
- * 
+ *
  * Copyright (c) Grampro Business Services and affiliates.
  *
  * This source code is licensed under the MIT license found in the
@@ -14,21 +14,22 @@ import Icon from "../icon/Icon";
 import { GetFileIcon } from "./uploaderIcon";
 import AestheticProcessingAnimationWithStyles from "./ProgressAnimation";
 import { sendFiles } from "./uploaderService";
+import { cloudDownload } from "../../icon/iconPaths";
 
 export const FileUploader = ({
   showImagePreview = false,
-  multiple = true,
+  multiple = false,
   onChange,
   selectedFiles = [],
   accept,
   fileCount,
   disabled = false,
   inputFileSize, // Max file size in MB
-  documentId = undefined,
   startUpload = false,
   apiURL = "",
   chunk_size = "",
   uploadedFileIdArray = () => {},
+  fileData = [],
 }: any) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
@@ -43,30 +44,29 @@ export const FileUploader = ({
   const fileInputRef = useRef<any>(null);
   const dropZoneRef = useRef<any>(null);
 
-  // Upload Handler
-  const handleUpload = async () => {
-    if (files.length > 0) {
-      setFileUploadStatus(undefined);
-      await sendFiles(
-        files,
-        chunk_size,
-        apiURL,
-        ({ uploading, progress, uploadedFileIds }) => {
-          setIsUploading(uploading);
-          if (progress !== undefined) setProgress(progress);
-          // Returns Uploaded File ID's
-          if (uploadedFileIds) uploadedFileIdArray(uploadedFileIds);
-        }
-      );
-      setFileUploadStatus("Upload completed");
-    } else {
-      setFileUploadStatus("No files selected");
-    }
-  };
-
   // Starts uploads to server
   useEffect(() => {
     if (startUpload) {
+      // Upload Handler
+      const handleUpload = async () => {
+        if (files.length > 0) {
+          setFileUploadStatus(undefined);
+          await sendFiles(
+            files,
+            chunk_size,
+            apiURL,
+            ({ uploading, progress, uploadedFileIds }) => {
+              setIsUploading(uploading);
+              if (progress !== undefined) setProgress(progress);
+              // Returns Uploaded File ID's
+              if (uploadedFileIds) uploadedFileIdArray(uploadedFileIds);
+            }
+          );
+          setFileUploadStatus("Upload completed");
+        } else {
+          setFileUploadStatus("No files selected");
+        }
+      };
       handleUpload();
     }
   }, [startUpload]);
@@ -167,6 +167,22 @@ export const FileUploader = ({
 
     const droppedFiles = Array.from(e.dataTransfer.files);
     handleFileChange(multiple ? droppedFiles : [droppedFiles[0]]);
+  };
+
+  const handleDownload = (fileId: any, fileName: any) => {
+    const downloadUrl = constructDownloadUrl(fileId);
+    window.open(downloadUrl, "_blank");
+  };
+
+  const constructDownloadUrl = (fileId: any) => {
+    const url = new URL("download", apiURL);
+    url.searchParams.append("id", fileId);
+    return url.href;
+  };
+
+  const isImageFile = (fileName: any) => {
+    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
+    return imageExtensions.some((ext) => fileName.toLowerCase().endsWith(ext));
   };
 
   return (
@@ -281,6 +297,44 @@ export const FileUploader = ({
           ))}
         </div>
       )}
+
+      {fileData.length > 0 &&
+        fileData.map((item: any, index: any) => (
+          <div
+            key={index}
+            className="flex items-center justify-between bg-gray-50 p-2 rounded-md mt-2"
+          >
+            <div className="flex items-center space-x-2">
+              {/* <GetFileIcon
+                file={item.FileName}
+                showImagePreview={showImagePreview}
+                previewUrls={previewUrls}
+              /> */}
+              {isImageFile(item.FileName) && (
+                <img
+                  src={constructDownloadUrl(item.FileID)}
+                  alt={item.FileName}
+                  className="mt-2 w-8 h-8 object-cover rounded-lg"
+                />
+              )}
+              <div>
+                <p className="text-sm font-medium text-gray-700">
+                  {item.FileName}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {(item.FileSize / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
+            </div>
+            <button onClick={() => handleDownload(item.FileID, item.FileName)}>
+              <Icon
+                dimensions={{ width: "18", height: "18" }}
+                elements={cloudDownload}
+                svgClass={"stroke-red-500 fill-none dark:stroke-white"}
+              />
+            </button>
+          </div>
+        ))}
     </div>
   );
 };
