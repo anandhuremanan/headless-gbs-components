@@ -27,6 +27,9 @@ export const DatePicker = ({
   const [days, setDays] = useState<any>([]);
   const [selectedDate, setSelectedDate] = useState(initialSelectedDate);
   const [hasMounted, setHasMounted] = useState(false);
+  const [showPlaceHolder, setShowPlaceHolder] = useState<string | undefined>(
+    placeholder
+  );
 
   const dateRef = useRef<HTMLDivElement>(null);
   const today = new Date();
@@ -68,6 +71,7 @@ export const DatePicker = ({
 
   const selectDate = (date: any) => {
     setSelectedDate(date);
+    setShowPlaceHolder(undefined);
     setShowDatepicker(false);
     if (onDateChange) onDateChange(date);
   };
@@ -126,8 +130,8 @@ export const DatePicker = ({
           elements={calender}
           svgClass={"stroke-black fill-none dark:stroke-white"}
         />
-        {placeholder ? (
-          <span className="text-gray-500">{placeholder}</span>
+        {showPlaceHolder ? (
+          <span className="text-gray-500">{showPlaceHolder}</span>
         ) : (
           <span>{selectedDate.toLocaleDateString()}</span>
         )}
