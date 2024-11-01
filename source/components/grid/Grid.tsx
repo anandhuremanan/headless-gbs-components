@@ -53,7 +53,11 @@ export const Grid = forwardRef((props: GridProps, ref) => {
     gridContainerClass = "flex flex-col min-w-screen border rounded-md overflow-hidden dark:bg-black",
     gridColumnStyleSelectAll = "border-b px-4 text-sm dark:text-white",
     gridColumnStyle = "border-b p-2 text-sm dark:text-white",
+    rowChange = () => {},
+    pageStatus = () => {},
   } = props;
+
+  // States Handling Grid
   const [workingDataSource, setWorkingDataSource] = useState<any>([]);
   const [fallbackSourceData, setFallbackSourceData] = useState([]);
   const [workingColumns, setWorkingColumns] = useState<any>([]);
@@ -64,6 +68,14 @@ export const Grid = forwardRef((props: GridProps, ref) => {
   const [searchParam, setSearchParam] = useState("");
   const [activeFilterArray, setActiveFilterArray] = useState<any>([]);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
+
+  // This will returns the Page Navigation Status of Grid
+  // Such as totalPages in the grid, currentpage, etc..
+  useEffect(() => {
+    if (pageStatus) {
+      pageStatus({ currentPage: currentPage, totalPages: totalPages });
+    }
+  }, [pageStatus, currentPage, totalPages]);
 
   // Function to handle API datasource
   const getGridData = useCallback(async () => {
@@ -225,6 +237,9 @@ export const Grid = forwardRef((props: GridProps, ref) => {
         <column.template
           rowData={rowData}
           rowIndex={rowIndex + currentPage * pageSettings.pageNumber}
+          rowChange={(changes: any) => {
+            if (rowChange) rowChange(changes);
+          }}
         />
       );
     }
@@ -330,19 +345,24 @@ export const Grid = forwardRef((props: GridProps, ref) => {
   // RowSelection Handling Logic Ends Here ***
 
   // Making Grid Functions Accessible in Parent
-  useImperativeHandle(ref, () => ({
-    goToPage,
-    nextPage,
-    prevPage,
-    goToFirstPage,
-    goToEndPage,
-    handleSearch,
-    handleApplyFilter,
-    clearFilter,
-    workingDataSource,
-    dataSource,
-  }));
+  useImperativeHandle(
+    ref,
+    () => {
+      return {
+        goToPage,
+        nextPage,
+        prevPage,
+        goToFirstPage,
+        goToEndPage,
+        handleSearch,
+        handleApplyFilter,
+        clearFilter,
+      };
+    },
+    []
+  );
 
+  // JSX Rendering
   return (
     <div className={gridContainerClass}>
       <React.Fragment>

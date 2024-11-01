@@ -25,4 +25,6 @@ export type GridProps = {
   tableHeaderStyle?: string;
   gridColumnStyleSelectAll?: string;
   gridColumnStyle?: string;
+  rowChange?: any;
+  pageStatus?: any;
 };
