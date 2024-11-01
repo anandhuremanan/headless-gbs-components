@@ -26,9 +26,16 @@ export const DatePicker = ({
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [days, setDays] = useState<any>([]);
   const [selectedDate, setSelectedDate] = useState(initialSelectedDate);
+  const [hasMounted, setHasMounted] = useState(false);
 
   const dateRef = useRef<HTMLDivElement>(null);
   const today = new Date();
+
+  // This useEffect will ensure the server and client
+  // rendererd date will not mismatch
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // This will helps to close the popup when clicked outside of datepicker component
   useEffect(() => {
@@ -104,9 +111,14 @@ export const DatePicker = ({
     (_, i) => currentYear - yearLimitStart + i
   );
 
+  if (!hasMounted) {
+    return null;
+  }
+
   return (
     <div className="relative inline-block w-80 dark:bg-black" ref={dateRef}>
       <button
+        type="button"
         onClick={toggleDatepicker}
         className="border p-2 rounded w-full flex gap-2 items-center justify-center dark:text-white"
       >
@@ -117,7 +129,7 @@ export const DatePicker = ({
         {placeholder ? (
           <span className="text-gray-500">{placeholder}</span>
         ) : (
-          selectedDate.toLocaleDateString()
+          <span>{selectedDate.toLocaleDateString()}</span>
         )}
       </button>
 
@@ -125,6 +137,7 @@ export const DatePicker = ({
         <div className="absolute z-10 bg-white border border-gray-300 shadow-lg mt-1 w-full rounded dark:bg-black dark:text-white px-2">
           <div className="flex justify-between items-center p-2">
             <button
+              type="button"
               onClick={prevMonth}
               className="text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100"
             >
@@ -140,7 +153,11 @@ export const DatePicker = ({
                 })}{" "}
                 {currentYear}
               </span>
-              <button onClick={toggleYearMonthPicker} className="">
+              <button
+                onClick={toggleYearMonthPicker}
+                className=""
+                type="button"
+              >
                 <Icon
                   elements={down}
                   svgClass={"stroke-black fill-none dark:stroke-white"}
@@ -148,6 +165,7 @@ export const DatePicker = ({
               </button>
             </div>
             <button
+              type="button"
               onClick={nextMonth}
               className="text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100"
             >
@@ -164,6 +182,7 @@ export const DatePicker = ({
                 <div className="overflow-y-auto h-[200px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar">
                   {months.map((month, index) => (
                     <button
+                      type="button"
                       key={month}
                       onClick={() => selectYearMonth(currentYear, index)}
                       className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
@@ -182,6 +201,7 @@ export const DatePicker = ({
                 <div className="overflow-y-auto h-[200px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar">
                   {years.map((year) => (
                     <button
+                      type="button"
                       key={year}
                       onClick={() => selectYearMonth(year, currentMonth)}
                       className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
@@ -218,6 +238,7 @@ export const DatePicker = ({
 
                 return (
                   <button
+                    type="button"
                     key={index}
                     onClick={() => !isDisabled && selectDate(day)}
                     disabled={isDisabled}
@@ -239,12 +260,14 @@ export const DatePicker = ({
           )}
           <div className="px-2 py-2 flex justify-between mb-8">
             <button
+              type="button"
               onClick={goToToday}
               className="text-blue-500 hover:text-blue-600 transition duration-150 ease-in-out"
             >
               Today
             </button>
             <button
+              type="button"
               onClick={toggleDatepicker}
               className="text-gray-500 hover:text-gray-600 transition duration-150 ease-in-out"
             >
