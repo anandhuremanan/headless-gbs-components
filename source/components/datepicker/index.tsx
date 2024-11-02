@@ -124,14 +124,18 @@ export const DatePicker = ({
       <button
         type="button"
         onClick={toggleDatepicker}
-        className="border p-2 rounded w-full flex gap-2 items-center justify-center dark:text-white"
+        className="border p-2 rounded w-full flex items-center gap-2 dark:text-white"
       >
         <Icon
+          dimensions={{ width: "30", height: "30" }}
           elements={calender}
           svgClass={"stroke-black fill-none dark:stroke-white"}
         />
         {showPlaceHolder ? (
-          <span className="text-gray-500">{showPlaceHolder}</span>
+          <div className="flex flex-col text-left">
+            <span className="text-gray-500 text-xs">{showPlaceHolder}</span>
+            <div className="text-sm">{new Date().toLocaleDateString()}</div>
+          </div>
         ) : (
           <span>{selectedDate.toLocaleDateString()}</span>
         )}
@@ -246,10 +250,8 @@ export const DatePicker = ({
                     key={index}
                     onClick={() => !isDisabled && selectDate(day)}
                     disabled={isDisabled}
-                    className={`text-center p-1 w-8 h-8 cursor-pointer rounded-full hover:bg-gray-200 transition duration-150 ease-in-out ${
-                      isSelected
-                        ? "bg-blue-500 text-white hover:bg-blue-600"
-                        : ""
+                    className={`text-center p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
+                      isSelected ? "bg-black text-white hover:bg-gray-800" : ""
                     } ${
                       isDisabled
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -266,7 +268,7 @@ export const DatePicker = ({
             <button
               type="button"
               onClick={goToToday}
-              className="text-blue-500 hover:text-blue-600 transition duration-150 ease-in-out"
+              className="text-black hover:text-blue-600 transition duration-150 ease-in-out"
             >
               Today
             </button>
