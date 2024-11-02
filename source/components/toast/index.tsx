@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+"use client";
 import React from "react";
 import { useToastStore } from "./toastAtom";
 import Toast from "./Toast";
