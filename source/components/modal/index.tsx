@@ -5,14 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { twMerge } from "tailwind-merge";
 import type { ModalProps } from "./types";
 
 export const Modal = ({
   showModal = false,
   modalTitle = "Modal Title",
-  autoclose = false,
   modalClass = "fixed z-10 overflow-y-auto inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 transition-opacity",
   modalContentClass = "bg-white m-10 md:w-[80vh] rounded-xl",
   classModalContent = "",
@@ -20,23 +19,14 @@ export const Modal = ({
   classModalTitle = "",
   children,
 }: ModalProps) => {
-  const [show, setShow] = useState(showModal);
-
-  const autoCloseHandler = () => {
-    if (autoclose) {
-      setShow(false);
-    }
-  };
-
   return (
     <>
-      {show && (
+      {showModal && (
         <div
           className={modalClass}
           aria-labelledby="modal-title"
           role="dialog"
           aria-modal="true"
-          onClick={autoCloseHandler}
         >
           <div
             className={twMerge(modalContentClass, classModalContent)}
