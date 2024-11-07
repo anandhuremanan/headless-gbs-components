@@ -14,7 +14,8 @@ import Icon from "../icon/Icon";
 import { GetFileIcon } from "./uploaderIcon";
 import AestheticProcessingAnimationWithStyles from "./ProgressAnimation";
 import { sendFiles } from "./uploaderService";
-import { cloudDownload } from "../../icon/iconPaths";
+import { cloudDownload } from "../icon/iconPaths";
+import type { FileUploadProps } from "./types";
 
 export const FileUploader = ({
   showImagePreview = false,
@@ -22,15 +23,15 @@ export const FileUploader = ({
   onChange,
   selectedFiles = [],
   accept,
-  fileCount,
+  fileCount = 1,
   disabled = false,
   inputFileSize, // Max file size in MB
   startUpload = false,
   apiURL = "",
-  chunk_size = "",
+  chunk_size = 1024 * 1024,
   uploadedFileIdArray = () => {},
   fileData = [],
-}: any) => {
+}: FileUploadProps) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
   const [isDragging, setIsDragging] = useState(false);
@@ -93,7 +94,7 @@ export const FileUploader = ({
     }
 
     // File size validation
-    const validFiles: File[] = [];
+    const validFiles: any = [];
     const newErrors: string[] = [];
 
     updatedFiles.forEach((file) => {
@@ -111,7 +112,7 @@ export const FileUploader = ({
     if (validFiles.length > 0) {
       setFiles(validFiles);
       setPreviewUrls({});
-      validFiles.forEach((file) => {
+      validFiles.forEach((file: any) => {
         if (showImagePreview && file.type.startsWith("image/")) {
           const reader = new FileReader();
           reader.onload = () => {
@@ -132,7 +133,7 @@ export const FileUploader = ({
 
   // Removes the file from file array
   const removeFile = (index: number) => {
-    const updatedFiles = files.filter((_, i) => i !== index);
+    const updatedFiles: any = files.filter((_, i) => i !== index);
     setFiles(updatedFiles);
     setPreviewUrls((prevPreviews) => {
       const { [files[index].name]: _, ...rest } = prevPreviews;
