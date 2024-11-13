@@ -1,6 +1,6 @@
 export type DatePickerProps = {
   placeholder?: string | undefined;
-  selectedDate?: Date;
+  selectedDateValue?: Date;
   minDate?: Date | null;
   maxDate?: Date | null;
   yearLimitStart?: number;

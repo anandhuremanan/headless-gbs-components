@@ -13,7 +13,7 @@ import type { DatePickerProps } from "./types";
 
 export const DatePicker = ({
   placeholder = undefined,
-  selectedDate: initialSelectedDate = new Date(),
+  selectedDateValue,
   minDate = null,
   maxDate = null,
   yearLimitStart = 50,
@@ -25,14 +25,24 @@ export const DatePicker = ({
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [days, setDays] = useState<any>([]);
-  const [selectedDate, setSelectedDate] = useState(initialSelectedDate);
+  const [selectedDate, setSelectedDate] = useState<any>(
+    selectedDateValue ? selectedDateValue : new Date()
+  );
   const [hasMounted, setHasMounted] = useState(false);
   const [showPlaceHolder, setShowPlaceHolder] = useState<string | undefined>(
-    placeholder
+    selectedDateValue ? undefined : placeholder
   );
 
   const dateRef = useRef<HTMLDivElement>(null);
   const today = new Date();
+
+  useEffect(() => {
+    if (selectedDateValue) {
+      setSelectedDate(selectedDateValue);
+      setCurrentMonth(selectedDateValue.getMonth());
+      setCurrentYear(selectedDateValue.getFullYear());
+    }
+  }, [selectedDateValue]);
 
   // This useEffect will ensure the server and client
   // rendererd date will not mismatch
@@ -131,14 +141,8 @@ export const DatePicker = ({
           elements={calender}
           svgClass={"stroke-black fill-none dark:stroke-white"}
         />
-        {showPlaceHolder ? (
-          <div className="flex flex-col text-left">
-            <span className="text-gray-500 text-xs">{showPlaceHolder}</span>
-            <div className="text-sm">{new Date().toLocaleDateString()}</div>
-          </div>
-        ) : (
-          <span>{selectedDate.toLocaleDateString()}</span>
-        )}
+
+        {showPlaceHolder ? showPlaceHolder : selectedDate.toLocaleDateString()}
       </button>
 
       {showDatepicker && (
@@ -240,9 +244,9 @@ export const DatePicker = ({
                 const isDisabled: any =
                   (minDate && day < minDate) || (maxDate && day > maxDate);
                 const isSelected =
-                  day.getDate() === selectedDate.getDate() &&
-                  day.getMonth() === selectedDate.getMonth() &&
-                  day.getFullYear() === selectedDate.getFullYear();
+                  day.getDate() === selectedDate?.getDate() &&
+                  day.getMonth() === selectedDate?.getMonth() &&
+                  day.getFullYear() === selectedDate?.getFullYear();
 
                 return (
                   <button
@@ -251,7 +255,7 @@ export const DatePicker = ({
                     onClick={() => !isDisabled && selectDate(day)}
                     disabled={isDisabled}
                     className={`text-center p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
-                      isSelected ? "bg-black text-white hover:bg-gray-800" : ""
+                      isSelected ? "bg-black text-white hover:bg-gray-800 " : ""
                     } ${
                       isDisabled
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
