@@ -27,6 +27,8 @@ interface ItemsProps {
 
 const Select = forwardRef<any, SelectProps>((props, ref) => {
   const {
+    id = "",
+    name = "",
     placeholder = "Select an Item...",
     items,
     lazy = false,
@@ -34,6 +36,7 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
     onSelect,
     selectedItem: initialSelectedItem,
     error = undefined,
+    onFiltering,
   } = props;
 
   const [showPopover, setShowPopover] = useState(false);
@@ -146,7 +149,7 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
   }));
 
   return (
-    <div className="relative w-full" ref={selectRef}>
+    <div className="relative w-full" ref={selectRef} id={id}>
       <div className="w-full relative">
         <button
           className={`flex items-center ${
@@ -192,7 +195,10 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
                 className="w-full outline-none dark:bg-black"
                 ref={inputRef}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  if (onFiltering) onFiltering(e.target.value);
+                }}
               />
             </div>
           )}
