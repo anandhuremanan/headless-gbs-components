@@ -1,7 +1,7 @@
-interface ItemsProps {
+export type ItemsProps = {
   value: string;
   label: string;
-}
+};
 
 export type SelectProps = {
   id?: string;

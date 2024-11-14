@@ -18,12 +18,9 @@ import React, {
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
 import { getSourceData } from "../utils";
-import type { SelectProps } from "./types";
-
-interface ItemsProps {
-  value: string;
-  label: string;
-}
+import type { ItemsProps, SelectProps } from "./types";
+import { selectStyle } from "./style";
+import { popUp, primary } from "../../globalStyle";
 
 const Select = forwardRef<any, SelectProps>((props, ref) => {
   const {
@@ -149,12 +146,12 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
   }));
 
   return (
-    <div className="relative w-full" ref={selectRef} id={id}>
+    <div className="relative w-96" ref={selectRef} id={id}>
       <div className="w-full relative">
         <button
-          className={`flex items-center ${
-            error ? "border border-red-600" : "border"
-          } px-4 py-2 w-full justify-between rounded-lg font-medium text-sm dark:bg-black dark:border-white dark:text-white`}
+          className={`${error ? primary["error-border"] : "border"} ${
+            selectStyle["select-button"]
+          }`}
           onClick={togglePopover}
           type="button"
         >
@@ -166,7 +163,7 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
         </button>
         {selectedDisplay && (
           <button
-            className="absolute right-8 top-0 h-full flex items-center px-2 z-20"
+            className={selectStyle["selectedDisplay-Button"]}
             onClick={clearSelected}
           >
             <Icon
@@ -175,13 +172,13 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
             />
           </button>
         )}
-        <p className="text-xs text-red-500">{error && error}</p>
+        <p className={primary["error-primary"]}>{error && error}</p>
       </div>
 
       {showPopover && (
-        <div className="w-full absolute overflow-y-auto border px-2 rounded-lg mt-[1px] scrollbar bg-white z-50 scrollbar h-auto dark:bg-black dark:text-white">
+        <div className={popUp["pop-up-style"]}>
           {showSearch && (
-            <div className="flex p-2 gap-1 items-center sticky top-0 bg-white border-b dark:bg-black">
+            <div className={selectStyle["input-parent"]}>
               <Icon
                 elements={search}
                 svgClass="stroke-gray-500 fill-none dark:stroke-white"
@@ -206,7 +203,7 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
             filteredItems.map(({ value, label }) => (
               <button
                 key={value}
-                className="flex items-center w-full px-2 py-1 text-left hover:bg-blue-100 gap-2 rounded-lg mt-1 text-sm dark:hover:bg-blue-600"
+                className={selectStyle["filter-button"]}
                 onClick={() => handleSelect(value)}
               >
                 <Icon

@@ -59,6 +59,12 @@ function copyCommonFiles() {
   fs.copySync(utilsSrc, utilsDest, { overwrite: true });
   console.log(`utils.ts copied successfully to ${utilsDest}`);
 
+  // Copy GlobalStyles
+  const globalStyleSrc = path.join(SOURCE_PATH, "..", "globalStyle.ts");
+  const globalStyleDest = path.join(DEST_PATH, "globalStyle.ts");
+  fs.copySync(globalStyleSrc, globalStyleDest, { overwrite: true });
+  console.log(`utils.ts copied successfully to ${globalStyleDest}`);
+
   // Copy icon folder
   const iconSrc = path.join(SOURCE_PATH, "..", "icon");
   const iconDest = path.join(DEST_PATH, "icon");
