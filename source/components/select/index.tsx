@@ -20,7 +20,7 @@ import { check, search, upDown, x } from "../icon/iconPaths";
 import { getSourceData } from "../utils";
 import type { ItemsProps, SelectProps } from "./types";
 import { selectStyle } from "./style";
-import { popUp, primary } from "../../globalStyle";
+import { popUp, primary } from "../globalStyle";
 
 const Select = forwardRef<any, SelectProps>((props, ref) => {
   const {
