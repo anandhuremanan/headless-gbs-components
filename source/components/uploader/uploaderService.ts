@@ -118,7 +118,17 @@ export async function getAllFiles(apiUrl: string) {
 }
 
 // returns files by ID
-export async function getFilesById(apiUrl: string, documentId: string) {
-  let files: any[] = [];
-  return files;
+export async function getFilesById(
+  apiUrl: string,
+  documentIds: string[]
+): Promise<any[]> {
+  return Promise.all(
+    documentIds.map(async (id) => {
+      const response = await fetch(`${apiUrl}?id=${id}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch document with ID: ${id}`);
+      }
+      return response.json();
+    })
+  );
 }

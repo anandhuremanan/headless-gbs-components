@@ -11,8 +11,8 @@ import {
   filetext,
   film,
   music,
-} from "../../icon/iconPaths";
-import Icon from "../../icon/Icon";
+} from "../icon/iconPaths";
+import Icon from "../icon/Icon";
 
 // returns an icon based on the selected file type
 export const GetFileIcon = ({ file, showImagePreview, previewUrls }: any) => {

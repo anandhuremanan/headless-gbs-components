@@ -9,13 +9,12 @@
  */
 
 import React, { useState, useRef, useEffect } from "react";
-import { upload, x, circleCheck } from "../icon/iconPaths";
+import { upload, circleCheck } from "../icon/iconPaths";
 import Icon from "../icon/Icon";
-import { GetFileIcon } from "./uploaderIcon";
 import AestheticProcessingAnimationWithStyles from "./ProgressAnimation";
-import { sendFiles } from "./uploaderService";
-import { cloudDownload } from "../icon/iconPaths";
+import { getFilesById, sendFiles } from "./uploaderService";
 import type { FileUploadProps } from "./types";
+import UploadedFilePreview from "./UploadedFilePreview";
 
 export const FileUploader = ({
   showImagePreview = false,
@@ -23,14 +22,16 @@ export const FileUploader = ({
   onChange,
   selectedFiles = [],
   accept,
-  fileCount = 1,
+  fileCount = Infinity,
   disabled = false,
   inputFileSize, // Max file size in MB
   startUpload = false,
   apiURL = "",
   chunk_size = 1024 * 1024,
   uploadedFileIdArray = () => {},
-  fileData = [],
+  documentId = [],
+  isRemovable = true,
+  removedIds,
 }: FileUploadProps) => {
   const [files, setFiles] = useState<any[]>([]);
   const [previewUrls, setPreviewUrls] = useState<{ [key: string]: string }>({});
@@ -42,32 +43,47 @@ export const FileUploader = ({
     undefined
   );
   const [progress, setProgress] = useState(0);
+  const [fileData, setFileData] = useState<any[]>([]);
   const fileInputRef = useRef<any>(null);
   const dropZoneRef = useRef<any>(null);
+
+  // Upload Handler
+  const handleUpload = async () => {
+    if (files.length > 0) {
+      setFileUploadStatus(undefined);
+      await sendFiles(
+        files,
+        chunk_size,
+        apiURL,
+        ({ uploading, progress, uploadedFileIds }) => {
+          setIsUploading(uploading);
+          if (progress !== undefined) setProgress(progress);
+          // Returns Uploaded File ID's
+          if (uploadedFileIds) uploadedFileIdArray(uploadedFileIds);
+        }
+      );
+      setFileUploadStatus("Upload completed");
+    } else {
+      setFileUploadStatus("No files selected");
+    }
+  };
+
+  // Getting Files by ID
+  const getFiles = async () => {
+    const files = await getFilesById(apiURL, documentId);
+    setFileData(files);
+  };
+
+  // Fetching by FileId
+  useEffect(() => {
+    if (documentId.length) {
+      getFiles();
+    }
+  }, [documentId]);
 
   // Starts uploads to server
   useEffect(() => {
     if (startUpload) {
-      // Upload Handler
-      const handleUpload = async () => {
-        if (files.length > 0) {
-          setFileUploadStatus(undefined);
-          await sendFiles(
-            files,
-            chunk_size,
-            apiURL,
-            ({ uploading, progress, uploadedFileIds }) => {
-              setIsUploading(uploading);
-              if (progress !== undefined) setProgress(progress);
-              // Returns Uploaded File ID's
-              if (uploadedFileIds) uploadedFileIdArray(uploadedFileIds);
-            }
-          );
-          setFileUploadStatus("Upload completed");
-        } else {
-          setFileUploadStatus("No files selected");
-        }
-      };
       handleUpload();
     }
   }, [startUpload]);
@@ -170,22 +186,6 @@ export const FileUploader = ({
     handleFileChange(multiple ? droppedFiles : [droppedFiles[0]]);
   };
 
-  const handleDownload = (fileId: any, fileName: any) => {
-    const downloadUrl = constructDownloadUrl(fileId);
-    window.open(downloadUrl, "_blank");
-  };
-
-  const constructDownloadUrl = (fileId: any) => {
-    const url = new URL("download", apiURL);
-    url.searchParams.append("id", fileId);
-    return url.href;
-  };
-
-  const isImageFile = (fileName: any) => {
-    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"];
-    return imageExtensions.some((ext) => fileName.toLowerCase().endsWith(ext));
-  };
-
   return (
     <div className="w-full max-w-md mx-auto">
       <div
@@ -261,81 +261,20 @@ export const FileUploader = ({
         <AestheticProcessingAnimationWithStyles progressPercentage={progress} />
       )}
 
-      {files.length > 0 && (
-        <div className="mt-4 space-y-2">
-          {files.map((file: any, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between bg-gray-50 p-2 rounded-md"
-            >
-              <div className="flex items-center space-x-2">
-                <GetFileIcon
-                  file={file}
-                  showImagePreview={showImagePreview}
-                  previewUrls={previewUrls}
-                />
-                <div>
-                  <p className="text-sm font-medium text-gray-700">
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => removeFile(index)}
-                className="text-red-500 hover:text-red-700 transition-colors"
-              >
-                <Icon
-                  dimensions={{ width: "16", height: "16" }}
-                  elements={x}
-                  svgClass={"stroke-red-500 fill-none dark:stroke-white"}
-                />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {fileData.length > 0 &&
-        fileData.map((item: any, index: any) => (
-          <div
-            key={index}
-            className="flex items-center justify-between bg-gray-50 p-2 rounded-md mt-2"
-          >
-            <div className="flex items-center space-x-2">
-              {/* <GetFileIcon
-                file={item.FileName}
-                showImagePreview={showImagePreview}
-                previewUrls={previewUrls}
-              /> */}
-              {isImageFile(item.FileName) && (
-                <img
-                  src={constructDownloadUrl(item.FileID)}
-                  alt={item.FileName}
-                  className="mt-2 w-8 h-8 object-cover rounded-lg"
-                />
-              )}
-              <div>
-                <p className="text-sm font-medium text-gray-700">
-                  {item.FileName}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {(item.FileSize / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-            </div>
-            <button onClick={() => handleDownload(item.FileID, item.FileName)}>
-              <Icon
-                dimensions={{ width: "18", height: "18" }}
-                elements={cloudDownload}
-                svgClass={"stroke-red-500 fill-none dark:stroke-white"}
-              />
-            </button>
-          </div>
-        ))}
+      <UploadedFilePreview
+        UploadedFileData={fileData}
+        apiURL={apiURL}
+        files={files}
+        showImagePreview={showImagePreview}
+        previewUrls={previewUrls}
+        onFileRemove={(index: any) => {
+          removeFile(index);
+        }}
+        isRemovable={isRemovable}
+        removedId={(fileId: any) => {
+          if (removedIds) removedIds(fileId);
+        }}
+      />
     </div>
   );
 };
