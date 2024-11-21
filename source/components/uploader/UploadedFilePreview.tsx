@@ -80,12 +80,14 @@ export default function UploadedFilePreview({
             className="flex items-center justify-between bg-gray-50 p-2 rounded-md mt-2"
           >
             <div className="flex items-center space-x-2">
-              {isImageFile(item.FileName) && (
+              {isImageFile(item.FileName) ? (
                 <img
                   src={constructDownloadUrl(item.FileID)}
                   alt={item.FileName}
                   className="mt-2 w-8 h-8 object-cover rounded-lg"
                 />
+              ) : (
+                <GetFileIcon file={{ type: item.FileName.split(".").pop() }} />
               )}
               <div>
                 <p className="text-sm font-medium text-gray-700">

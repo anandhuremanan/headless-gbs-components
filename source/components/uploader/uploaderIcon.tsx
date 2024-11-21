@@ -30,7 +30,7 @@ export const GetFileIcon = ({ file, showImagePreview, previewUrls }: any) => {
         svgClass={"stroke-blue-500 fill-none dark:stroke-white"}
       />
     );
-  if (file.type === "application/pdf")
+  if (file.type === "application/pdf" || file.type.includes("pdf"))
     return (
       <Icon
         dimensions={{ width: "26", height: "26" }}

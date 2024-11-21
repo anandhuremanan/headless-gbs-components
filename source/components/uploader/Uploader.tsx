@@ -63,6 +63,7 @@ export const FileUploader = ({
         }
       );
       setFileUploadStatus("Upload completed");
+      setFiles([]);
     } else {
       setFileUploadStatus("No files selected");
     }
