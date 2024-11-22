@@ -98,9 +98,34 @@ export const FileUploader = ({
 
   // Adds files to file array
   const handleFileChange = (newFiles: File[]) => {
+    // First check for duplicates
+    const duplicateFiles: string[] = [];
+    const nonDuplicateFiles = newFiles.filter((newFile) => {
+      const isDuplicate = files.some(
+        (existingFile) => existingFile.name === newFile.name
+      );
+      if (isDuplicate) {
+        duplicateFiles.push(newFile.name);
+      }
+      return !isDuplicate;
+    });
+
+    // If there are duplicates, set error messages
+    if (duplicateFiles.length > 0) {
+      setFileSizeErrors((prev) => [
+        ...prev,
+        ...duplicateFiles.map(
+          (fileName) => `File "${fileName}" has already been uploaded`
+        ),
+      ]);
+
+      // If all files are duplicates, exit early
+      if (nonDuplicateFiles.length === 0) return;
+    }
+
     let updatedFiles: File[] = multiple
-      ? [...files, ...newFiles]
-      : [newFiles[0]];
+      ? [...files, ...nonDuplicateFiles]
+      : [nonDuplicateFiles[0]];
 
     // Ensure the total number of files doesn't exceed the fileCount limit
     if (updatedFiles.length > fileCount) {
@@ -144,7 +169,7 @@ export const FileUploader = ({
       if (onChange) onChange(validFiles);
     }
 
-    // Set file size errors
+    // Set file size errors (now includes both size and duplicate errors)
     setFileSizeErrors(newErrors);
   };
 
