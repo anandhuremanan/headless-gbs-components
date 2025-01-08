@@ -8,7 +8,7 @@
  * https://psychedelic-step-e70.notion.site/Data-GRID-by-GBS-R-D-20ff97c899d24bc590215a6196435fa3
  */
 
-import { Grid as GridComponent } from "./Grid";
+import { GridMemoised as GridComponent } from "./Grid";
 import React, { memo } from "react";
 
 const Grid = memo(GridComponent, (prevProps, nextProps) => {

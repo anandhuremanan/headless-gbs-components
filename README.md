@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v0.0.23)
+# GBS Building Blocks 2.0 (v0.0.25)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -8,8 +8,7 @@ For detailed documentation on usage and props, Please visit: [Building Block Doc
 
 ## What's New 🎉 (Ver 0.0.23)
 
-- Updated Uploader
-- Global Style Customisation is Now available(beta)
+- Updated Grid
 
 ## Authors
 

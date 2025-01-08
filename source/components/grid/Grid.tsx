@@ -33,7 +33,7 @@ import {
 import type { GridProps } from "./type";
 import { getSourceData } from "../utils";
 
-export const Grid = forwardRef((props: GridProps, ref) => {
+export const GridMemoised = forwardRef((props: GridProps, ref) => {
   const {
     dataSource,
     columns = [],
