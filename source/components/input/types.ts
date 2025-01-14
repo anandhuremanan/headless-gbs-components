@@ -6,4 +6,5 @@ export type InputProps = {
   OTPLength?: number;
   OTPClass?: string;
   onOTPValueChange?: (value: string) => void;
+  error?: undefined | string;
 } & InputHTMLAttributes<HTMLInputElement>;

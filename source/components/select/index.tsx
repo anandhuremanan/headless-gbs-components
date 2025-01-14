@@ -175,6 +175,9 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
         <p className={primary["error-primary"]}>{error && error}</p>
       </div>
 
+      {/* Hidden input to integrate with the form */}
+      <input type="hidden" name={name} value={selectedItem || ""} readOnly />
+
       {showPopover && (
         <div className={popUp["pop-up-style"]}>
           {showSearch && (
