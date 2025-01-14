@@ -62,12 +62,12 @@ const FormRenderer = ({ onSubmit, sourceData }: any) => {
               case "button":
                 return (
                   <div key={index} className="w-full mt-2">
-                    <Button
+                    <button
                       type={item.type}
                       className="w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800"
                     >
                       {item.value}
-                    </Button>
+                    </button>
                   </div>
                 );
 

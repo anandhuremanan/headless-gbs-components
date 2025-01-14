@@ -18,6 +18,7 @@ const COMPONENTS = [
   "Spinner",
   "Toast",
   "Uploader",
+  "FormRenderer",
 ];
 
 const FRAMEWORKS = {
