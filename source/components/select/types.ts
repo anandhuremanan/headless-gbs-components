@@ -11,7 +11,16 @@ export type SelectProps = {
   items?: ItemsProps[] | string;
   lazy?: boolean;
   showSearch?: boolean;
-  onSelect?: any;
+  onSelect?: (selectedItem: string) => void;
   selectedItem?: string;
-  onFiltering?: any;
+  onFiltering?: (searchTerm: string) => void;
+};
+
+export type SelectHandle = {
+  workingDataSource: ItemsProps[];
+  clearSelected: () => void;
+  togglePopover: (e: React.MouseEvent) => void;
+  getSelectItems: (itemsApi: string) => Promise<void>;
+  selectedDisplay: string;
+  selected: string | undefined;
 };

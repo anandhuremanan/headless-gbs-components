@@ -18,11 +18,11 @@ import React, {
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
 import { getSourceData } from "../utils";
-import type { ItemsProps, SelectProps } from "./types";
+import type { ItemsProps, SelectHandle, SelectProps } from "./types";
 import { selectStyle } from "./style";
 import { popUp, primary } from "../globalStyle";
 
-const Select = forwardRef<any, SelectProps>((props, ref) => {
+const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   const {
     id = "",
     name = "",
@@ -226,6 +226,8 @@ const Select = forwardRef<any, SelectProps>((props, ref) => {
     </div>
   );
 });
+
+Select.displayName = "Select";
 
 const MemoizedSelect = memo(Select);
 export { MemoizedSelect as Select };

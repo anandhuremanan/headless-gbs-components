@@ -1,14 +1,22 @@
 import React from "react";
 import { Select } from "../select";
+import { FormItem } from "./types";
+
+interface SelectHandlesProps {
+  item?: FormItem;
+  requirementError: string[];
+  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
+  formRef?: React.RefObject<HTMLFormElement>;
+}
 
 export default function SelectHandles({
   item,
   requirementError,
   setRequirementError,
   formRef,
-}: any) {
+}: SelectHandlesProps) {
   const handleSelect = (value: string, key: string) => {
-    if (formRef.current) {
+    if (formRef && formRef.current) {
       const hiddenInput = formRef.current.querySelector(
         `input[name="${key}"]`
       ) as HTMLInputElement;
@@ -27,22 +35,23 @@ export default function SelectHandles({
 
   return (
     <div className="w-full">
-      {item.label && (
+      {item?.label && (
         <label htmlFor={item.name} className="font-medium text-sm">
           {item.label}
         </label>
       )}
       <Select
-        name={item.name}
-        items={item.options}
+        name={item?.name}
+        items={item?.options}
         onSelect={(value: string) => {
-          handleSelect(value, item.key);
-          setRequirementError((prevErrors: any) =>
-            prevErrors.filter((errorName: any) => errorName !== item.name)
-          );
+          item?.key && handleSelect(value, item.key);
+          setRequirementError &&
+            setRequirementError((prevErrors: any) =>
+              prevErrors.filter((errorName: any) => errorName !== item?.name)
+            );
         }}
         error={
-          requirementError.includes(item.name)
+          item?.name && requirementError.includes(item.name)
             ? `${item.name} is required`
             : undefined
         }

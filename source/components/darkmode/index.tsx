@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) Grampro Business Services and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import React, { useEffect } from "react";
 import Icon from "../icon/Icon";
 import { moon, sun } from "../icon/iconPaths";
@@ -45,4 +52,4 @@ export const DarkMode = () => {
       )}
     </button>
   );
-}
+};

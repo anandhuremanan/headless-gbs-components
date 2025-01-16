@@ -15,21 +15,24 @@ export const Input = ({
   OTPField = false,
   OTPValue = "",
   OTPLength = 4,
-  OTPClass = "w-8 h-10 m-1 border border-gray-600 rounded-lg text-center",
+  OTPClass = "w-8 h-10 m-1 border border-gray-600 rounded-lg text-center text-black",
   onOTPValueChange,
   error = undefined,
   ...props
 }: InputProps) => {
   const [otpValues, setOtpValues] = useState(new Array(OTPLength).fill(""));
   const [showPassword, setShowPassword] = useState(false);
-  const inputRefs = useRef<any>([]);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const defaultClass = `bg-gray-100 p-2 rounded-lg ${
     error ? "border border-red-600" : ""
   }`;
 
   // This will update the OTP Field Value
-  const updateOtpValue = (index: number, e: any) => {
+  const updateOtpValue = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     e.preventDefault();
     const input = e.target;
     if (input) {
@@ -37,7 +40,7 @@ export const Input = ({
       newOtpValues[index] = input.value;
       setOtpValues(newOtpValues);
       if (index < OTPLength - 1 && input.value) {
-        inputRefs.current[index + 1].focus();
+        inputRefs.current[index + 1]?.focus();
       }
       OTPValue = newOtpValues.join("");
       if (onOTPValueChange) onOTPValueChange(OTPValue);
@@ -45,13 +48,16 @@ export const Input = ({
   };
 
   // Function for handling keyboard navigation in OTP Field
-  const handleKeydown = (index: number, e: any) => {
+  const handleKeydown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Backspace" && otpValues[index] === "" && index > 0) {
-      inputRefs.current[index - 1].focus();
+      inputRefs.current[index - 1]?.focus();
     } else if (e.key === "ArrowLeft" && index > 0) {
-      inputRefs.current[index - 1].focus();
+      inputRefs.current[index - 1]?.focus();
     } else if (e.key === "ArrowRight" && index < OTPLength - 1) {
-      inputRefs.current[index + 1].focus();
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -65,7 +71,10 @@ export const Input = ({
       {!OTPField ? (
         <div className="text-input-container w-full relative">
           <input
-            className={twMerge(defaultClass, "w-full focus:outline-blue-400")}
+            className={twMerge(
+              defaultClass,
+              "w-full text-black focus:outline-blue-400"
+            )}
             {...props}
             type={
               props.type === "password" && showPassword ? "text" : props.type
