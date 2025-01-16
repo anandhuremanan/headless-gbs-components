@@ -6,7 +6,7 @@ interface SelectHandlesProps {
   item?: FormItem;
   requirementError: string[];
   setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
-  formRef?: React.RefObject<HTMLFormElement>;
+  formRef?: React.RefObject<HTMLFormElement | null>;
 }
 
 export default function SelectHandles({
