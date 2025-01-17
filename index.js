@@ -19,6 +19,7 @@ const COMPONENTS = [
   "Toast",
   "Uploader",
   "FormRenderer",
+  "materialInput",
 ];
 
 const FRAMEWORKS = {

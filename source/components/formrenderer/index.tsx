@@ -10,7 +10,12 @@ import InputHandles from "./InputHandles";
 import SelectHandles from "./SelectHandles";
 import { FormItem, FormRendererProps } from "./types";
 
-const FormRenderer = ({ onSubmit, sourceData }: FormRendererProps) => {
+const FormRenderer = ({
+  onSubmit,
+  sourceData,
+  formFormationClass = "grid grid-cols-1 text-left gap-4",
+  formParentClass = "w-96",
+}: FormRendererProps) => {
   const formRef = useRef<HTMLFormElement>(null);
   const [requirementError, setRequirementError] = useState<string[]>([]);
 
@@ -40,9 +45,9 @@ const FormRenderer = ({ onSubmit, sourceData }: FormRendererProps) => {
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="w-96">
+    <form ref={formRef} onSubmit={handleSubmit} className={formParentClass}>
       {sourceData && sourceData?.length > 0 ? (
-        <div className="flex flex-col items-start text-left gap-4">
+        <div className={formFormationClass}>
           {sourceData.map((item: FormItem, index: number) => {
             switch (item.component) {
               case "input":
@@ -68,7 +73,7 @@ const FormRenderer = ({ onSubmit, sourceData }: FormRendererProps) => {
 
               case "button":
                 return (
-                  <div key={index} className="w-full mt-2">
+                  <div key={index} className="w-full mt-1">
                     <button
                       type={item.button_type}
                       className="w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-300 dark:bg-white dark:text-black"

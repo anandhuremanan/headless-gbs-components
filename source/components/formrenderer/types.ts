@@ -14,4 +14,6 @@ export type FormItem = {
 export type FormRendererProps = {
   onSubmit?: (formData: FormData) => void;
   sourceData?: FormItem[] | undefined;
+  formFormationClass?: string;
+  formParentClass?: string;
 };

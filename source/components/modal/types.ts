@@ -8,4 +8,7 @@ export type ModalProps = {
   modalTitleClass?: string;
   classModalTitle?: string;
   children?: React.ReactNode;
+  showCloseButton?: boolean;
+  onClose?: () => void;
+  dissmissible?: boolean;
 };
