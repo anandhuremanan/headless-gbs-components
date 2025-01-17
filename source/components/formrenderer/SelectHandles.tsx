@@ -43,6 +43,7 @@ export default function SelectHandles({
       <Select
         name={item?.name}
         items={item?.options}
+        selectedItem={item?.value ?? ""}
         onSelect={(value: string) => {
           item?.key && handleSelect(value, item.key);
           setRequirementError &&

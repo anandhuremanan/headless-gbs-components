@@ -57,6 +57,7 @@ const InputHandles = ({
             ? "border-red-500"
             : "border-gray-300"
         }`}
+        defaultValue={item?.value ?? ""}
       />
       {item?.name && requirementError.includes(item.name) && (
         <p className="text-red-500 text-xs">{`${item?.name} is required`}</p>
