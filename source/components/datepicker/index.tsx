@@ -17,7 +17,7 @@ export const DatePicker = ({
   minDate = null,
   maxDate = null,
   yearLimitStart = 50,
-  yearLimitEnd = 30,
+  yearLimitEnd = 0,
   onDateChange,
 }: DatePickerProps) => {
   const [showDatepicker, setShowDatepicker] = useState(false);
@@ -36,6 +36,12 @@ export const DatePicker = ({
   const dateRef = useRef<HTMLDivElement>(null);
   const today = new Date();
 
+  const actualCurrentYear = today.getFullYear();
+  const years = Array.from(
+    { length: yearLimitStart + yearLimitEnd + 1 },
+    (_, i) => actualCurrentYear - yearLimitStart + i
+  ).sort((a, b) => b - a);
+
   useEffect(() => {
     if (selectedDateValue) {
       setSelectedDate(selectedDateValue);
@@ -44,13 +50,10 @@ export const DatePicker = ({
     }
   }, [selectedDateValue]);
 
-  // This useEffect will ensure the server and client
-  // rendererd date will not mismatch
   useEffect(() => {
     setHasMounted(true);
   }, []);
 
-  // This will helps to close the popup when clicked outside of datepicker component
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dateRef.current && !dateRef.current.contains(event.target as Node)) {
@@ -68,13 +71,11 @@ export const DatePicker = ({
     setDays(generateCalendarHelper(currentYear, currentMonth));
   }, [currentYear, currentMonth]);
 
-  // DatePicker Toggler
   const toggleDatepicker = () => {
     setShowDatepicker(!showDatepicker);
     setShowYearMonthPicker(false);
   };
 
-  // YearMonthPicker Toggler
   const toggleYearMonthPicker = () => {
     setShowYearMonthPicker(!showYearMonthPicker);
   };
@@ -93,7 +94,6 @@ export const DatePicker = ({
     setDays(generateCalendarHelper(year, month));
   };
 
-  // *** DatePicker navigation starts here
   const prevMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
@@ -118,12 +118,6 @@ export const DatePicker = ({
     setSelectedDate(new Date());
     if (onDateChange) onDateChange(new Date());
   };
-  // DatePicker navigation ends here ***
-
-  const years = Array.from(
-    { length: yearLimitEnd },
-    (_, i) => currentYear - yearLimitStart + i
-  );
 
   if (!hasMounted) {
     return null;
@@ -137,9 +131,9 @@ export const DatePicker = ({
         className="border p-2 rounded w-full flex items-center gap-2 dark:text-white"
       >
         <Icon
-          dimensions={{ width: "30", height: "30" }}
+          dimensions={{ width: "20", height: "20" }}
           elements={calender}
-          svgClass={"stroke-black fill-none dark:stroke-white"}
+          svgClass={"stroke-gray-500 fill-none dark:stroke-white"}
         />
 
         {showPlaceHolder ? showPlaceHolder : selectedDate.toLocaleDateString()}
