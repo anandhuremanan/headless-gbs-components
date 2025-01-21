@@ -1,3 +1,4 @@
+"use client";
 /**
  * Copyright (c) Grampro Business Services and affiliates.
  *
@@ -9,6 +10,7 @@ import React, { useRef, useState } from "react";
 import InputHandles from "./InputHandles";
 import SelectHandles from "./SelectHandles";
 import { FormItem, FormRendererProps } from "./types";
+import MultiHandles from "./MultiHandles";
 
 const FormRenderer = ({
   onSubmit,
@@ -63,6 +65,17 @@ const FormRenderer = ({
               case "select":
                 return (
                   <SelectHandles
+                    key={index}
+                    item={item}
+                    requirementError={requirementError}
+                    setRequirementError={setRequirementError}
+                    formRef={formRef}
+                  />
+                );
+
+              case "multi-select":
+                return (
+                  <MultiHandles
                     key={index}
                     item={item}
                     requirementError={requirementError}

@@ -52,7 +52,7 @@ const InputHandles = ({
         name={item?.name}
         placeholder={item?.placeholder || ""}
         onChange={handleChange}
-        className={`border rounded p-2 w-full text-black ${
+        className={`border rounded-md px-4 py-[6px] w-full text-black ${
           inputError || (item?.name && requirementError.includes(item?.name))
             ? "border-red-500"
             : "border-gray-300"
