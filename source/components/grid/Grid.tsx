@@ -232,6 +232,8 @@ export const GridMemoised = forwardRef((props: GridProps, ref) => {
 
   // This will render template passed to Grid
   const renderCell = (rowData: any, column: any, rowIndex: number) => {
+    const cellValue = rowData[column.field];
+
     if (column.template) {
       return (
         <column.template
@@ -243,7 +245,18 @@ export const GridMemoised = forwardRef((props: GridProps, ref) => {
         />
       );
     }
-    return rowData[column.field];
+
+    if (column.tooltip) {
+      return (
+        <span title={cellValue?.toString()}>
+          {cellValue && cellValue.length > 10
+            ? `${cellValue.slice(0, 10)}...`
+            : cellValue}
+        </span>
+      );
+    }
+
+    return cellValue;
   };
 
   // *** Filter Handling Functions Starts Here

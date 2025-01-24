@@ -1,4 +1,3 @@
-"use client";
 /**
  * Copyright (c) Grampro Business Services and affiliates.
  *
@@ -17,13 +16,13 @@ const FormRenderer = ({
   sourceData,
   formFormationClass = "grid grid-cols-1 text-left gap-4",
   formParentClass = "w-96",
+  dependencyConfig,
 }: FormRendererProps) => {
   const formRef = useRef<HTMLFormElement>(null);
   const [requirementError, setRequirementError] = useState<string[]>([]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const requirementErrorItems: string[] = [];
 
     sourceData?.forEach((item: FormItem) => {
@@ -70,6 +69,7 @@ const FormRenderer = ({
                     requirementError={requirementError}
                     setRequirementError={setRequirementError}
                     formRef={formRef}
+                    dependencyMap={dependencyConfig}
                   />
                 );
 

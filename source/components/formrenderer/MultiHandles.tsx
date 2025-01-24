@@ -40,6 +40,7 @@ export default function MultiHandles({
       {item?.label && (
         <label htmlFor={item.name} className="font-medium text-sm">
           {item.label}
+          {item.required && <span className="text-red-500">*</span>}
         </label>
       )}
       <MultiSelect

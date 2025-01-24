@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v0.0.34)
+# GBS Building Blocks 2.0 (v0.0.36)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -6,10 +6,10 @@ Latest and upgraded version of GBS building blocks with headless UI and removed 
 
 For detailed documentation on usage and props, Please visit: [Building Block Documentation v2.0](https://blackmax-designs.gitbook.io/building-block-v2.0)
 
-## What's New 🎉 (Ver 0.0.24)
+## What's New 🎉 (Ver 0.0.36)
 
-- Updated Form Renderer (Added Multi Select)
-- Updated Date Picker
+- Updated Form Renderer with form builder and AI support
+- Updated Grid
 
 ## Authors
 
