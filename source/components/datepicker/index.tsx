@@ -12,7 +12,6 @@ import { calender, down, leftArrows, rightArrows } from "../icon/iconPaths";
 import type { DatePickerProps } from "./types";
 
 export const DatePicker = ({
-  placeholder = undefined,
   selectedDateValue,
   minDate = null,
   maxDate = null,
@@ -29,9 +28,6 @@ export const DatePicker = ({
     selectedDateValue ? selectedDateValue : new Date()
   );
   const [hasMounted, setHasMounted] = useState(false);
-  const [showPlaceHolder, setShowPlaceHolder] = useState<string | undefined>(
-    selectedDateValue ? undefined : placeholder
-  );
 
   const dateRef = useRef<HTMLDivElement>(null);
   const today = new Date();
@@ -82,7 +78,6 @@ export const DatePicker = ({
 
   const selectDate = (date: any) => {
     setSelectedDate(date);
-    setShowPlaceHolder(undefined);
     setShowDatepicker(false);
     if (onDateChange) onDateChange(date);
   };
@@ -135,8 +130,7 @@ export const DatePicker = ({
           elements={calender}
           svgClass={"stroke-gray-500 fill-none dark:stroke-white"}
         />
-
-        {showPlaceHolder ? showPlaceHolder : selectedDate.toLocaleDateString()}
+        {selectedDate.toLocaleDateString()}
       </button>
 
       {showDatepicker && (
