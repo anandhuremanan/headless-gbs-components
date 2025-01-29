@@ -1,3 +1,7 @@
+export interface FormElement extends HTMLFormElement {
+  [key: string]: any;
+}
+
 export type FormItem = {
   id?: string;
   name?: string;
@@ -47,4 +51,11 @@ export type SelectHandlesProps = {
 export type Option = {
   value: string;
   label: string;
+};
+
+export type CheckboxHandlesProps = {
+  item?: FormItem;
+  requirementError: string[];
+  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
+  formRef?: React.RefObject<HTMLFormElement | null>;
 };

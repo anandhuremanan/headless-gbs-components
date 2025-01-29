@@ -8,9 +8,10 @@
 import React, { useRef, useState } from "react";
 import InputHandles from "./InputHandles";
 import SelectHandles from "./SelectHandles";
-import { FormItem, FormRendererProps } from "./types";
+import { FormElement, FormItem, FormRendererProps } from "./types";
 import MultiHandles from "./MultiHandles";
 import DatePickerHandles from "./DatePickerHandles";
+import CheckboxHandles from "./CheckBoxHandles";
 
 const FormRenderer = ({
   onSubmit,
@@ -19,7 +20,7 @@ const FormRenderer = ({
   formParentClass = "w-96",
   dependencyConfig,
 }: FormRendererProps) => {
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = useRef<FormElement>(null);
   const [requirementError, setRequirementError] = useState<string[]>([]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -88,6 +89,17 @@ const FormRenderer = ({
               case "datepicker":
                 return (
                   <DatePickerHandles
+                    key={index}
+                    item={item}
+                    requirementError={requirementError}
+                    setRequirementError={setRequirementError}
+                    formRef={formRef}
+                  />
+                );
+
+              case "checkbox":
+                return (
+                  <CheckboxHandles
                     key={index}
                     item={item}
                     requirementError={requirementError}
