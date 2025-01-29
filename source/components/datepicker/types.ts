@@ -5,5 +5,7 @@ export type DatePickerProps = {
   maxDate?: Date | null;
   yearLimitStart?: number;
   yearLimitEnd?: number;
-  onDateChange?: any;
+  onDateChange?: (date: Date) => void;
+  name?: string;
+  error?: string;
 };

@@ -10,6 +10,7 @@ import InputHandles from "./InputHandles";
 import SelectHandles from "./SelectHandles";
 import { FormItem, FormRendererProps } from "./types";
 import MultiHandles from "./MultiHandles";
+import DatePickerHandles from "./DatePickerHandles";
 
 const FormRenderer = ({
   onSubmit,
@@ -76,6 +77,17 @@ const FormRenderer = ({
               case "multi-select":
                 return (
                   <MultiHandles
+                    key={index}
+                    item={item}
+                    requirementError={requirementError}
+                    setRequirementError={setRequirementError}
+                    formRef={formRef}
+                  />
+                );
+
+              case "datepicker":
+                return (
+                  <DatePickerHandles
                     key={index}
                     item={item}
                     requirementError={requirementError}

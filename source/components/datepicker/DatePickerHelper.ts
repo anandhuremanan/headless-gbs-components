@@ -1,8 +1,8 @@
-const getDaysInMonth = (year: any, month: any) => {
+const getDaysInMonth = (year: number, month: number) => {
 	return new Date(year, month + 1, 0).getDate();
 };
 
-export const generateCalendarHelper = (year: any, month: any) => {
+export const generateCalendarHelper = (year: number, month: number) => {
 	const daysInMonth = getDaysInMonth(year, month);
 	const firstDay = new Date(year, month, 1).getDay();
 	const weeks = [];

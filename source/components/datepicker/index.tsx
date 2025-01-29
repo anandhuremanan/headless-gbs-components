@@ -10,6 +10,7 @@ import { generateCalendarHelper, months } from "./DatePickerHelper";
 import Icon from "../icon/Icon";
 import { calender, down, leftArrows, rightArrows } from "../icon/iconPaths";
 import type { DatePickerProps } from "./types";
+import { primary } from "../globalStyle";
 
 export const DatePicker = ({
   selectedDateValue,
@@ -18,14 +19,20 @@ export const DatePicker = ({
   yearLimitStart = 50,
   yearLimitEnd = 0,
   onDateChange,
+  name,
+  error,
+  placeholder = "Select a date",
 }: DatePickerProps) => {
   const [showDatepicker, setShowDatepicker] = useState(false);
   const [showYearMonthPicker, setShowYearMonthPicker] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [days, setDays] = useState<any>([]);
-  const [selectedDate, setSelectedDate] = useState<any>(
-    selectedDateValue ? selectedDateValue : new Date()
+  const [days, setDays] = useState<(Date | null)[][]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    selectedDateValue || null
+  );
+  const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(
+    selectedDateValue || new Date()
   );
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -41,6 +48,7 @@ export const DatePicker = ({
   useEffect(() => {
     if (selectedDateValue) {
       setSelectedDate(selectedDateValue);
+      setTempSelectedDate(selectedDateValue);
       setCurrentMonth(selectedDateValue.getMonth());
       setCurrentYear(selectedDateValue.getFullYear());
     }
@@ -54,6 +62,7 @@ export const DatePicker = ({
     function handleClickOutside(event: MouseEvent) {
       if (dateRef.current && !dateRef.current.contains(event.target as Node)) {
         setShowDatepicker(false);
+        setTempSelectedDate(selectedDate || new Date());
       }
     }
 
@@ -61,7 +70,7 @@ export const DatePicker = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [selectedDate]);
 
   useEffect(() => {
     setDays(generateCalendarHelper(currentYear, currentMonth));
@@ -70,19 +79,26 @@ export const DatePicker = ({
   const toggleDatepicker = () => {
     setShowDatepicker(!showDatepicker);
     setShowYearMonthPicker(false);
+    if (!showDatepicker) {
+      setTempSelectedDate(selectedDate || new Date());
+      const date = selectedDate || new Date();
+      setCurrentMonth(date.getMonth());
+      setCurrentYear(date.getFullYear());
+    }
   };
 
   const toggleYearMonthPicker = () => {
     setShowYearMonthPicker(!showYearMonthPicker);
   };
 
-  const selectDate = (date: any) => {
+  const selectDate = (date: Date) => {
     setSelectedDate(date);
+    setTempSelectedDate(date);
     setShowDatepicker(false);
     if (onDateChange) onDateChange(date);
   };
 
-  const selectYearMonth = (year: any, month: any) => {
+  const selectYearMonth = (year: number, month: number) => {
     setCurrentYear(year);
     setCurrentMonth(month);
     setShowYearMonthPicker(false);
@@ -108,10 +124,13 @@ export const DatePicker = ({
   };
 
   const goToToday = () => {
+    const today = new Date();
     setCurrentMonth(today.getMonth());
     setCurrentYear(today.getFullYear());
-    setSelectedDate(new Date());
-    if (onDateChange) onDateChange(new Date());
+    setSelectedDate(today);
+    setTempSelectedDate(today);
+    if (onDateChange) onDateChange(today);
+    setShowDatepicker(false);
   };
 
   if (!hasMounted) {
@@ -119,19 +138,32 @@ export const DatePicker = ({
   }
 
   return (
-    <div className="relative inline-block w-80 dark:bg-black" ref={dateRef}>
+    <div className="relative inline-block w-full dark:bg-black" ref={dateRef}>
       <button
         type="button"
         onClick={toggleDatepicker}
-        className="border p-2 rounded w-full flex items-center gap-2 dark:text-white"
+        className={`${
+          error ? primary["error-border"] : "border"
+        } p-2 rounded-lg w-full flex items-center gap-2 dark:text-white`}
       >
         <Icon
           dimensions={{ width: "20", height: "20" }}
           elements={calender}
           svgClass={"stroke-gray-500 fill-none dark:stroke-white"}
         />
-        {selectedDate.toLocaleDateString()}
+        <span className={!selectedDate ? "text-gray-400" : ""}>
+          {selectedDate ? selectedDate.toLocaleDateString() : placeholder}
+        </span>
       </button>
+      <p className={primary["error-primary"]}>{error && error}</p>
+
+      {/* Hidden input to integrate with the form */}
+      <input
+        type="hidden"
+        name={name}
+        value={selectedDate?.toDateString() || ""}
+        readOnly
+      />
 
       {showDatepicker && (
         <div className="absolute z-10 bg-white border border-gray-300 shadow-lg mt-1 w-full rounded dark:bg-black dark:text-white px-2">
@@ -223,18 +255,20 @@ export const DatePicker = ({
                   {day}
                 </div>
               ))}
-              {days.flat().map((day: any, index: any) => {
+              {days.flat().map((day: Date | null, index: number) => {
                 if (!day) {
                   return (
                     <div key={index} className="text-center p-1 w-8 h-8"></div>
                   );
                 }
-                const isDisabled: any =
-                  (minDate && day < minDate) || (maxDate && day > maxDate);
+                const isDisabled: boolean | undefined =
+                  (minDate && day < minDate) ||
+                  (maxDate && day > maxDate) ||
+                  undefined;
                 const isSelected =
-                  day.getDate() === selectedDate?.getDate() &&
-                  day.getMonth() === selectedDate?.getMonth() &&
-                  day.getFullYear() === selectedDate?.getFullYear();
+                  day.getDate() === tempSelectedDate?.getDate() &&
+                  day.getMonth() === tempSelectedDate?.getMonth() &&
+                  day.getFullYear() === tempSelectedDate?.getFullYear();
 
                 return (
                   <button
