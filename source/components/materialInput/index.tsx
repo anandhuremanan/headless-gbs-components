@@ -62,7 +62,7 @@ const MaterialInput = ({
             ${
               error
                 ? "border-red-500 focus:border-red-500"
-                : "border-gray-300 focus:border-blue-500"
+                : "border-gray-300 focus:border-black"
             }
             ${disabled ? "text-gray-400 cursor-not-allowed" : "text-gray-900"}
           `}
@@ -91,7 +91,7 @@ const MaterialInput = ({
             ${
               error
                 ? "border-red-500 focus:border-red-500"
-                : "border-gray-300 focus:border-blue-500"
+                : "border-gray-300 focus:border-black"
             }
             ${disabled ? "text-gray-400 cursor-not-allowed" : "text-gray-900"}
           `}
@@ -109,7 +109,7 @@ const MaterialInput = ({
               error
                 ? "text-red-500"
                 : isFocused
-                ? "text-blue-500"
+                ? "text-black"
                 : "text-gray-500"
             }
             ${disabled ? "text-gray-400 cursor-not-allowed" : ""}

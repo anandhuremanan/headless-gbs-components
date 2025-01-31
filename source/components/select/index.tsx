@@ -172,7 +172,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
             />
           </button>
         )}
-        <p className={primary["error-primary"]}>{error && error}</p>
+        {error && <p className={primary["error-primary"]}>{error}</p>}
       </div>
 
       {/* Hidden input to integrate with the form */}

@@ -155,7 +155,7 @@ export const DatePicker = ({
           {selectedDate ? selectedDate.toLocaleDateString() : placeholder}
         </span>
       </button>
-      <p className={primary["error-primary"]}>{error && error}</p>
+      {error && <p className={primary["error-primary"]}>{error}</p>}
 
       {/* Hidden input to integrate with the form */}
       <input

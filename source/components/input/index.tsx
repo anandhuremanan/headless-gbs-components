@@ -93,7 +93,7 @@ export const Input = ({
               />
             </button>
           )}
-          <div className="text-xs text-red-500">{error && error}</div>
+          {error && <div className="text-xs text-red-500">{error}</div>}
         </div>
       ) : (
         <div className="otp-container">
