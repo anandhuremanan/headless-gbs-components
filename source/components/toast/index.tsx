@@ -5,9 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-"use client";
 import React from "react";
-import { useToastStore } from "./toastAtom";
+import { useToastContext } from "./ToastContext";
 import Toast from "./Toast";
 import { ToastPosition } from "./types";
 
@@ -23,7 +22,7 @@ const positionClasses: Record<ToastPosition, string> = {
 };
 
 export const Toasts: React.FC<ToastsProps> = ({ position = "top-right" }) => {
-  const { toasts } = useToastStore();
+  const { toasts } = useToastContext();
 
   return (
     <section

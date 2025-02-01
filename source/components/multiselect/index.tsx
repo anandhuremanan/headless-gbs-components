@@ -5,20 +5,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, {
-  forwardRef,
-  memo,
+import {
   useCallback,
-  useEffect,
-  useImperativeHandle,
+  forwardRef,
   useRef,
-  useState,
+  useEffect,
+  memo,
+  useImperativeHandle,
 } from "react";
+import { useClickOutside } from "../hooks/SelectionHooks/useClickOutside";
+import type { MultiSelectHandle, MultiSelectProps } from "./types";
+import { useMultiSelectState } from "../hooks/SelectionHooks/useMultiSelectState";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
-import { getSourceData } from "../utils";
-import type { ItemsProps, MultiSelectHandle, MultiSelectProps } from "./types";
-import { primary } from "../globalStyle";
+import { iconClass, popUp, primary } from "../globalStyle";
 
 const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
   (props, ref) => {
@@ -34,70 +34,32 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
       error,
     } = props;
 
-    const [showPopover, setShowPopover] = useState(false);
-    const [workingDataSource, setWorkingDataSource] = useState<ItemsProps[]>(
-      []
-    );
-    const [filteredItems, setFilteredItems] = useState<ItemsProps[]>([]);
-    const [selected, setSelected] = useState<string[]>(selectedItems);
-    const [searchTerm, setSearchTerm] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
     const selectRef = useRef<HTMLDivElement>(null);
 
+    const {
+      showPopover,
+      setShowPopover,
+      workingDataSource,
+      filteredItems,
+      selected,
+      searchTerm,
+      setSearchTerm,
+      handleSelect,
+      togglePopover,
+      clearSelected,
+      getSelectItems,
+    } = useMultiSelectState(items, selectedItems, lazy, onSelect);
+
+    useClickOutside(selectRef, () => setShowPopover(false));
+
     useEffect(() => {
-      inputRef.current?.focus();
+      if (showPopover) {
+        inputRef.current?.focus();
+      }
     }, [showPopover]);
 
-    useEffect(() => {
-      handleDataSource();
-    }, [items]);
-
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (
-          selectRef.current &&
-          !selectRef.current.contains(event.target as Node)
-        ) {
-          setShowPopover(false);
-        }
-      };
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    const getSelectItems = async (itemsApi: string) => {
-      const itemsData = await getSourceData(itemsApi);
-      setWorkingDataSource(itemsData.sourcedata);
-      setFilteredItems(itemsData.sourcedata);
-    };
-
-    const handleDataSource = async () => {
-      if (Array.isArray(items)) {
-        setWorkingDataSource(items);
-        setFilteredItems(items);
-      } else if (typeof items === "string") {
-        await getSelectItems(items);
-      }
-    };
-
-    const togglePopover = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setShowPopover(!showPopover);
-    };
-
-    const handleSelect = useCallback(
-      (value: string) => {
-        const newSelected = selected.includes(value)
-          ? selected.filter((item) => item !== value)
-          : [...selected, value];
-        setSelected(newSelected);
-        onSelect?.(newSelected);
-      },
-      [selected, onSelect]
-    );
-
-    const getSelectedDisplay = () => {
+    const getSelectedDisplay = useCallback(() => {
       if (selected.length === 0) return placeholder;
       const displayedItems = selected
         .slice(0, 3)
@@ -110,37 +72,29 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
         display += `, +${selected.length - 3} more`;
       }
       return display;
-    };
+    }, [selected, workingDataSource, placeholder, truncate]);
 
-    const inputSearchHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value.toLowerCase();
-      setSearchTerm(value);
-      if (!lazy) {
-        setFilteredItems(
-          workingDataSource.filter((item) =>
-            Object.values(item).some((val) =>
-              val.toString().toLowerCase().includes(value)
-            )
-          )
-        );
-      }
-    };
-
-    const clearSelected = () => {
-      setSelected([]);
-      setShowPopover(false);
-      if (onSelect) onSelect([]);
-    };
-
-    useImperativeHandle(ref, () => ({
-      workingDataSource,
-      items,
-      clearSelected,
-      togglePopover,
-      getSelectItems,
-      selectedDisplay: getSelectedDisplay(),
-      selected,
-    }));
+    useImperativeHandle(
+      ref,
+      () => ({
+        workingDataSource,
+        items,
+        clearSelected,
+        togglePopover,
+        getSelectItems,
+        selectedDisplay: getSelectedDisplay(),
+        selected,
+      }),
+      [
+        workingDataSource,
+        items,
+        clearSelected,
+        togglePopover,
+        getSelectItems,
+        getSelectedDisplay,
+        selected,
+      ]
+    );
 
     return (
       <div className="relative w-full" ref={selectRef}>
@@ -163,23 +117,16 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
                 onClick={clearSelected}
                 type="button"
               >
-                <Icon
-                  elements={x}
-                  svgClass="h-4 w-4 stroke-gray-500 fill-none dark:stroke-white"
-                />
+                <Icon elements={x} svgClass={iconClass["grey-common"]} />
               </button>
             )}
             <button onClick={togglePopover} type="button">
-              <Icon
-                elements={upDown}
-                svgClass="h-4 w-4 stroke-gray-500 fill-none dark:stroke-white"
-              />
+              <Icon elements={upDown} svgClass={iconClass["grey-common"]} />
             </button>
           </div>
         </div>
         {error && <p className={primary["error-primary"]}>{error}</p>}
 
-        {/* Hidden input to integrate with the form */}
         <input
           type="hidden"
           name={name}
@@ -188,13 +135,10 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
         />
 
         {showPopover && (
-          <div className="w-full absolute overflow-y-auto border px-2 rounded-lg mt-[1px] scrollbar bg-white z-50 scrollbar h-auto dark:bg-black dark:text-white">
+          <div className={popUp["pop-up-style"]}>
             {showSearch && (
               <div className="flex p-2 gap-1 items-center sticky top-0 bg-white border-b dark:bg-black">
-                <Icon
-                  elements={search}
-                  svgClass="stroke-gray-500 fill-none dark:stroke-white"
-                />
+                <Icon elements={search} svgClass={iconClass["grey-common"]} />
                 <input
                   autoComplete="off"
                   type="text"
@@ -204,7 +148,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
                   className="w-full outline-none dark:bg-black"
                   ref={inputRef}
                   value={searchTerm}
-                  onChange={inputSearchHandler}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             )}

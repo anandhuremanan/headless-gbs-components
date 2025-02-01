@@ -11,16 +11,16 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useRef,
-  useState,
 } from "react";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
-import { getSourceData } from "../utils";
-import type { ItemsProps, SelectHandle, SelectProps } from "./types";
+import type { SelectHandle, SelectProps } from "./types";
 import { selectStyle } from "./style";
-import { popUp, primary } from "../globalStyle";
+import { iconClass, popUp, primary } from "../globalStyle";
+import { useSelectState } from "../hooks/SelectionHooks/useSelectState";
+import { useSelectData } from "../hooks/SelectionHooks/useSelectData";
+import { useClickOutside } from "../hooks/SelectionHooks/useClickOutside";
 
 const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   const {
@@ -36,76 +36,43 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
     onFiltering,
   } = props;
 
-  const [showPopover, setShowPopover] = useState(false);
-  const [workingDataSource, setWorkingDataSource] = useState<ItemsProps[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItem, setSelectedItem] = useState<string | undefined>(
-    initialSelectedItem
+  const {
+    showPopover,
+    setShowPopover,
+    workingDataSource,
+    setWorkingDataSource,
+    searchTerm,
+    setSearchTerm,
+    selectedItem,
+    setSelectedItem,
+    togglePopover,
+    clearSelected,
+  } = useSelectState(initialSelectedItem);
+
+  const { getSelectItems, selectedDisplay, filteredItems } = useSelectData(
+    items,
+    setWorkingDataSource,
+    workingDataSource,
+    searchTerm,
+    lazy,
+    selectedItem
   );
+
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLDivElement>(null);
 
-  // This will close the popup if clicked outside of the component
-  const handleClickOutside = useCallback((event: MouseEvent) => {
-    if (
-      selectRef.current &&
-      !selectRef.current.contains(event.target as Node)
-    ) {
-      setShowPopover(false);
-    }
-  }, []);
+  useClickOutside(selectRef, () => setShowPopover(false));
 
-  // This will close the popup if clicked outside of the component
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [handleClickOutside]);
-
-  // Focus to input feild when popup opens
   useEffect(() => {
     if (showPopover) {
       inputRef.current?.focus();
     }
   }, [showPopover]);
 
-  // Handles if items is an API URL
-  const getSelectItems = useCallback(async (itemsApi: string) => {
-    const itemsData = await getSourceData(itemsApi);
-    setWorkingDataSource(itemsData.sourcedata);
-  }, []);
-
-  useEffect(() => {
-    if (Array.isArray(items)) {
-      setWorkingDataSource(items);
-    } else if (typeof items === "string") {
-      getSelectItems(items);
-    }
-  }, [items, getSelectItems]);
-
   useEffect(() => {
     setSelectedItem(initialSelectedItem);
-  }, [initialSelectedItem]);
+  }, [initialSelectedItem, setSelectedItem]);
 
-  //Sets if a default value is passed
-  const selectedDisplay = useMemo(() => {
-    if (selectedItem && workingDataSource.length > 0) {
-      const selected = workingDataSource.find(
-        (item) => item.value === selectedItem
-      );
-      return selected ? selected.label : "";
-    }
-    return "";
-  }, [selectedItem, workingDataSource]);
-
-  // Toggles Popover
-  const togglePopover = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowPopover((prev) => !prev);
-  }, []);
-
-  // Handles Selection of items
   const handleSelect = useCallback(
     (value: string) => {
       setSelectedItem(value);
@@ -113,28 +80,14 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
       setSearchTerm("");
       if (onSelect) onSelect(value);
     },
-    [onSelect]
+    [onSelect, setSelectedItem, setShowPopover, setSearchTerm]
   );
 
-  // Clears Selection
-  const clearSelected = useCallback(() => {
-    setSelectedItem(undefined);
-    if (onSelect) onSelect("");
-    setShowPopover(false);
-    setSearchTerm("");
-  }, [onSelect]);
+  const handleClear = () => {
+    clearSelected();
+    if (onSelect) onSelect(undefined);
+  };
 
-  // Filtering logic
-  const filteredItems = useMemo(() => {
-    if (!searchTerm || lazy) return workingDataSource;
-    return workingDataSource.filter((item) =>
-      Object.values(item).some((val) =>
-        val.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-  }, [workingDataSource, searchTerm, lazy]);
-
-  // Making Select Functions Accessible in Paren
   useImperativeHandle(ref, () => ({
     workingDataSource,
     items,
@@ -146,7 +99,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   }));
 
   return (
-    <div className="relative w-96" ref={selectRef} id={id}>
+    <div className="relative w-full" ref={selectRef} id={id}>
       <div className="w-full relative">
         <button
           className={`${error ? primary["error-border"] : "border"} ${
@@ -156,36 +109,26 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
           type="button"
         >
           {selectedDisplay || placeholder}
-          <Icon
-            elements={upDown}
-            svgClass="h-4 w-4 stroke-gray-500 fill-none dark:stroke-white"
-          />
+          <Icon elements={upDown} svgClass={iconClass["grey-common"]} />
         </button>
         {selectedDisplay && (
           <button
             className={selectStyle["selectedDisplay-Button"]}
-            onClick={clearSelected}
+            onClick={handleClear}
           >
-            <Icon
-              elements={x}
-              svgClass="h-4 w-4 stroke-gray-500 fill-none dark:stroke-white"
-            />
+            <Icon elements={x} svgClass={iconClass["grey-common"]} />
           </button>
         )}
         {error && <p className={primary["error-primary"]}>{error}</p>}
       </div>
 
-      {/* Hidden input to integrate with the form */}
       <input type="hidden" name={name} value={selectedItem || ""} readOnly />
 
       {showPopover && (
         <div className={popUp["pop-up-style"]}>
           {showSearch && (
             <div className={selectStyle["input-parent"]}>
-              <Icon
-                elements={search}
-                svgClass="stroke-gray-500 fill-none dark:stroke-white"
-              />
+              <Icon elements={search} svgClass={iconClass["grey-common"]} />
               <input
                 autoComplete="off"
                 type="text"

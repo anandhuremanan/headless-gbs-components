@@ -2,164 +2,176 @@
 
 const fs = require("fs-extra");
 const path = require("path");
-const readline = require("readline");
+const { createInterface } = require("readline");
 
-const COMPONENTS = [
-  "Select",
-  "Grid",
-  "MultiSelect",
-  "Button",
-  "DatePicker",
-  "Checkbox",
-  "DarkMode",
-  "Dialog",
-  "Input",
-  "Modal",
-  "Spinner",
-  "Toast",
-  "Uploader",
-  "FormRenderer",
-  "materialInput",
-];
-
-const FRAMEWORKS = {
-  next: "Next.js",
-  vite: "Vite",
+// Configuration
+const CONFIG = {
+  components: [
+    "Select",
+    "Grid",
+    "MultiSelect",
+    "Button",
+    "DatePicker",
+    "Checkbox",
+    "DarkMode",
+    "Dialog",
+    "Input",
+    "Modal",
+    "Spinner",
+    "Toast",
+    "Uploader",
+    "FormRenderer",
+    "materialInput",
+  ],
+  frameworks: {
+    next: {
+      name: "Next.js",
+      path: ["app", "component-lib"],
+    },
+    vite: {
+      name: "Vite",
+      path: ["src", "component-lib"],
+    },
+  },
+  docs: "https://blackmax-designs.gitbook.io/building-block-v2.0",
 };
 
 const SOURCE_PATH = path.join(__dirname, "source", "components");
-let DEST_PATH;
+let isFirstCopy = true;
 
-const rl = readline.createInterface({
+const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-let isFirstCopy = true;
+const prompt = (question) =>
+  new Promise((resolve) => {
+    rl.question(question, resolve);
+  });
 
-function listFrameworks() {
-  console.log("Available frameworks:");
+const displayOptions = (options, title) => {
+  console.log(`\n${title}:\n`);
+  options.forEach((option, index) => console.log(`${index + 1}. ${option}`));
   console.log("");
-  Object.entries(FRAMEWORKS).forEach(([key, name], index) => {
-    console.log(`${index + 1}. ${name}`);
-  });
-}
+};
 
-function listComponents() {
-  console.log(" ");
-  console.log("Available components:");
-  console.log(" ");
-  COMPONENTS.forEach((component, index) => {
-    console.log(`${index + 1}. ${component}`);
-  });
-}
+const copyCommonFiles = async (destPath) => {
+  const commonFiles = [
+    { src: ["..", "utils.ts"], dest: "utils.ts" },
+    { src: ["..", "globalStyle.ts"], dest: "globalStyle.ts" },
+    { src: ["..", "icon"], dest: "icon" },
+  ];
 
-function copyCommonFiles() {
-  // Copy utils.ts
-  const utilsSrc = path.join(SOURCE_PATH, "..", "utils.ts");
-  const utilsDest = path.join(DEST_PATH, "utils.ts");
-  fs.copySync(utilsSrc, utilsDest, { overwrite: true });
-  console.log(`utils.ts copied successfully to ${utilsDest}`);
+  for (const file of commonFiles) {
+    const src = path.join(SOURCE_PATH, ...file.src);
+    const dest = path.join(destPath, file.dest);
+    await fs.copy(src, dest, { overwrite: true });
+    console.log(`${file.dest} copied successfully to ${dest}`);
+  }
+};
 
-  // Copy GlobalStyles
-  const globalStyleSrc = path.join(SOURCE_PATH, "..", "globalStyle.ts");
-  const globalStyleDest = path.join(DEST_PATH, "globalStyle.ts");
-  fs.copySync(globalStyleSrc, globalStyleDest, { overwrite: true });
-  console.log(`globalStyle.ts copied successfully to ${globalStyleDest}`);
+const copySelectionHooks = async (destPath) => {
+  const hooksSrc = path.join(SOURCE_PATH, "..", "hooks", "SelectionHooks");
+  const hooksDest = path.join(destPath, "hooks", "SelectionHooks");
 
-  // Copy icon folder
-  const iconSrc = path.join(SOURCE_PATH, "..", "icon");
-  const iconDest = path.join(DEST_PATH, "icon");
-  fs.copySync(iconSrc, iconDest, { overwrite: true });
-  console.log(`icon folder copied successfully to ${iconDest}`);
-}
+  await fs.ensureDir(path.dirname(hooksDest));
 
-function copyComponent(component) {
-  const componentSrc = path.join(SOURCE_PATH, component.toLowerCase());
-  const componentDest = path.join(DEST_PATH, component.toLowerCase());
-
-  if (!fs.existsSync(componentSrc)) {
-    console.error(`Component ${component} not found in source directory.`);
-    return;
+  if (!fs.existsSync(hooksSrc)) {
+    throw new Error(`SelectionHooks not found at ${hooksSrc}`);
   }
 
-  fs.copySync(componentSrc, componentDest, { overwrite: true });
-  console.log("");
-  console.log(`Component ${component} copied successfully to ${componentDest}`);
-  console.log("");
-  console.log(
-    "For Props and Usage Guides Visit : https://blackmax-designs.gitbook.io/building-block-v2.0"
+  await fs.copy(hooksSrc, hooksDest, { overwrite: true });
+  console.log(`SelectionHooks copied successfully to ${hooksDest}`);
+};
+
+const copyComponent = async (component, destPath) => {
+  try {
+    const componentSrc = path.join(SOURCE_PATH, component.toLowerCase());
+    const componentDest = path.join(destPath, component.toLowerCase());
+
+    if (!fs.existsSync(componentSrc)) {
+      throw new Error(`Component ${component} not found in source directory.`);
+    }
+
+    await fs.copy(componentSrc, componentDest, { overwrite: true });
+    console.log(
+      `\nComponent ${component} copied successfully to ${componentDest}`
+    );
+
+    if (isFirstCopy) {
+      await copyCommonFiles(destPath);
+      isFirstCopy = false;
+    }
+
+    if (["Select", "MultiSelect"].includes(component)) {
+      await copySelectionHooks(destPath);
+    }
+
+    console.log(`\nFor Props and Usage Guides Visit: ${CONFIG.docs}\n`);
+  } catch (error) {
+    console.error(`Error copying component ${component}:`, error.message);
+  }
+};
+
+const selectFramework = async () => {
+  displayOptions(
+    Object.values(CONFIG.frameworks).map((f) => f.name),
+    "Available frameworks"
   );
-  console.log("");
 
-  if (isFirstCopy) {
-    copyCommonFiles();
-    isFirstCopy = false;
+  const answer = await prompt("Select your framework (enter the number): ");
+  const index = parseInt(answer) - 1;
+  const frameworks = Object.keys(CONFIG.frameworks);
+
+  if (isNaN(index) || index < 0 || index >= frameworks.length) {
+    throw new Error("Invalid framework selection");
   }
-}
 
-function promptForFramework() {
-  listFrameworks();
-  rl.question("Select your framework (enter the number): ", (answer) => {
+  return frameworks[index];
+};
+
+const handleComponentSelection = async (destPath) => {
+  while (true) {
+    displayOptions(CONFIG.components, "Available components");
+
+    const answer = await prompt(
+      'Enter the number of the component to copy (or "q" to quit): '
+    );
+
+    if (answer.toLowerCase() === "q") break;
+
     const index = parseInt(answer) - 1;
-    const frameworks = Object.keys(FRAMEWORKS);
-
-    if (isNaN(index) || index < 0 || index >= frameworks.length) {
+    if (isNaN(index) || index < 0 || index >= CONFIG.components.length) {
       console.log("Invalid selection. Please try again.");
-      promptForFramework();
-      return;
+      continue;
     }
 
-    const selectedFramework = frameworks[index];
+    await copyComponent(CONFIG.components[index], destPath);
 
-    // Set destination path based on framework
-    if (selectedFramework === "next") {
-      DEST_PATH = path.join(process.cwd(), "app", "component-lib");
-    } else {
-      DEST_PATH = path.join(process.cwd(), "src", "component-lib");
-    }
+    const continueAnswer = await prompt(
+      "Do you want to copy another component? (y/n): "
+    );
+    if (continueAnswer.toLowerCase() !== "y") break;
+  }
+};
 
-    // Ensure the destination directory exists
-    fs.ensureDirSync(DEST_PATH);
+const main = async () => {
+  try {
+    const framework = await selectFramework();
+    const destPath = path.join(
+      process.cwd(),
+      ...CONFIG.frameworks[framework].path
+    );
 
-    // Continue with component selection
-    promptForComponent();
-  });
-}
+    await fs.ensureDir(destPath);
+    await handleComponentSelection(destPath);
+  } catch (error) {
+    console.error("Error:", error.message);
+    process.exit(1);
+  } finally {
+    rl.close();
+  }
+};
 
-function promptForComponent() {
-  listComponents();
-  rl.question(
-    'Enter the number of the component you want to copy (or "q" to quit): ',
-    (answer) => {
-      if (answer.toLowerCase() === "q") {
-        rl.close();
-        return;
-      }
-
-      const index = parseInt(answer) - 1;
-      if (isNaN(index) || index < 0 || index >= COMPONENTS.length) {
-        console.log("Invalid selection. Please try again.");
-        promptForComponent();
-        return;
-      }
-
-      const selectedComponent = COMPONENTS[index];
-      copyComponent(selectedComponent);
-
-      rl.question(
-        "Do you want to copy another component? (y/n): ",
-        (answer) => {
-          if (answer.toLowerCase() === "y") {
-            promptForComponent();
-          } else {
-            rl.close();
-          }
-        }
-      );
-    }
-  );
-}
-
-// Start with framework selection
-promptForFramework();
+// Run the script
+main();

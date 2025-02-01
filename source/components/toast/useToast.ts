@@ -1,8 +1,8 @@
 import { ToastOptions } from "./types";
-import { useToastStore } from "./toastAtom";
+import { useToastContext } from "./ToastContext";
 
 const useToast = () => {
-  const { addToast, dismissToast } = useToastStore();
+  const { addToast, dismissToast } = useToastContext();
 
   return {
     addToast: ({

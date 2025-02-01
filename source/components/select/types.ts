@@ -11,7 +11,7 @@ export type SelectProps = {
   items?: ItemsProps[] | string;
   lazy?: boolean;
   showSearch?: boolean;
-  onSelect?: (selectedItem: string) => void;
+  onSelect?: (selectedItem: string | undefined) => void;
   selectedItem?: string;
   onFiltering?: (searchTerm: string) => void;
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { Toast as ToastType } from "./types";
-import { useToastStore } from "./toastAtom";
+import { useToastContext } from "./ToastContext";
 import Icon from "../icon/Icon";
 import { circleCheck, info, x, xCircle } from "../icon/iconPaths";
 
@@ -9,7 +9,7 @@ interface ToastProps {
 }
 
 const Toast: React.FC<ToastProps> = ({ toast }) => {
-  const { dismissToast } = useToastStore();
+  const { dismissToast } = useToastContext();
   const icons = {
     success: (
       <Icon
@@ -33,7 +33,7 @@ const Toast: React.FC<ToastProps> = ({ toast }) => {
 
   return (
     <div
-      className={`bg-white px-2 py-3 rounded-lg text-sm flex justify-between w-80 m-2 border shadow-lg ${
+      className={`bg-white px-2 py-3 rounded-lg text-sm flex justify-between w-full m-2 border shadow-lg ${
         toast.type === "success"
           ? "text-green-500"
           : toast.type === "error"
