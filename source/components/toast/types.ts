@@ -1,28 +1,18 @@
-import { ReactNode } from "react";
-
-export type ToastType = "success" | "error" | "info";
-
-export type Toast = {
-  id: number;
-  type: ToastType;
-  message: string | ReactNode;
-  title: string | ReactNode;
-  dismissible: boolean;
-  timeout: number;
-  action?: any;
-};
-
-export type ToastOptions = {
-  message: string | ReactNode;
-  title?: string | ReactNode;
-  type?: ToastType;
-  dismissible?: boolean;
-  timeout?: number;
-  action?: any;
-};
-
+export type ToastType = "default" | "success" | "error" | "warning";
 export type ToastPosition =
-  | "top-left"
   | "top-right"
+  | "top-left"
+  | "top-center"
+  | "bottom-right"
   | "bottom-left"
-  | "bottom-right";
+  | "bottom-center";
+
+export interface Toast {
+  id: string;
+  type?: ToastType;
+  duration?: number;
+  content?: React.ReactNode;
+  title?: string;
+  description?: string;
+  action?: React.ReactNode;
+}

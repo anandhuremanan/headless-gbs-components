@@ -1,28 +1,12 @@
-import { ToastOptions } from "./types";
-import { useToastContext } from "./ToastContext";
+import { Toast } from "./types";
+import { useToastStore } from "./toastStore";
 
-const useToast = () => {
-  const { addToast, dismissToast } = useToastContext();
+export function useToast() {
+  const store = useToastStore();
 
   return {
-    addToast: ({
-      title,
-      message,
-      type = "info",
-      dismissible = false,
-      timeout = 3000,
-      action,
-    }: ToastOptions) =>
-      addToast({
-        title,
-        message,
-        type,
-        dismissible,
-        timeout,
-        action,
-      }),
-    dismissToast,
+    toast: (props: Omit<Toast, "id">) => store.add(props),
+    dismiss: store.dismiss,
+    toasts: store.toasts,
   };
-};
-
-export default useToast;
+}
