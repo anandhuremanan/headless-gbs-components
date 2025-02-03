@@ -182,6 +182,11 @@ export const FileUploader = ({
       return rest;
     });
 
+    // Reset file input to allow re-selecting the same file
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
     if (onChange) onChange(updatedFiles);
   };
 

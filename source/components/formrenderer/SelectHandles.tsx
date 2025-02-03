@@ -92,7 +92,7 @@ export default function SelectHandles({
     }
   }, [item?.name, dependencyMap, formRef]);
 
-  const handleSelect = (value: string, key: string) => {
+  const handleSelect = (value: string | undefined, key: string) => {
     if (!formRef?.current) return;
 
     let input = formRef.current.querySelector(
@@ -106,7 +106,9 @@ export default function SelectHandles({
       formRef.current.appendChild(input);
     }
 
-    input.value = value;
+    if (value) {
+      input.value = value;
+    }
     const event = new Event("change", { bubbles: true });
     input.dispatchEvent(event);
   };
@@ -123,7 +125,7 @@ export default function SelectHandles({
         name={item?.name}
         items={options}
         selectedItem={item?.value ?? ""}
-        onSelect={(value: string) => {
+        onSelect={(value: string | undefined) => {
           item?.name && handleSelect(value, item.name);
           setRequirementError &&
             setRequirementError((prevErrors) =>
