@@ -12,16 +12,18 @@ import { FormElement, FormItem, FormRendererProps } from "./types";
 import MultiHandles from "./MultiHandles";
 import DatePickerHandles from "./DatePickerHandles";
 import CheckboxHandles from "./CheckBoxHandles";
+import { useFormContext } from "@grampro/expression-evaluator";
 
 const FormRenderer = ({
   onSubmit,
   sourceData,
   formFormationClass = "grid grid-cols-1 text-left gap-4",
   formParentClass = "w-96",
-  dependencyConfig,
 }: FormRendererProps) => {
   const formRef = useRef<FormElement>(null);
   const [requirementError, setRequirementError] = useState<string[]>([]);
+
+  const { context, updateContext } = useFormContext();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -60,6 +62,10 @@ const FormRenderer = ({
                     item={item}
                     requirementError={requirementError}
                     setRequirementError={setRequirementError}
+                    onChangeEvent={item.onChangeEvent}
+                    formRef={formRef}
+                    context={context}
+                    updateContext={updateContext}
                   />
                 );
 
@@ -67,11 +73,17 @@ const FormRenderer = ({
                 return (
                   <SelectHandles
                     key={index}
-                    item={item}
+                    item={{
+                      name: item.name,
+                      label: item.label,
+                      options: item.options,
+                      value: item.value,
+                      required: Boolean(item.required),
+                    }}
                     requirementError={requirementError}
                     setRequirementError={setRequirementError}
                     formRef={formRef}
-                    dependencyMap={dependencyConfig}
+                    onChangeEvent={item.onChangeEvent}
                   />
                 );
 
@@ -83,6 +95,7 @@ const FormRenderer = ({
                     requirementError={requirementError}
                     setRequirementError={setRequirementError}
                     formRef={formRef}
+                    onChangeEvent={item.onChangeEvent}
                   />
                 );
 
@@ -94,6 +107,7 @@ const FormRenderer = ({
                     requirementError={requirementError}
                     setRequirementError={setRequirementError}
                     formRef={formRef}
+                    onChangeEvent={item.onChangeEvent}
                   />
                 );
 
@@ -105,6 +119,10 @@ const FormRenderer = ({
                     requirementError={requirementError}
                     setRequirementError={setRequirementError}
                     formRef={formRef}
+                    onChangeEvent={item.onChangeEvent}
+                    sourceData={sourceData}
+                    context={context}
+                    updateContext={updateContext}
                   />
                 );
 

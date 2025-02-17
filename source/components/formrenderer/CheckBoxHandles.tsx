@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { CheckboxHandlesProps, FormItem } from "./types";
+import { CheckboxHandlesProps } from "./types";
 
 const CheckboxHandles = ({
   item,
   formRef,
   requirementError,
   setRequirementError,
+  onChangeEvent,
+  updateContext,
 }: CheckboxHandlesProps) => {
   const [checked, setChecked] = useState<boolean>(!!item?.value);
 
@@ -47,6 +49,9 @@ const CheckboxHandles = ({
               prevErrors.filter((error) => error !== item.name)
             );
           }
+          onChangeEvent?.(e);
+
+          item?.name && updateContext("checkbox", item.name, newValue);
         }}
         className={`w-5 h-5 cursor-pointer rounded-md border-2 transition-colors duration-200 ${
           item?.name && requirementError.includes(item?.name)

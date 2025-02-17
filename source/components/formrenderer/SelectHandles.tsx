@@ -1,103 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { Select } from "../select";
-import { Option, SelectHandlesProps } from "./types";
+import React, { useState } from "react";
+import { Select } from "../refactoredSelect/Select";
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface SelectHandlesProps {
+  item?: {
+    name?: string;
+    label?: string;
+    options?: Option[];
+    value?: string;
+    required?: boolean;
+  };
+  requirementError: string[];
+  setRequirementError: React.Dispatch<React.SetStateAction<string[]>>;
+  formRef: React.RefObject<HTMLFormElement | null>;
+  onChangeEvent?: (event: any) => void;
+}
 
 export default function SelectHandles({
   item,
   requirementError,
   setRequirementError,
   formRef,
-  dependencyMap = {},
+  onChangeEvent,
 }: SelectHandlesProps) {
-  const [options, setOptions] = useState<Option[]>(item?.options || []);
-
-  const getFieldValue = (fieldName: string): string => {
-    if (!formRef?.current) return "";
-    const field = formRef.current.querySelector(
-      `input[name="${fieldName}"]`
-    ) as HTMLInputElement;
-    return field?.value || "";
-  };
-
-  const getDependentOptions = (fieldName: string): Option[] => {
-    const fieldConfig = dependencyMap[fieldName];
-    if (!fieldConfig) return [];
-
-    let currentData = fieldConfig.dataStructure;
-
-    if (fieldConfig.parent) {
-      const parentValue = getFieldValue(fieldConfig.parent);
-      if (!parentValue) return [];
-
-      const getNestedValue = (data: any, path: string[]): any => {
-        return path.reduce((acc, key) => acc?.[key], data);
-      };
-
-      const parentChain: string[] = [];
-      let currentField = fieldName;
-      while (dependencyMap[currentField]?.parent) {
-        const parent = dependencyMap[currentField].parent!;
-        parentChain.unshift(getFieldValue(parent));
-        currentField = parent;
-      }
-
-      currentData = getNestedValue(currentData, parentChain);
-    }
-
-    if (Array.isArray(currentData)) {
-      return currentData.map((value) => ({ value, label: value }));
-    } else if (typeof currentData === "object" && currentData !== null) {
-      return Object.keys(currentData).map((key) => ({
-        value: key,
-        label: key,
-      }));
-    }
-
-    return [];
-  };
-
-  useEffect(() => {
-    if (!item?.name || !dependencyMap[item.name]) {
-      return;
-    }
-
-    const updateOptions = () => {
-      const newOptions = getDependentOptions(item.name!);
-      setOptions(newOptions);
-    };
-
-    updateOptions();
-
-    const parentField = dependencyMap[item.name]?.parent;
-    if (parentField && formRef?.current) {
-      const parentInput = formRef.current.querySelector(
-        `input[name="${parentField}"]`
-      );
-
-      const handleParentChange = () => {
-        if (formRef.current) {
-          const currentField = formRef.current.querySelector(
-            `input[name="${item.name}"]`
-          ) as HTMLInputElement;
-          if (currentField) {
-            currentField.value = "";
-          }
-        }
-        updateOptions();
-      };
-
-      parentInput?.addEventListener("change", handleParentChange);
-      return () =>
-        parentInput?.removeEventListener("change", handleParentChange);
-    }
-  }, [item?.name, dependencyMap, formRef]);
+  const [options] = useState<Option[]>(item?.options || []);
 
   const handleSelect = (value: string | undefined, key: string) => {
     if (!formRef?.current) return;
 
     let input = formRef.current.querySelector(
       `input[name="${key}"]`
-    ) as HTMLInputElement;
+    ) as HTMLInputElement | null;
 
     if (!input) {
       input = document.createElement("input");
@@ -127,10 +64,10 @@ export default function SelectHandles({
         selectedItem={item?.value ?? ""}
         onSelect={(value: string | undefined) => {
           item?.name && handleSelect(value, item.name);
-          setRequirementError &&
-            setRequirementError((prevErrors) =>
-              prevErrors.filter((errorName) => errorName !== item?.name)
-            );
+          setRequirementError((prevErrors) =>
+            prevErrors.filter((errorName) => errorName !== item?.name)
+          );
+          onChangeEvent?.(value);
         }}
         error={
           item?.name && requirementError.includes(item.name)

@@ -7,7 +7,7 @@ export type FormItem = {
   name?: string;
   component?: string;
   type?: string;
-  required?: boolean;
+  required?: boolean | string;
   placeholder?: string;
   options?: { value: string; label: string }[];
   value?: string;
@@ -17,6 +17,13 @@ export type FormItem = {
   dependency?: string;
   hasDependents?: boolean;
   isReady?: boolean;
+  disabled?: string | boolean;
+  onChangeEvent?: (event: any) => void;
+  stepProperty?: {
+    customClass?: {
+      inputClass?: string;
+    };
+  };
 };
 
 interface DependencyConfig {
@@ -58,4 +65,22 @@ export type CheckboxHandlesProps = {
   requirementError: string[];
   setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
   formRef?: React.RefObject<HTMLFormElement | null>;
+  onChangeEvent?: (event: any) => void;
+  changeTrigger?: number;
+  setChangeTrigger?: React.Dispatch<React.SetStateAction<number>>;
+  sourceData?: FormItem[];
+  context: FormContext;
+  updateContext: (
+    componentName: string,
+    fieldName: string,
+    value: FieldValue
+  ) => void;
 };
+
+export type FieldValue = string | boolean | number | null;
+
+export interface FormContext {
+  [componentName: string]: {
+    [fieldName: string]: FieldValue;
+  };
+}

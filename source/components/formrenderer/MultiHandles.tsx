@@ -7,6 +7,7 @@ interface MultiSelectHandlesProps {
   requirementError: string[];
   setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
   formRef?: React.RefObject<HTMLFormElement | null>;
+  onChangeEvent?: (event: any) => void;
 }
 
 export default function MultiHandles({
@@ -14,6 +15,7 @@ export default function MultiHandles({
   requirementError,
   setRequirementError,
   formRef,
+  onChangeEvent,
 }: MultiSelectHandlesProps) {
   const handleSelect = (value: string[], key: string) => {
     if (formRef && formRef.current) {
@@ -53,6 +55,7 @@ export default function MultiHandles({
               prevErrors.filter((errorName) => errorName !== item.name)
             );
           }
+          onChangeEvent?.(value);
         }}
         error={
           item?.name && requirementError.includes(item.name)

@@ -7,6 +7,7 @@ interface DatePickerHandlesProps {
   requirementError: string[];
   setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
   formRef?: React.RefObject<HTMLFormElement | null>;
+  onChangeEvent?: (event: any) => void;
 }
 
 export default function DatePickerHandles({
@@ -14,6 +15,7 @@ export default function DatePickerHandles({
   requirementError,
   setRequirementError,
   formRef,
+  onChangeEvent,
 }: DatePickerHandlesProps) {
   const handleSelectDate = (value: string[], key: string) => {
     if (formRef && formRef.current) {
@@ -52,6 +54,7 @@ export default function DatePickerHandles({
               prevErrors.filter((errorName) => errorName !== item.name)
             );
           }
+          onChangeEvent?.(value);
         }}
         error={
           item?.name && requirementError.includes(item.name)
