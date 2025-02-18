@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { validateEmail, validatePhoneNumber } from "./helperFunctions";
-import { Input } from "../input";
-import { FieldValue, FormContext, FormItem } from "./types";
+import { validateEmail, validatePhoneNumber } from "../helperFunctions";
+import { Input } from "../../input";
+import { FieldValue, FormContext, FormItem } from "../types";
 import { evaluateExpression } from "@grampro/expression-evaluator";
 import { twMerge } from "tailwind-merge";
 

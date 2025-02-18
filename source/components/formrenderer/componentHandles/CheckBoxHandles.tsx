@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CheckboxHandlesProps } from "./types";
+import { CheckboxHandlesProps } from "../types";
 
 const CheckboxHandles = ({
   item,

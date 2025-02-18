@@ -6,13 +6,13 @@
  */
 
 import React, { useRef, useState } from "react";
-import InputHandles from "./InputHandles";
-import SelectHandles from "./SelectHandles";
-import { FormElement, FormItem, FormRendererProps } from "./types";
-import MultiHandles from "./MultiHandles";
-import DatePickerHandles from "./DatePickerHandles";
-import CheckboxHandles from "./CheckBoxHandles";
 import { useFormContext } from "@grampro/expression-evaluator";
+import { FormElement, FormItem, FormRendererProps } from "./types";
+import InputHandles from "./componentHandles/InputHandles";
+import SelectHandles from "./componentHandles/SelectHandles";
+import MultiHandles from "./componentHandles/MultiHandles";
+import DatePickerHandles from "./componentHandles/DatePickerHandles";
+import CheckboxHandles from "./componentHandles/CheckBoxHandles";
 
 const FormRenderer = ({
   onSubmit,

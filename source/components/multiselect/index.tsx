@@ -13,9 +13,11 @@ import {
   memo,
   useImperativeHandle,
 } from "react";
-import { useClickOutside } from "../hooks/SelectionHooks/useClickOutside";
 import type { MultiSelectHandle, MultiSelectProps } from "./types";
-import { useMultiSelectState } from "../hooks/SelectionHooks/useMultiSelectState";
+import {
+  useMultiSelectState,
+  useClickOutside,
+} from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
 import { iconClass, popUp, primary } from "../globalStyle";
@@ -51,7 +53,9 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
       getSelectItems,
     } = useMultiSelectState(items, selectedItems, lazy, onSelect);
 
-    useClickOutside(selectRef, () => setShowPopover(false));
+    useClickOutside(selectRef as React.RefObject<HTMLElement>, () =>
+      setShowPopover(false)
+    );
 
     useEffect(() => {
       if (showPopover) {

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Select } from "../refactoredSelect/Select";
+import { Select } from "../../select";
 
 interface Option {
   value: string;

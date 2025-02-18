@@ -1,8 +1,8 @@
 import React from "react";
-import { DatePicker } from "../datepicker";
-import { FormItem } from "./types";
+import { FormItem } from "../types";
+import { MultiSelect } from "../../multiselect";
 
-interface DatePickerHandlesProps {
+interface MultiSelectHandlesProps {
   item?: FormItem;
   requirementError: string[];
   setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
@@ -10,14 +10,14 @@ interface DatePickerHandlesProps {
   onChangeEvent?: (event: any) => void;
 }
 
-export default function DatePickerHandles({
+export default function MultiHandles({
   item,
   requirementError,
   setRequirementError,
   formRef,
   onChangeEvent,
-}: DatePickerHandlesProps) {
-  const handleSelectDate = (value: string[], key: string) => {
+}: MultiSelectHandlesProps) {
+  const handleSelect = (value: string[], key: string) => {
     if (formRef && formRef.current) {
       const hiddenInput = formRef.current.querySelector(
         `input[name="${key}"]`
@@ -45,11 +45,12 @@ export default function DatePickerHandles({
           {item.required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <DatePicker
+      <MultiSelect
         name={item?.name}
-        onDateChange={(value: any) => {
+        items={item?.options}
+        onSelect={(value: string[]) => {
           if (item?.name) {
-            handleSelectDate(value, item.name);
+            handleSelect(value, item.name);
             setRequirementError?.((prevErrors) =>
               prevErrors.filter((errorName) => errorName !== item.name)
             );
@@ -61,7 +62,6 @@ export default function DatePickerHandles({
             ? `${item.name} is required`
             : undefined
         }
-        selectedDateValue={item?.value ? new Date(item.value) : undefined}
       />
     </div>
   );

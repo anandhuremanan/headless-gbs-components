@@ -70,20 +70,6 @@ const copyCommonFiles = async (destPath) => {
   }
 };
 
-const copySelectionHooks = async (destPath) => {
-  const hooksSrc = path.join(SOURCE_PATH, "..", "hooks", "SelectionHooks");
-  const hooksDest = path.join(destPath, "hooks", "SelectionHooks");
-
-  await fs.ensureDir(path.dirname(hooksDest));
-
-  if (!fs.existsSync(hooksSrc)) {
-    throw new Error(`SelectionHooks not found at ${hooksSrc}`);
-  }
-
-  await fs.copy(hooksSrc, hooksDest, { overwrite: true });
-  console.log(`SelectionHooks copied successfully to ${hooksDest}`);
-};
-
 const copyComponent = async (component, destPath) => {
   try {
     const componentSrc = path.join(SOURCE_PATH, component.toLowerCase());
@@ -101,10 +87,6 @@ const copyComponent = async (component, destPath) => {
     if (isFirstCopy) {
       await copyCommonFiles(destPath);
       isFirstCopy = false;
-    }
-
-    if (["Select", "MultiSelect"].includes(component)) {
-      await copySelectionHooks(destPath);
     }
 
     console.log(`\nFor Props and Usage Guides Visit: ${CONFIG.docs}\n`);

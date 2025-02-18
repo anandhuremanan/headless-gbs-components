@@ -5,8 +5,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useState, useEffect, useRef } from "react";
-import { generateCalendarHelper, months } from "./DatePickerHelper";
+import React, { useRef } from "react";
+import {
+  useDatePickerState,
+  useYearMonthNavigation,
+  useClickOutside,
+  isAtYearLimit,
+  months,
+  applyScrollbarStyles,
+} from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
 import { calender, down, leftArrows, rightArrows } from "../icon/iconPaths";
 import type { DatePickerProps } from "./types";
@@ -23,58 +30,50 @@ export const DatePicker = ({
   error,
   placeholder = "Select a date",
 }: DatePickerProps) => {
-  const [showDatepicker, setShowDatepicker] = useState(false);
-  const [showYearMonthPicker, setShowYearMonthPicker] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [days, setDays] = useState<(Date | null)[][]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(
-    selectedDateValue || null
-  );
-  const [tempSelectedDate, setTempSelectedDate] = useState<Date | null>(
-    selectedDateValue || new Date()
-  );
-  const [hasMounted, setHasMounted] = useState(false);
+  applyScrollbarStyles();
 
   const dateRef = useRef<HTMLDivElement>(null);
   const today = new Date();
-
   const actualCurrentYear = today.getFullYear();
+
+  const {
+    showDatepicker,
+    setShowDatepicker,
+    showYearMonthPicker,
+    setShowYearMonthPicker,
+    currentMonth,
+    setCurrentMonth,
+    currentYear,
+    setCurrentYear,
+    days,
+    selectedDate,
+    setSelectedDate,
+    tempSelectedDate,
+    setTempSelectedDate,
+    hasMounted,
+  } = useDatePickerState(selectedDateValue || null);
+
+  const { prevMonth, nextMonth } = useYearMonthNavigation(
+    currentMonth,
+    currentYear,
+    yearLimitStart,
+    yearLimitEnd,
+    setCurrentMonth,
+    setCurrentYear
+  );
+  useClickOutside(
+    dateRef as React.RefObject<HTMLElement>,
+    () => {
+      setShowDatepicker(false);
+      setTempSelectedDate(selectedDate || new Date());
+    },
+    [selectedDate]
+  );
+
   const years = Array.from(
     { length: yearLimitStart + yearLimitEnd + 1 },
     (_, i) => actualCurrentYear - yearLimitStart + i
   ).sort((a, b) => b - a);
-
-  useEffect(() => {
-    if (selectedDateValue) {
-      setSelectedDate(selectedDateValue);
-      setTempSelectedDate(selectedDateValue);
-      setCurrentMonth(selectedDateValue.getMonth());
-      setCurrentYear(selectedDateValue.getFullYear());
-    }
-  }, [selectedDateValue]);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dateRef.current && !dateRef.current.contains(event.target as Node)) {
-        setShowDatepicker(false);
-        setTempSelectedDate(selectedDate || new Date());
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [selectedDate]);
-
-  useEffect(() => {
-    setDays(generateCalendarHelper(currentYear, currentMonth));
-  }, [currentYear, currentMonth]);
 
   const toggleDatepicker = () => {
     setShowDatepicker(!showDatepicker);
@@ -102,25 +101,6 @@ export const DatePicker = ({
     setCurrentYear(year);
     setCurrentMonth(month);
     setShowYearMonthPicker(false);
-    setDays(generateCalendarHelper(year, month));
-  };
-
-  const prevMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
-  };
-
-  const nextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
   };
 
   const goToToday = () => {
@@ -157,7 +137,6 @@ export const DatePicker = ({
       </button>
       {error && <p className={primary["error-primary"]}>{error}</p>}
 
-      {/* Hidden input to integrate with the form */}
       <input
         type="hidden"
         name={name}
@@ -171,11 +150,28 @@ export const DatePicker = ({
             <button
               type="button"
               onClick={prevMonth}
-              className="text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100"
+              disabled={isAtYearLimit(
+                "prev",
+                currentMonth,
+                currentYear,
+                yearLimitStart,
+                yearLimitEnd
+              )}
+              className={`text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ${
+                isAtYearLimit(
+                  "prev",
+                  currentMonth,
+                  currentYear,
+                  yearLimitStart,
+                  yearLimitEnd
+                )
+                  ? "opacity-50"
+                  : ""
+              }`}
             >
               <Icon
                 elements={leftArrows}
-                svgClass={"stroke-gray-500 fill-none dark:stroke-white"}
+                svgClass={"stroke-black fill-none dark:stroke-white"}
               />
             </button>
             <div className="flex items-center space-x-2">
@@ -199,7 +195,24 @@ export const DatePicker = ({
             <button
               type="button"
               onClick={nextMonth}
-              className="text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100"
+              disabled={isAtYearLimit(
+                "next",
+                currentMonth,
+                currentYear,
+                yearLimitStart,
+                yearLimitEnd
+              )}
+              className={`text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ${
+                isAtYearLimit(
+                  "next",
+                  currentMonth,
+                  currentYear,
+                  yearLimitStart,
+                  yearLimitEnd
+                )
+                  ? "opacity-50"
+                  : ""
+              }`}
             >
               <Icon
                 elements={rightArrows}
@@ -219,7 +232,7 @@ export const DatePicker = ({
                       onClick={() => selectYearMonth(currentYear, index)}
                       className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
                         index === currentMonth
-                          ? "bg-blue-500 text-white hover:bg-blue-600"
+                          ? "bg-black text-white hover:bg-blue-600"
                           : ""
                       }`}
                     >
@@ -238,7 +251,7 @@ export const DatePicker = ({
                       onClick={() => selectYearMonth(year, currentMonth)}
                       className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
                         year === currentYear
-                          ? "bg-blue-500 text-white hover:bg-blue-600"
+                          ? "bg-black text-white hover:bg-blue-600"
                           : ""
                       }`}
                     >
@@ -277,7 +290,9 @@ export const DatePicker = ({
                     onClick={() => !isDisabled && selectDate(day)}
                     disabled={isDisabled}
                     className={`text-center p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
-                      isSelected ? "bg-black text-white hover:bg-gray-800 " : ""
+                      isSelected
+                        ? "bg-black text-white hover:bg-gray-800 dark:bg-white"
+                        : ""
                     } ${
                       isDisabled
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"

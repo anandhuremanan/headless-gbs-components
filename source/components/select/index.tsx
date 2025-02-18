@@ -18,9 +18,11 @@ import { check, search, upDown, x } from "../icon/iconPaths";
 import type { SelectHandle, SelectProps } from "./types";
 import { selectStyle } from "./style";
 import { iconClass, popUp, primary } from "../globalStyle";
-import { useSelectState } from "../hooks/SelectionHooks/useSelectState";
-import { useSelectData } from "../hooks/SelectionHooks/useSelectData";
-import { useClickOutside } from "../hooks/SelectionHooks/useClickOutside";
+import {
+  useSelectState,
+  useSelectData,
+  useClickOutside,
+} from "@grampro/headless-helpers";
 
 const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   const {
@@ -61,7 +63,9 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside(selectRef, () => setShowPopover(false));
+  useClickOutside(selectRef as React.RefObject<HTMLElement>, () =>
+    setShowPopover(false)
+  );
 
   useEffect(() => {
     if (showPopover) {
@@ -70,7 +74,9 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   }, [showPopover]);
 
   useEffect(() => {
-    setSelectedItem(initialSelectedItem);
+    if (initialSelectedItem) {
+      setSelectedItem(initialSelectedItem);
+    }
   }, [initialSelectedItem, setSelectedItem]);
 
   const handleSelect = useCallback(
