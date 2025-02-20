@@ -2,7 +2,8 @@
 
 const fs = require("fs-extra");
 const path = require("path");
-const { createInterface } = require("readline");
+const yargs = require("yargs/yargs");
+const { hideBin } = require("yargs/helpers");
 
 // Configuration
 const CONFIG = {
@@ -21,7 +22,8 @@ const CONFIG = {
     "Toast",
     "Uploader",
     "FormRenderer",
-    "materialInput",
+    "MaterialInput",
+    "ContextMenu",
   ],
   frameworks: {
     next: {
@@ -37,23 +39,6 @@ const CONFIG = {
 };
 
 const SOURCE_PATH = path.join(__dirname, "source", "components");
-let isFirstCopy = true;
-
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-const prompt = (question) =>
-  new Promise((resolve) => {
-    rl.question(question, resolve);
-  });
-
-const displayOptions = (options, title) => {
-  console.log(`\n${title}:\n`);
-  options.forEach((option, index) => console.log(`${index + 1}. ${option}`));
-  console.log("");
-};
 
 const copyCommonFiles = async (destPath) => {
   const commonFiles = [
@@ -66,7 +51,7 @@ const copyCommonFiles = async (destPath) => {
     const src = path.join(SOURCE_PATH, ...file.src);
     const dest = path.join(destPath, file.dest);
     await fs.copy(src, dest, { overwrite: true });
-    console.log(`${file.dest} copied successfully to ${dest}`);
+    console.log(`✓ ${file.dest} copied successfully`);
   }
 };
 
@@ -80,80 +65,103 @@ const copyComponent = async (component, destPath) => {
     }
 
     await fs.copy(componentSrc, componentDest, { overwrite: true });
-    console.log(
-      `\nComponent ${component} copied successfully to ${componentDest}`
-    );
-
-    if (isFirstCopy) {
-      await copyCommonFiles(destPath);
-      isFirstCopy = false;
-    }
-
-    console.log(`\nFor Props and Usage Guides Visit: ${CONFIG.docs}\n`);
+    console.log(`✓ Component ${component} installed successfully`);
+    console.log(`\nFor documentation visit: ${CONFIG.docs}`);
   } catch (error) {
-    console.error(`Error copying component ${component}:`, error.message);
+    console.error(`Error installing component ${component}:`, error.message);
+    process.exit(1);
   }
 };
 
-const selectFramework = async () => {
-  displayOptions(
-    Object.values(CONFIG.frameworks).map((f) => f.name),
-    "Available frameworks"
-  );
-
-  const answer = await prompt("Select your framework (enter the number): ");
-  const index = parseInt(answer) - 1;
-  const frameworks = Object.keys(CONFIG.frameworks);
-
-  if (isNaN(index) || index < 0 || index >= frameworks.length) {
-    throw new Error("Invalid framework selection");
+const detectFramework = () => {
+  // Check for Next.js
+  if (fs.existsSync(path.join(process.cwd(), "next.config.js"))) {
+    return "next";
   }
-
-  return frameworks[index];
-};
-
-const handleComponentSelection = async (destPath) => {
-  while (true) {
-    displayOptions(CONFIG.components, "Available components");
-
-    const answer = await prompt(
-      'Enter the number of the component to copy (or "q" to quit): '
-    );
-
-    if (answer.toLowerCase() === "q") break;
-
-    const index = parseInt(answer) - 1;
-    if (isNaN(index) || index < 0 || index >= CONFIG.components.length) {
-      console.log("Invalid selection. Please try again.");
-      continue;
-    }
-
-    await copyComponent(CONFIG.components[index], destPath);
-
-    const continueAnswer = await prompt(
-      "Do you want to copy another component? (y/n): "
-    );
-    if (continueAnswer.toLowerCase() !== "y") break;
+  // Check for Vite
+  if (
+    fs.existsSync(path.join(process.cwd(), "vite.config.js")) ||
+    fs.existsSync(path.join(process.cwd(), "vite.config.ts"))
+  ) {
+    return "vite";
   }
+  return null;
 };
 
 const main = async () => {
-  try {
-    const framework = await selectFramework();
-    const destPath = path.join(
-      process.cwd(),
-      ...CONFIG.frameworks[framework].path
-    );
+  const argv = yargs(hideBin(process.argv))
+    .option("add", {
+      alias: "a",
+      describe: "Component to install",
+      type: "string",
+    })
+    .option("framework", {
+      alias: "f",
+      describe: "Framework to use (next or vite)",
+      type: "string",
+    })
+    .option("list", {
+      alias: "l",
+      describe: "List available components",
+      type: "boolean",
+    })
+    .help().argv;
 
-    await fs.ensureDir(destPath);
-    await handleComponentSelection(destPath);
-  } catch (error) {
-    console.error("Error:", error.message);
-    process.exit(1);
-  } finally {
-    rl.close();
+  // List components if requested
+  if (argv.list) {
+    console.log("\nAvailable components:");
+    CONFIG.components.forEach((comp) => console.log(`- ${comp}`));
+    return;
   }
+
+  if (!argv.add) {
+    console.error("Please specify a component to install using -a or --add");
+    process.exit(1);
+  }
+
+  // Validate component name
+  const component = argv.add;
+  if (!CONFIG.components.includes(component)) {
+    console.error(`Invalid component: ${component}`);
+    console.log("\nAvailable components:");
+    CONFIG.components.forEach((comp) => console.log(`- ${comp}`));
+    process.exit(1);
+  }
+
+  // Detect or get framework
+  let framework = argv.framework;
+  if (!framework) {
+    framework = detectFramework();
+    if (!framework) {
+      console.error(
+        "Could not detect framework. Please specify using -f or --framework"
+      );
+      process.exit(1);
+    }
+  }
+
+  if (!CONFIG.frameworks[framework]) {
+    console.error(`Unsupported framework: ${framework}`);
+    process.exit(1);
+  }
+
+  // Create destination directory
+  const destPath = path.join(
+    process.cwd(),
+    ...CONFIG.frameworks[framework].path
+  );
+  await fs.ensureDir(destPath);
+
+  // Copy common files if they don't exist
+  if (!fs.existsSync(path.join(destPath, "utils.ts"))) {
+    await copyCommonFiles(destPath);
+  }
+
+  // Copy the requested component
+  await copyComponent(component, destPath);
 };
 
-// Run the script
-main();
+main().catch((error) => {
+  console.error("Error:", error.message);
+  process.exit(1);
+});
