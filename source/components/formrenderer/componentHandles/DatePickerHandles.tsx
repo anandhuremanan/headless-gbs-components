@@ -1,14 +1,6 @@
 import React from "react";
 import { DatePicker } from "../../datepicker";
-import { FormItem } from "../types";
-
-interface DatePickerHandlesProps {
-  item?: FormItem;
-  requirementError: string[];
-  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
-  formRef?: React.RefObject<HTMLFormElement | null>;
-  onChangeEvent?: (event: any) => void;
-}
+import { DatePickerHandlesProps } from "../types";
 
 export default function DatePickerHandles({
   item,

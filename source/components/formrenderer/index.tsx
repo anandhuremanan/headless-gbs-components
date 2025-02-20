@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFormContext } from "@grampro/headless-helpers";
 import { FormElement, FormItem, FormRendererProps } from "./types";
 import InputHandles from "./componentHandles/InputHandles";
@@ -73,17 +73,13 @@ const FormRenderer = ({
                 return (
                   <SelectHandles
                     key={index}
-                    item={{
-                      name: item.name,
-                      label: item.label,
-                      options: item.options,
-                      value: item.value,
-                      required: Boolean(item.required),
-                    }}
+                    item={item}
                     requirementError={requirementError}
                     setRequirementError={setRequirementError}
                     formRef={formRef}
                     onChangeEvent={item.onChangeEvent}
+                    context={context}
+                    updateContext={updateContext}
                   />
                 );
 
@@ -96,6 +92,8 @@ const FormRenderer = ({
                     setRequirementError={setRequirementError}
                     formRef={formRef}
                     onChangeEvent={item.onChangeEvent}
+                    context={context}
+                    updateContext={updateContext}
                   />
                 );
 
@@ -131,7 +129,7 @@ const FormRenderer = ({
                   <div key={index} className="w-full mt-1">
                     <button
                       type={item.button_type}
-                      className="w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-300 dark:bg-white dark:text-black"
+                      className="w-full bg-black text-white py-2 rounded-xl hover:bg-gray-800"
                     >
                       {item.value}
                     </button>

@@ -1,24 +1,7 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Select } from "../../select";
-
-interface Option {
-  value: string;
-  label: string;
-}
-
-interface SelectHandlesProps {
-  item?: {
-    name?: string;
-    label?: string;
-    options?: Option[];
-    value?: string;
-    required?: boolean;
-  };
-  requirementError: string[];
-  setRequirementError: React.Dispatch<React.SetStateAction<string[]>>;
-  formRef: React.RefObject<HTMLFormElement | null>;
-  onChangeEvent?: (event: any) => void;
-}
+import { Option, SelectHandlesProps } from "../types";
+import { evaluateExpression } from "@grampro/headless-helpers";
 
 export default function SelectHandles({
   item,
@@ -26,9 +9,41 @@ export default function SelectHandles({
   setRequirementError,
   formRef,
   onChangeEvent,
+  context,
+  updateContext,
 }: SelectHandlesProps) {
   const [options] = useState<Option[]>(item?.options || []);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
+  const [isRequired, setIsRequired] = useState<boolean>(false);
 
+  // Evaluate expression with memoization
+  const evaluateCondition = useCallback(
+    (expression: string | boolean | undefined): boolean => {
+      if (typeof expression === "string") {
+        return evaluateExpression(expression, context);
+      }
+      return !!expression;
+    },
+    [context]
+  );
+
+  // Initialize context and handle dynamic states
+  useEffect(() => {
+    if (item?.name && item?.value !== undefined) {
+      updateContext("select", item.name, item.value);
+    }
+
+    const disabled = evaluateCondition(item?.disabled);
+    console.log("disabled", disabled);
+
+    setIsDisabled(disabled);
+
+    // Only set required if not disabled
+    const required = disabled ? false : evaluateCondition(item?.required);
+    setIsRequired(required);
+  }, [item, context, evaluateCondition, updateContext]);
+
+  // Handle select change event
   const handleSelect = (value: string | undefined, key: string) => {
     if (!formRef?.current) return;
 
@@ -55,7 +70,7 @@ export default function SelectHandles({
       {item?.label && (
         <label htmlFor={item.name} className="font-medium text-sm">
           {item.label}
-          {item.required && <span className="text-red-500">*</span>}
+          {isRequired && <span className="text-red-500">*</span>}
         </label>
       )}
       <Select
@@ -74,6 +89,7 @@ export default function SelectHandles({
             ? `${item.name} is required`
             : undefined
         }
+        disabled={isDisabled}
       />
     </div>
   );

@@ -11,6 +11,8 @@ const CheckboxHandles = ({
 }: CheckboxHandlesProps) => {
   const [checked, setChecked] = useState<boolean>(!!item?.value);
 
+  // We Need this to set the value of the checkbox in the form
+  // if the value is not set in the form
   useEffect(() => {
     if (item?.name) {
       handleSelect(checked, item.name);
@@ -40,6 +42,7 @@ const CheckboxHandles = ({
       <input
         type="checkbox"
         checked={checked}
+        name={item?.name}
         onChange={(e) => {
           const newValue = e.target.checked;
           setChecked(newValue);

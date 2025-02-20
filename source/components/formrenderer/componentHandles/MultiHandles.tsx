@@ -1,14 +1,7 @@
-import React from "react";
-import { FormItem } from "../types";
+import React, { useCallback, useEffect, useState } from "react";
+import { MultiSelectHandlesProps } from "../types";
 import { MultiSelect } from "../../multiselect";
-
-interface MultiSelectHandlesProps {
-  item?: FormItem;
-  requirementError: string[];
-  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
-  formRef?: React.RefObject<HTMLFormElement | null>;
-  onChangeEvent?: (event: any) => void;
-}
+import { evaluateExpression } from "@grampro/headless-helpers";
 
 export default function MultiHandles({
   item,
@@ -16,7 +9,39 @@ export default function MultiHandles({
   setRequirementError,
   formRef,
   onChangeEvent,
+  context,
+  updateContext,
 }: MultiSelectHandlesProps) {
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
+  const [isRequired, setIsRequired] = useState<boolean>(false);
+
+  // Evaluate expression with memoization
+  const evaluateCondition = useCallback(
+    (expression: string | boolean | undefined): boolean => {
+      if (typeof expression === "string") {
+        return evaluateExpression(expression, context);
+      }
+      return !!expression;
+    },
+    [context]
+  );
+
+  // Initialize context and handle dynamic states
+  useEffect(() => {
+    if (item?.name && item?.value !== undefined) {
+      updateContext("select", item.name, item.value);
+    }
+
+    const disabled = evaluateCondition(item?.disabled);
+    console.log("disabled", disabled);
+
+    setIsDisabled(disabled);
+
+    // Only set required if not disabled
+    const required = disabled ? false : evaluateCondition(item?.required);
+    setIsRequired(required);
+  }, [item, context, evaluateCondition, updateContext]);
+
   const handleSelect = (value: string[], key: string) => {
     if (formRef && formRef.current) {
       const hiddenInput = formRef.current.querySelector(
@@ -42,7 +67,7 @@ export default function MultiHandles({
       {item?.label && (
         <label htmlFor={item.name} className="font-medium text-sm">
           {item.label}
-          {item.required && <span className="text-red-500">*</span>}
+          {isRequired && <span className="text-red-500">*</span>}
         </label>
       )}
       <MultiSelect
@@ -62,6 +87,7 @@ export default function MultiHandles({
             ? `${item.name} is required`
             : undefined
         }
+        disabled={isDisabled}
       />
     </div>
   );

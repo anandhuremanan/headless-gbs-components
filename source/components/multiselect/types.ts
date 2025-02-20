@@ -8,11 +8,12 @@ export type MultiSelectProps = {
   items?: ItemsProps[] | string;
   lazy?: boolean;
   showSearch?: boolean;
-  onSelect?: (selectedItem: string[]) => void;
+  onSelect?: (selectedItem: string[]) => void | [];
   truncate?: boolean;
   selectedItems?: string[];
   name?: string;
   error?: string;
+  disabled?: boolean;
 };
 
 export type MultiSelectHandle = {

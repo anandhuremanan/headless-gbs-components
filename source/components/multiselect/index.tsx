@@ -17,6 +17,7 @@ import type { MultiSelectHandle, MultiSelectProps } from "./types";
 import {
   useMultiSelectState,
   useClickOutside,
+  applyScrollbarStyles,
 } from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
@@ -34,7 +35,10 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
       selectedItems = [],
       name,
       error,
+      disabled = false,
     } = props;
+
+    applyScrollbarStyles();
 
     const inputRef = useRef<HTMLInputElement>(null);
     const selectRef = useRef<HTMLDivElement>(null);
@@ -78,6 +82,12 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
       return display;
     }, [selected, workingDataSource, placeholder, truncate]);
 
+    const handleClear = () => {
+      if (disabled) return;
+      clearSelected();
+      if (onSelect) onSelect([]);
+    };
+
     useImperativeHandle(
       ref,
       () => ({
@@ -109,8 +119,11 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
         >
           <button
             onClick={togglePopover}
-            className="flex-grow text-sm text-left font-medium"
+            className={`flex-grow text-sm text-left font-medium ${
+              disabled ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             type="button"
+            disabled={disabled}
           >
             {getSelectedDisplay()}
           </button>
@@ -118,14 +131,19 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
             {selected.length > 0 && (
               <button
                 className="flex items-center px-2"
-                onClick={clearSelected}
+                onClick={handleClear}
                 type="button"
               >
                 <Icon elements={x} svgClass={iconClass["grey-common"]} />
               </button>
             )}
             <button onClick={togglePopover} type="button">
-              <Icon elements={upDown} svgClass={iconClass["grey-common"]} />
+              <Icon
+                elements={upDown}
+                svgClass={`${iconClass["grey-common"]} ${
+                  disabled ? "opacity-50" : ""
+                }`}
+              />
             </button>
           </div>
         </div>
@@ -138,7 +156,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
           readOnly
         />
 
-        {showPopover && (
+        {showPopover && !disabled && (
           <div className={popUp["pop-up-style"]}>
             {showSearch && (
               <div className="flex p-2 gap-1 items-center sticky top-0 bg-white border-b dark:bg-black">

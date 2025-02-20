@@ -1,3 +1,7 @@
+export type Option = {
+  value: string;
+  label: string;
+};
 export interface FormElement extends HTMLFormElement {
   [key: string]: any;
 }
@@ -26,39 +30,15 @@ export type FormItem = {
   };
 };
 
-interface DependencyConfig {
-  source: string;
-  parent?: string;
-  dataStructure: any;
-}
-
 export type FormRendererProps = {
   onSubmit?: (formData: FormData) => void;
   sourceData?: FormItem[] | undefined;
   formFormationClass?: string;
   formParentClass?: string;
-  dependencyConfig?: Record<string, DependencyConfig>;
 };
 
-export type SelectHandlesProps = {
-  item?: FormItem;
-  requirementError: string[];
-  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
-  formRef?: React.RefObject<HTMLFormElement | null>;
-  dependencyMap?: Record<
-    string,
-    {
-      source: string;
-      parent?: string;
-      dataStructure: any;
-    }
-  >;
-};
-
-export type Option = {
-  value: string;
-  label: string;
-};
+// Handler Props Starts here
+export type FieldValue = string | boolean | number | null;
 
 export type CheckboxHandlesProps = {
   item?: FormItem;
@@ -77,10 +57,59 @@ export type CheckboxHandlesProps = {
   ) => void;
 };
 
-export type FieldValue = string | boolean | number | null;
-
 export interface FormContext {
   [componentName: string]: {
     [fieldName: string]: FieldValue;
   };
 }
+
+export type InputHandlesProps = {
+  item?: FormItem;
+  requirementError: string[];
+  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
+  onChangeEvent?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  formRef: React.RefObject<HTMLFormElement | null>;
+  context: FormContext;
+  updateContext: (
+    componentName: string,
+    fieldName: string,
+    value: FieldValue
+  ) => void;
+};
+
+export type DatePickerHandlesProps = {
+  item?: FormItem;
+  requirementError: string[];
+  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
+  formRef?: React.RefObject<HTMLFormElement | null>;
+  onChangeEvent?: (event: any) => void;
+};
+
+export type SelectHandlesProps = {
+  item?: FormItem;
+  requirementError: string[];
+  setRequirementError: React.Dispatch<React.SetStateAction<string[]>>;
+  formRef: React.RefObject<HTMLFormElement | null>;
+  onChangeEvent?: (event: any) => void;
+  context: FormContext;
+  updateContext: (
+    componentName: string,
+    fieldName: string,
+    value: FieldValue
+  ) => void;
+};
+
+export type MultiSelectHandlesProps = {
+  item?: FormItem;
+  requirementError: string[];
+  setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
+  formRef?: React.RefObject<HTMLFormElement | null>;
+  onChangeEvent?: (event: any) => void;
+  context: FormContext;
+  updateContext: (
+    componentName: string,
+    fieldName: string,
+    value: FieldValue
+  ) => void;
+};
+// Handler Props Ends here

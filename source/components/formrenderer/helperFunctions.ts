@@ -20,3 +20,18 @@ export const formDataToObject = (formData: FormData) => {
   });
   return obj;
 };
+
+export const validateInput = (value: string, type?: string): string | null => {
+  if (!value) return null;
+
+  switch (type) {
+    case "email":
+      return validateEmail(value) ? null : "Invalid email format";
+    case "tel":
+      return validatePhoneNumber(value)
+        ? null
+        : "Invalid phone number. Must be 10 digits.";
+    default:
+      return null;
+  }
+};

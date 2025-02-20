@@ -22,6 +22,7 @@ import {
   useSelectState,
   useSelectData,
   useClickOutside,
+  applyScrollbarStyles,
 } from "@grampro/headless-helpers";
 
 const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
@@ -36,7 +37,10 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
     selectedItem: initialSelectedItem,
     error = undefined,
     onFiltering,
+    disabled = false,
   } = props;
+
+  applyScrollbarStyles();
 
   const {
     showPopover,
@@ -90,6 +94,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   );
 
   const handleClear = () => {
+    if (disabled) return;
     clearSelected();
     if (onSelect) onSelect(undefined);
   };
@@ -110,14 +115,20 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
         <button
           className={`${error ? primary["error-border"] : "border"} ${
             selectStyle["select-button"]
-          }`}
+          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           onClick={togglePopover}
           type="button"
+          disabled={disabled}
         >
           {selectedDisplay || placeholder}
-          <Icon elements={upDown} svgClass={iconClass["grey-common"]} />
+          <Icon
+            elements={upDown}
+            svgClass={`${iconClass["grey-common"]} ${
+              disabled ? "opacity-50" : ""
+            }`}
+          />
         </button>
-        {selectedDisplay && (
+        {selectedDisplay && !disabled && (
           <button
             className={selectStyle["selectedDisplay-Button"]}
             onClick={handleClear}
@@ -130,7 +141,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
 
       <input type="hidden" name={name} value={selectedItem || ""} readOnly />
 
-      {showPopover && (
+      {showPopover && !disabled && (
         <div className={popUp["pop-up-style"]}>
           {showSearch && (
             <div className={selectStyle["input-parent"]}>
@@ -141,7 +152,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
                 name="search"
                 id="search"
                 placeholder="Search a value"
-                className="w-full outline-none dark:bg-black"
+                className="w-full outline-none"
                 ref={inputRef}
                 value={searchTerm}
                 onChange={(e) => {

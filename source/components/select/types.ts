@@ -14,6 +14,7 @@ export type SelectProps = {
   onSelect?: (selectedItem: string | undefined) => void;
   selectedItem?: string;
   onFiltering?: (searchTerm: string) => void;
+  disabled?: boolean;
 };
 
 export type SelectHandle = {
