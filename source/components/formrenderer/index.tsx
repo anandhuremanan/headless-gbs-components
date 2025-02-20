@@ -1,39 +1,19 @@
+/**
+ * Copyright (c) Grampro Business Services and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 import React, { useRef, useState, FormEvent } from "react";
 import { useFormContext } from "@grampro/headless-helpers";
-import InputHandles from "./componentHandles/InputHandles";
-import SelectHandles from "./componentHandles/SelectHandles";
-import MultiHandles from "./componentHandles/MultiHandles";
-import DatePickerHandles from "./componentHandles/DatePickerHandles";
-import CheckboxHandles from "./componentHandles/CheckBoxHandles";
 import { FormItem, FormRendererProps } from "./types";
-
-// Component mapping
-const COMPONENT_MAP = {
-  input: InputHandles,
-  select: SelectHandles,
-  "multi-select": MultiHandles,
-  datepicker: DatePickerHandles,
-  checkbox: CheckboxHandles,
-} as const;
-
-const validateField = (
-  field: HTMLInputElement | null,
-  item: FormItem
-): boolean => {
-  if (!item.required || !item.name || field?.disabled) {
-    return true;
-  }
-  // Explicitly check for null and empty value
-  if (!field) {
-    return false;
-  }
-  return field.value.trim() !== "";
-};
+import { COMPONENT_MAP, validateField } from "./helperFunctions";
 
 const FormRenderer: React.FC<FormRendererProps> = ({
   onSubmit,
   sourceData = [],
-  formFormationClass = "grid grid-cols-1 text-left gap-4",
+  formFormationClass = "grid grid-cols-1 gap-2",
   formParentClass = "w-96",
 }) => {
   const formRef = useRef<HTMLFormElement>(null);

@@ -154,6 +154,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
           name={name}
           value={JSON.stringify(selected) || ""}
           readOnly
+          disabled={disabled}
         />
 
         {showPopover && !disabled && (

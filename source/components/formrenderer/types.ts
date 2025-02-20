@@ -89,6 +89,12 @@ export type DatePickerHandlesProps = {
   setRequirementError?: React.Dispatch<React.SetStateAction<string[]>>;
   formRef?: React.RefObject<HTMLFormElement | null>;
   onChangeEvent?: (event: any) => void;
+  context: FormContext;
+  updateContext: (
+    componentName: string,
+    fieldName: string,
+    value: FieldValue
+  ) => void;
 };
 
 export type SelectHandlesProps = {

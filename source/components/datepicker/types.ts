@@ -8,4 +8,5 @@ export type DatePickerProps = {
   onDateChange?: (date: Date) => void;
   name?: string;
   error?: string;
+  disabled?: boolean;
 };

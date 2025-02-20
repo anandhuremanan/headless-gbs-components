@@ -139,7 +139,13 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
         {error && <p className={primary["error-primary"]}>{error}</p>}
       </div>
 
-      <input type="hidden" name={name} value={selectedItem || ""} readOnly />
+      <input
+        type="hidden"
+        name={name}
+        value={selectedItem || ""}
+        readOnly
+        disabled={disabled}
+      />
 
       {showPopover && !disabled && (
         <div className={popUp["pop-up-style"]}>

@@ -29,6 +29,7 @@ export const DatePicker = ({
   name,
   error,
   placeholder = "Select a date",
+  disabled = false,
 }: DatePickerProps) => {
   applyScrollbarStyles();
 
@@ -61,6 +62,7 @@ export const DatePicker = ({
     setCurrentMonth,
     setCurrentYear
   );
+
   useClickOutside(
     dateRef as React.RefObject<HTMLElement>,
     () => {
@@ -124,7 +126,10 @@ export const DatePicker = ({
         onClick={toggleDatepicker}
         className={`${
           error ? primary["error-border"] : "border"
-        } p-2 rounded-lg w-full flex items-center gap-2 dark:text-white`}
+        } p-2 rounded-lg w-full flex items-center gap-2 dark:text-white ${
+          disabled ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+        disabled={disabled}
       >
         <Icon
           dimensions={{ width: "20", height: "20" }}
@@ -144,7 +149,7 @@ export const DatePicker = ({
         readOnly
       />
 
-      {showDatepicker && (
+      {showDatepicker && !disabled && (
         <div className="absolute z-10 bg-white border border-gray-300 shadow-lg mt-1 w-full rounded dark:bg-black dark:text-white px-2">
           <div className="flex justify-between items-center p-2">
             <button

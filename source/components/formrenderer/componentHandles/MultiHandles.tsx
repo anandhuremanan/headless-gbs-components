@@ -29,11 +29,10 @@ export default function MultiHandles({
   // Initialize context and handle dynamic states
   useEffect(() => {
     if (item?.name && item?.value !== undefined) {
-      updateContext("select", item.name, item.value);
+      updateContext("multi-select", item.name, item.value);
     }
 
     const disabled = evaluateCondition(item?.disabled);
-    console.log("disabled", disabled);
 
     setIsDisabled(disabled);
 

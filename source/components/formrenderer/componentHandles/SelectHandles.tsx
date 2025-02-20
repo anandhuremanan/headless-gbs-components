@@ -34,7 +34,6 @@ export default function SelectHandles({
     }
 
     const disabled = evaluateCondition(item?.disabled);
-    console.log("disabled", disabled);
 
     setIsDisabled(disabled);
 
