@@ -9,7 +9,13 @@ export interface FormElement extends HTMLFormElement {
 export type FormItem = {
   id?: string;
   name?: string;
-  component?: string;
+  component?:
+    | "input"
+    | "select"
+    | "multi-select"
+    | "datepicker"
+    | "checkbox"
+    | "button";
   type?: string;
   required?: boolean | string;
   placeholder?: string;
