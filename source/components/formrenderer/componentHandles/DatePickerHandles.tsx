@@ -86,6 +86,7 @@ export default function DatePickerHandles({
             : undefined
         }
         selectedDateValue={item?.value ? new Date(item.value) : undefined}
+        disabled={isDisabled}
       />
     </div>
   );

@@ -25,6 +25,10 @@ const CONFIG = {
     "MaterialInput",
     "ContextMenu",
   ],
+  // Define component dependencies
+  dependencies: {
+    FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
+  },
   frameworks: {
     next: {
       name: "Next.js",
@@ -55,6 +59,11 @@ const copyCommonFiles = async (destPath) => {
   }
 };
 
+const checkComponentExists = (component, destPath) => {
+  const componentPath = path.join(destPath, component.toLowerCase());
+  return fs.existsSync(componentPath);
+};
+
 const copyComponent = async (component, destPath) => {
   try {
     const componentSrc = path.join(SOURCE_PATH, component.toLowerCase());
@@ -66,11 +75,42 @@ const copyComponent = async (component, destPath) => {
 
     await fs.copy(componentSrc, componentDest, { overwrite: true });
     console.log(`✓ Component ${component} installed successfully`);
-    console.log(`\nFor documentation visit: ${CONFIG.docs}`);
   } catch (error) {
     console.error(`Error installing component ${component}:`, error.message);
     process.exit(1);
   }
+};
+
+const installComponentWithDependencies = async (component, destPath) => {
+  // Get dependencies for the component
+  const dependencies = CONFIG.dependencies[component] || [];
+  const componentsToInstall = new Set([component, ...dependencies]);
+
+  // Check which components need to be installed
+  const pendingInstalls = Array.from(componentsToInstall).filter(
+    (comp) => !checkComponentExists(comp, destPath)
+  );
+
+  if (pendingInstalls.length === 0) {
+    console.log(
+      `✓ ${component} and all its dependencies are already installed.`
+    );
+    return;
+  }
+
+  // Install all pending components
+  for (const comp of pendingInstalls) {
+    await copyComponent(comp, destPath);
+  }
+
+  if (dependencies.length > 0) {
+    console.log(`\nInstalled dependencies for ${component}:`);
+    dependencies.forEach((dep) => {
+      console.log(`- ${dep}`);
+    });
+  }
+
+  console.log(`\nFor documentation visit: ${CONFIG.docs}`);
 };
 
 const detectFramework = () => {
@@ -110,7 +150,12 @@ const main = async () => {
   // List components if requested
   if (argv.list) {
     console.log("\nAvailable components:");
-    CONFIG.components.forEach((comp) => console.log(`- ${comp}`));
+    CONFIG.components.forEach((comp) => {
+      const deps = CONFIG.dependencies[comp]
+        ? ` (requires: ${CONFIG.dependencies[comp].join(", ")})`
+        : "";
+      console.log(`- ${comp}${deps}`);
+    });
     return;
   }
 
@@ -157,8 +202,8 @@ const main = async () => {
     await copyCommonFiles(destPath);
   }
 
-  // Copy the requested component
-  await copyComponent(component, destPath);
+  // Install component and its dependencies
+  await installComponentWithDependencies(component, destPath);
 };
 
 main().catch((error) => {
