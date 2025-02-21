@@ -115,7 +115,10 @@ const installComponentWithDependencies = async (component, destPath) => {
 
 const detectFramework = () => {
   // Check for Next.js
-  if (fs.existsSync(path.join(process.cwd(), "next.config.js"))) {
+  if (
+    fs.existsSync(path.join(process.cwd(), "next.config.ts")) ||
+    fs.existsSync(path.join(process.cwd(), "next.config.js"))
+  ) {
     return "next";
   }
   // Check for Vite
