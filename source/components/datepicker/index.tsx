@@ -54,10 +54,6 @@ export const DatePicker = ({
     hasMounted,
   } = useDatePickerState(selectedDateValue || null);
 
-  useEffect(() => {
-    console.log("selectedDateValue", selectedDate);
-  }, [selectedDate]);
-
   const { prevMonth, nextMonth } = useYearMonthNavigation(
     currentMonth,
     currentYear,
@@ -124,13 +120,13 @@ export const DatePicker = ({
   }
 
   return (
-    <div className="relative inline-block w-full dark:bg-black" ref={dateRef}>
+    <div className="relative inline-block w-full" ref={dateRef}>
       <button
         type="button"
         onClick={toggleDatepicker}
         className={`${
           error ? primary["error-border"] : "border"
-        } p-2 rounded-lg w-full flex items-center gap-2 dark:text-white ${
+        } p-2 rounded-lg w-full flex items-center gap-2 dark:text-white dark:bg-black ${
           disabled ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={disabled}
@@ -243,7 +239,7 @@ export const DatePicker = ({
                       onClick={() => selectYearMonth(currentYear, index)}
                       className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
                         index === currentMonth
-                          ? "bg-black text-white hover:bg-blue-600"
+                          ? "bg-black text-white dark:bg-zinc-500"
                           : ""
                       }`}
                     >
@@ -262,7 +258,7 @@ export const DatePicker = ({
                       onClick={() => selectYearMonth(year, currentMonth)}
                       className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
                         year === currentYear
-                          ? "bg-black text-white hover:bg-blue-600"
+                          ? "bg-black text-white dark:bg-zinc-500"
                           : ""
                       }`}
                     >
@@ -302,7 +298,7 @@ export const DatePicker = ({
                     disabled={isDisabled}
                     className={`text-center p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
                       isSelected
-                        ? "bg-black text-white hover:bg-gray-800 dark:bg-white"
+                        ? "bg-black text-white hover:bg-gray-800 dark:bg-zinc-500"
                         : ""
                     } ${
                       isDisabled
