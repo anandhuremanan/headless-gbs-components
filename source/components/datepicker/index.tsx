@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   useDatePickerState,
   useYearMonthNavigation,
@@ -17,7 +17,7 @@ import {
 import Icon from "../icon/Icon";
 import { calender, down, leftArrows, rightArrows } from "../icon/iconPaths";
 import type { DatePickerProps } from "./types";
-import { primary } from "../globalStyle";
+import { iconClass, popUp, primary } from "../globalStyle";
 
 export const DatePicker = ({
   selectedDateValue,
@@ -53,6 +53,10 @@ export const DatePicker = ({
     setTempSelectedDate,
     hasMounted,
   } = useDatePickerState(selectedDateValue || null);
+
+  useEffect(() => {
+    console.log("selectedDateValue", selectedDate);
+  }, [selectedDate]);
 
   const { prevMonth, nextMonth } = useYearMonthNavigation(
     currentMonth,
@@ -134,10 +138,12 @@ export const DatePicker = ({
         <Icon
           dimensions={{ width: "20", height: "20" }}
           elements={calender}
-          svgClass={"stroke-gray-500 fill-none dark:stroke-white"}
+          svgClass={iconClass["grey-common"]}
         />
         <span className={!selectedDate ? "text-gray-400" : ""}>
-          {selectedDate ? selectedDate.toLocaleDateString() : placeholder}
+          {selectedDate
+            ? selectedDate.toLocaleDateString("en-GB")
+            : placeholder}
         </span>
       </button>
       {error && <p className={primary["error-primary"]}>{error}</p>}
@@ -150,7 +156,7 @@ export const DatePicker = ({
       />
 
       {showDatepicker && !disabled && (
-        <div className="absolute z-10 bg-white border border-gray-300 shadow-lg mt-1 w-full rounded dark:bg-black dark:text-white px-2">
+        <div className={popUp["pop-up-style"]}>
           <div className="flex justify-between items-center p-2">
             <button
               type="button"

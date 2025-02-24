@@ -10,12 +10,13 @@ import { twMerge } from "tailwind-merge";
 import Icon from "../icon/Icon";
 import { eye } from "../icon/iconPaths";
 import type { InputProps } from "./types";
+import { iconClass, inputStyles, primary } from "../globalStyle";
 
 export const Input = ({
   OTPField = false,
   OTPValue = "",
   OTPLength = 4,
-  OTPClass = "w-8 h-10 m-1 border border-gray-600 rounded-lg text-center text-black",
+  OTPClass = inputStyles.otp,
   onOTPValueChange,
   error = undefined,
   ...props
@@ -24,11 +25,6 @@ export const Input = ({
   const [showPassword, setShowPassword] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const defaultClass = `bg-gray-100 p-2 rounded-lg ${
-    error ? "border border-red-600" : ""
-  }`;
-
-  // This will update the OTP Field Value
   const updateOtpValue = (
     index: number,
     e: React.ChangeEvent<HTMLInputElement>
@@ -47,7 +43,6 @@ export const Input = ({
     }
   };
 
-  // Function for handling keyboard navigation in OTP Field
   const handleKeydown = (
     index: number,
     e: React.KeyboardEvent<HTMLInputElement>
@@ -61,7 +56,6 @@ export const Input = ({
     }
   };
 
-  // Password Feild Toggler
   const toggleTypeForPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -69,34 +63,38 @@ export const Input = ({
   return (
     <div>
       {!OTPField ? (
-        <div className="text-input-container w-full relative">
-          <input
-            className={twMerge(
-              defaultClass,
-              "w-full text-black focus:outline-blue-400"
+        <div className="text-input-container w-full relative flex flex-col">
+          <div className="relative">
+            <input
+              className={twMerge(
+                inputStyles.default,
+                error ? inputStyles.error : "",
+                "w-full text-black pr-10"
+              )}
+              {...props}
+              type={
+                props.type === "password" && showPassword ? "text" : props.type
+              }
+            />
+            {props.type === "password" && (
+              <button
+                type="button"
+                className="absolute inset-y-0 right-2 flex items-center"
+                onClick={toggleTypeForPassword}
+              >
+                <Icon
+                  elements={eye}
+                  svgClass={
+                    error ? iconClass["error-icon"] : iconClass["grey-common"]
+                  }
+                />
+              </button>
             )}
-            {...props}
-            type={
-              props.type === "password" && showPassword ? "text" : props.type
-            }
-          />
-          {/* If Type is password, this will show a password visible toggle button */}
-          {props.type && props.type === "password" && (
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-2"
-              onClick={toggleTypeForPassword}
-            >
-              <Icon
-                elements={eye}
-                svgClass={"h-5 w-5 stroke-gray-500 fill-none dark:stroke-white"}
-              />
-            </button>
-          )}
-          {error && <div className="text-xs text-red-500">{error}</div>}
+          </div>
+          {error && <div className={primary["error-primary"]}>{error}</div>}
         </div>
       ) : (
-        <div className="otp-container">
+        <div className={inputStyles.otpContainer}>
           {Array(OTPLength)
             .fill("")
             .map((_, index) => (
