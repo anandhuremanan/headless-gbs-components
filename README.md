@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v0.0.56)
+# GBS Building Blocks 2.0 (v0.0.58)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -6,11 +6,10 @@ Latest and upgraded version of GBS building blocks with headless UI and removed 
 
 For detailed documentation on usage and props, Please visit: [Building Block Documentation v2.0](https://blackmax-designs.gitbook.io/building-block-v2.0)
 
-## What's New 🎉 (Ver 0.0.56)
+## What's New 🎉 (Ver 0.0.58)
 
-- Updated for more general installation methods
-- Fixed bug in Framework detection for more accuracy
-- Style Update
+- Updated for bug fixes.
+- New component "Skeleton" Added.
 
 ## Authors
 

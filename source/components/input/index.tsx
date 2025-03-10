@@ -50,9 +50,29 @@ export const Input = ({
     if (e.key === "Backspace" && otpValues[index] === "" && index > 0) {
       inputRefs.current[index - 1]?.focus();
     } else if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
       inputRefs.current[index - 1]?.focus();
+      setTimeout(() => {
+        if (inputRefs.current[index - 1]) {
+          const inputEl = inputRefs.current[index - 1];
+          if (inputEl) {
+            const length = inputEl.value.length;
+            inputEl.setSelectionRange(length, length);
+          }
+        }
+      }, 0);
     } else if (e.key === "ArrowRight" && index < OTPLength - 1) {
+      e.preventDefault();
       inputRefs.current[index + 1]?.focus();
+      setTimeout(() => {
+        if (inputRefs.current[index + 1]) {
+          const inputEl = inputRefs.current[index + 1];
+          if (inputEl) {
+            const length = inputEl.value.length;
+            inputEl.setSelectionRange(length, length);
+          }
+        }
+      }, 0);
     }
   };
 

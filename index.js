@@ -24,6 +24,7 @@ const CONFIG = {
     "FormRenderer",
     "MaterialInput",
     "ContextMenu",
+    "Skeleton",
   ],
   // Define component dependencies
   dependencies: {
