@@ -9,7 +9,8 @@ For detailed documentation on usage and props, Please visit: [Building Block Doc
 ## What's New 🎉 (Ver 0.0.58)
 
 - Updated for bug fixes.
-- New component "Skeleton" Added.
+- New component "Skeleton" & "Navbar" Added.
+
 
 ## Authors
 

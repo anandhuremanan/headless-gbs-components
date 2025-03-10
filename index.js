@@ -25,6 +25,7 @@ const CONFIG = {
     "MaterialInput",
     "ContextMenu",
     "Skeleton",
+    "Navbar",
   ],
   // Define component dependencies
   dependencies: {
