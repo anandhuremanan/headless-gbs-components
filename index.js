@@ -26,6 +26,7 @@ const CONFIG = {
     "ContextMenu",
     "Skeleton",
     "Navbar",
+    "DataGrid",
   ],
   // Define component dependencies
   dependencies: {
@@ -95,7 +96,10 @@ const installComponentWithDependencies = async (component, destPath) => {
 
   if (pendingInstalls.length === 0) {
     console.log(
-      `✓ ${component} and all its dependencies are already installed.`
+      `✓ ${component} and all its dependencies are already installed. ${
+        component === "Grid" &&
+        "This Version of Grid will be deprecated soon. Please Install The New Data Grid Component"
+      }`
     );
     return;
   }
