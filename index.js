@@ -77,7 +77,12 @@ const copyComponent = async (component, destPath) => {
     }
 
     await fs.copy(componentSrc, componentDest, { overwrite: true });
-    console.log(`✓ Component ${component} installed successfully`);
+    console.log(
+      `✓ Component ${component} installed successfully ${
+        component === "Grid" &&
+        "This Version of Grid will be deprecated soon. Please Install The New Data Grid Component"
+      }`
+    );
   } catch (error) {
     console.error(`Error installing component ${component}:`, error.message);
     process.exit(1);
@@ -96,10 +101,7 @@ const installComponentWithDependencies = async (component, destPath) => {
 
   if (pendingInstalls.length === 0) {
     console.log(
-      `✓ ${component} and all its dependencies are already installed. ${
-        component === "Grid" &&
-        "This Version of Grid will be deprecated soon. Please Install The New Data Grid Component"
-      }`
+      `✓ ${component} and all its dependencies are already installed.`
     );
     return;
   }
