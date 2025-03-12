@@ -421,6 +421,11 @@ export const GridMemoised = forwardRef((props: GridProps, ref) => {
                   onChange={handleSearchInput}
                   placeholder="search"
                   className="outline-none p-2 text-sm font-normal bg-gray-50 rounded-lg max-sm:hidden dark:bg-black dark:border dark:text-white"
+                  onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (event.key === "Enter") {
+                      handleSearch(searchParam);
+                    }
+                  }}
                 />
                 <button
                   className="bg-white border rounded-lg text-black w-10 flex items-center justify-center dark:bg-black dark:text-white"
