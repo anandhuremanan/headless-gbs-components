@@ -87,7 +87,7 @@ export const GridProvider: React.FC<{
     onSelectRow,
     isFetching,
     tableHeaderStyle = "text-left px-2 py-4 bg-zinc-200 dark:bg-zinc-800",
-    gridContainerClass = "flex flex-col min-w-screen rounded-md overflow-hidden",
+    gridContainerClass = "flex flex-col rounded-md overflow-hidden",
     gridColumnStyleSelectAll = "px-4 text-xs",
     gridColumnStyle = "p-2 text-xs",
     rowChange = () => {},

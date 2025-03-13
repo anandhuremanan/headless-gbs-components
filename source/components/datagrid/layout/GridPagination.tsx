@@ -23,7 +23,7 @@ const Pagination = () => {
   } = useGridPagination();
 
   return (
-    <div className="flex flex-wrap justify-between items-center text-xs px-2 py-4 bg-white dark:bg-zinc-900 gap-2 md:gap-4">
+    <div className="flex flex-wrap justify-between items-center text-xs px-2 py-4 bg-zinc-100 dark:bg-zinc-900 gap-2 md:gap-4">
       <div className="flex flex-1 space-x-1">
         <button onClick={goToFirstPage} disabled={currentPage === 0}>
           <Icon

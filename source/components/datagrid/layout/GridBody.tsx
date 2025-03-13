@@ -148,7 +148,14 @@ const GridBody = () => {
                   </td>
                 )}
                 {workingColumns.map((column, colIndex) => (
-                  <td key={colIndex} className={gridColumnStyle}>
+                  <td
+                    key={colIndex}
+                    className={gridColumnStyle}
+                    style={{
+                      width: column.width ? `${column.width}px` : "auto",
+                      maxWidth: column.width ? `${column.width}px` : "auto",
+                    }}
+                  >
                     {renderCell(rowData, column, rowIndex)}
                   </td>
                 ))}

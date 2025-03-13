@@ -9,7 +9,7 @@
  */
 
 import { GridMemoised as GridComponent } from "./layout";
-import React, { memo } from "react";
+import { memo } from "react";
 
 const Grid = memo(GridComponent, (prevProps, nextProps) => {
   // Custom comparison function
