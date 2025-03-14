@@ -27,6 +27,7 @@ const CONFIG = {
     "Skeleton",
     "Navbar",
     "DataGrid",
+    "BreadCrumb",
   ],
   // Define component dependencies
   dependencies: {
