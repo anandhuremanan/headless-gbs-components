@@ -33,20 +33,11 @@ const CONFIG = {
   dependencies: {
     FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
   },
-  frameworks: {
-    next: {
-      name: "Next.js",
-      path: ["app", "component-lib"],
-    },
-    vite: {
-      name: "Vite",
-      path: ["src", "component-lib"],
-    },
-  },
   docs: "https://blackmax-designs.gitbook.io/building-block-v2.0",
 };
 
 const SOURCE_PATH = path.join(__dirname, "source", "components");
+const DEFAULT_DEST_PATH = path.join(process.cwd(), "component-lib");
 
 const copyCommonFiles = async (destPath) => {
   const commonFiles = [
@@ -80,8 +71,9 @@ const copyComponent = async (component, destPath) => {
     await fs.copy(componentSrc, componentDest, { overwrite: true });
     console.log(
       `✓ Component ${component} installed successfully ${
-        component === "Grid" &&
-        "This Version of Grid will be deprecated soon. Please Install The New Data Grid Component"
+        component === "Grid"
+          ? "This Version of Grid will be deprecated soon. Please Install The New Data Grid Component"
+          : ""
       }`
     );
   } catch (error) {
@@ -122,34 +114,11 @@ const installComponentWithDependencies = async (component, destPath) => {
   console.log(`\nFor documentation visit: ${CONFIG.docs}`);
 };
 
-const detectFramework = () => {
-  // Check for Next.js
-  if (
-    fs.existsSync(path.join(process.cwd(), "next.config.ts")) ||
-    fs.existsSync(path.join(process.cwd(), "next.config.js"))
-  ) {
-    return "next";
-  }
-  // Check for Vite
-  if (
-    fs.existsSync(path.join(process.cwd(), "vite.config.js")) ||
-    fs.existsSync(path.join(process.cwd(), "vite.config.ts"))
-  ) {
-    return "vite";
-  }
-  return null;
-};
-
 const main = async () => {
   const argv = yargs(hideBin(process.argv))
     .option("add", {
       alias: "a",
       describe: "Component to install",
-      type: "string",
-    })
-    .option("framework", {
-      alias: "f",
-      describe: "Framework to use (next or vite)",
       type: "string",
     })
     .option("list", {
@@ -185,28 +154,8 @@ const main = async () => {
     process.exit(1);
   }
 
-  // Detect or get framework
-  let framework = argv.framework;
-  if (!framework) {
-    framework = detectFramework();
-    if (!framework) {
-      console.error(
-        "Could not detect framework. Please specify using -f or --framework"
-      );
-      process.exit(1);
-    }
-  }
-
-  if (!CONFIG.frameworks[framework]) {
-    console.error(`Unsupported framework: ${framework}`);
-    process.exit(1);
-  }
-
-  // Create destination directory
-  const destPath = path.join(
-    process.cwd(),
-    ...CONFIG.frameworks[framework].path
-  );
+  // Create destination directory in project root
+  const destPath = DEFAULT_DEST_PATH;
   await fs.ensureDir(destPath);
 
   // Copy common files if they don't exist
