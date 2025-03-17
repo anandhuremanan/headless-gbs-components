@@ -12,19 +12,19 @@ import { x } from "../icon/iconPaths";
 import { ModalProps } from "./types";
 
 const defaultClasses = {
-  modal:
-    "fixed z-10 overflow-y-auto inset-0 flex items-center justify-center bg-gray-500 bg-opacity-75 transition-opacity",
+  modal: "fixed z-10 overflow-y-auto inset-0 flex items-center justify-center",
   modalContent: "bg-white m-10 md:w-[80vh] rounded-xl relative",
   modalTitle:
     "p-4 text-lg leading-6 font-medium text-gray-900 flex justify-between items-center",
   closeButton:
     "p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300",
-  closeIcon: "h-5 w-5 stroke-gray-500 fill-none dark:stroke-white",
+  closeIcon: "h-5 w-5 stroke-gray-500 fill-none",
 };
 
 export const Modal = memo(
   ({
     showModal = false,
+    setShowModal,
     modalTitle = "Modal Title",
     modalClass = defaultClasses.modal,
     modalContentClass = defaultClasses.modalContent,
@@ -33,7 +33,6 @@ export const Modal = memo(
     classModalTitle = "",
     children,
     showCloseButton = false,
-    onClose,
     dismissible = false,
     titleId = "modal-title",
     closeButtonContent,
@@ -45,22 +44,27 @@ export const Modal = memo(
     // Handle ESC key press to close modal
     const handleEscKey = useCallback(
       (event: KeyboardEvent) => {
-        if (event.key === "Escape" && showModal && onClose) {
-          onClose();
+        if (event.key === "Escape" && showModal && dismissible) {
+          setShowModal(false);
         }
       },
-      [showModal, onClose]
+      [showModal, dismissible, setShowModal]
     );
 
     // Handle click outside modal to close
     const handleOutsideClick = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (onClose && e.target === e.currentTarget && dismissible) {
-          onClose();
+        if (e.target === e.currentTarget && dismissible) {
+          setShowModal(false);
         }
       },
-      [onClose, dismissible]
+      [dismissible, setShowModal]
     );
+
+    // Handle close button click
+    const handleClose = useCallback(() => {
+      setShowModal(false);
+    }, [setShowModal]);
 
     // Manage focus trap and keyboard events
     useEffect(() => {
@@ -110,9 +114,9 @@ export const Modal = memo(
         >
           <div className={twMerge(modalTitleClass, classModalTitle)}>
             <h2 id={titleId}>{modalTitle}</h2>
-            {showCloseButton && onClose && (
+            {showCloseButton && (
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className={defaultClasses.closeButton}
                 aria-label="Close modal"
                 type="button"

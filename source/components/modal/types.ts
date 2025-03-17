@@ -1,5 +1,6 @@
 export type ModalProps = {
   showModal?: boolean;
+  setShowModal: (show: boolean) => void;
   modalTitle?: string;
   modalClass?: string;
   modalContentClass?: string;
@@ -8,7 +9,6 @@ export type ModalProps = {
   classModalTitle?: string;
   children: React.ReactNode;
   showCloseButton?: boolean;
-  onClose?: () => void;
   dismissible?: boolean;
   titleId?: string;
   closeButtonContent?: React.ReactNode;

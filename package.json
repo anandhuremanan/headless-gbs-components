@@ -1,6 +1,6 @@
 {
   "name": "gbs-add-block",
-  "version": "0.0.66",
+  "version": "0.0.67",
   "description": "React Component Library",
   "files": [
     "index.js",
