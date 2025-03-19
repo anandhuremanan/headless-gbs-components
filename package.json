@@ -2,6 +2,7 @@
   "name": "gbs-add-block",
   "version": "0.0.68",
   "description": "React Component Library",
+  "type": "module",
   "files": [
     "index.js",
     "source"
@@ -19,7 +20,6 @@
   "author": "Anandhu Remanan",
   "license": "ISC",
   "dependencies": {
-    "fs-extra": "^11.2.0",
     "path": "^0.12.7",
     "yargs": "^17.7.2"
   },
