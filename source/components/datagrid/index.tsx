@@ -11,7 +11,7 @@
 import { GridMemoised as GridComponent } from "./layout";
 import { memo } from "react";
 
-const Grid = memo(GridComponent, (prevProps, nextProps) => {
+const DataGrid = memo(GridComponent, (prevProps, nextProps) => {
   // Custom comparison function
   return (
     prevProps.dataSource === nextProps.dataSource &&
@@ -23,4 +23,4 @@ const Grid = memo(GridComponent, (prevProps, nextProps) => {
   );
 });
 
-export { Grid };
+export { DataGrid };

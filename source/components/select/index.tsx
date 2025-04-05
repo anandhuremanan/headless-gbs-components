@@ -15,7 +15,7 @@ import React, {
 } from "react";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
-import type { SelectHandle, SelectProps } from "./types";
+import type { ItemsProps, SelectHandle, SelectProps } from "./types";
 import { selectStyle } from "./style";
 import { iconClass, popUp, primary } from "../globalStyle";
 import {
@@ -23,6 +23,7 @@ import {
   useSelectData,
   useClickOutside,
   applyScrollbarStyles,
+  useKeyboardNavigation,
 } from "@grampro/headless-helpers";
 
 const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
@@ -71,6 +72,26 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
     setShowPopover(false)
   );
 
+  // Update the handleSelect to accept a SelectItem
+  const handleSelect = useCallback(
+    (item: ItemsProps) => {
+      setSelectedItem(item.value);
+      setShowPopover(false);
+      setSearchTerm("");
+      if (onSelect) onSelect(item.value);
+    },
+    [onSelect, setSelectedItem, setShowPopover, setSearchTerm]
+  );
+
+  // Set up keyboard navigation with the correct item type
+  const { focusedIndex, setFocusedIndex, itemRefs, handleKeyDown } =
+    useKeyboardNavigation<ItemsProps>({
+      items: filteredItems,
+      isOpen: showPopover,
+      onSelect: handleSelect,
+      onClose: () => setShowPopover(false),
+    });
+
   useEffect(() => {
     if (showPopover) {
       inputRef.current?.focus();
@@ -82,16 +103,6 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
       setSelectedItem(initialSelectedItem);
     }
   }, [initialSelectedItem, setSelectedItem]);
-
-  const handleSelect = useCallback(
-    (value: string) => {
-      setSelectedItem(value);
-      setShowPopover(false);
-      setSearchTerm("");
-      if (onSelect) onSelect(value);
-    },
-    [onSelect, setSelectedItem, setShowPopover, setSearchTerm]
-  );
 
   const handleClear = () => {
     if (disabled) return;
@@ -110,7 +121,12 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   }));
 
   return (
-    <div className="relative w-full" ref={selectRef} id={id}>
+    <div
+      className="relative w-full mt-2"
+      ref={selectRef}
+      id={id}
+      onKeyDown={handleKeyDown}
+    >
       <div className="w-full relative">
         <button
           className={`${error ? primary["error-border"] : "border"} ${
@@ -164,16 +180,21 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
                   if (onFiltering) onFiltering(e.target.value);
+                  setFocusedIndex(-1);
                 }}
               />
             </div>
           )}
           {filteredItems.length > 0 ? (
-            filteredItems.map(({ value, label }) => (
+            filteredItems.map(({ value, label }, index) => (
               <button
                 key={value}
-                className={selectStyle["filter-button"]}
-                onClick={() => handleSelect(value)}
+                ref={(el: any) => (itemRefs.current[index] = el)}
+                className={`${selectStyle["filter-button"]} ${
+                  focusedIndex === index ? "bg-gray-100" : ""
+                }`}
+                onClick={() => handleSelect({ value, label })}
+                onMouseEnter={() => setFocusedIndex(index)}
               >
                 <Icon
                   elements={check}
