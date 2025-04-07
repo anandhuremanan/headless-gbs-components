@@ -1,17 +1,17 @@
 {
   "name": "gbs-add-block",
-  "version": "0.0.69",
+  "version": "0.0.72",
   "description": "React Component Library",
   "type": "module",
   "files": [
-    "index.js",
+    "index.cjs",
     "source"
   ],
   "engines": {
     "node": ">=17"
   },
   "bin": {
-    "gbs-add-block": "./index.js"
+    "gbs-add-block": "./index.cjs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -20,9 +20,10 @@
   "author": "Anandhu Remanan",
   "license": "ISC",
   "dependencies": {
-    "path": "^0.12.7",
-    "yargs": "^17.7.2"
-  },
+  "fs-extra": "^11.0.4",
+  "path": "^0.12.7",
+  "yargs": "^17.7.2"
+},
   "devDependencies": {
     "@types/fs-extra": "^11.0.4"
   }
