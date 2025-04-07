@@ -11,7 +11,7 @@
     "node": ">=17"
   },
   "bin": {
-    "gbs-add-block": "./index.cjs"
+    "gbs-add-block": "index.cjs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
