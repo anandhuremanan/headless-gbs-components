@@ -15,7 +15,7 @@ import {
   applyScrollbarStyles,
 } from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
-import { calender, down, leftArrows, rightArrows } from "../icon/iconPaths";
+import { calender, down, leftArrows, rightArrows, x } from "../icon/iconPaths";
 import type { DatePickerProps } from "./types";
 import { iconClass, popUp, primary } from "../globalStyle";
 
@@ -52,6 +52,7 @@ export const DatePicker = ({
     tempSelectedDate,
     setTempSelectedDate,
     hasMounted,
+    clearSelected,
   } = useDatePickerState(selectedDateValue || null);
 
   const { prevMonth, nextMonth } = useYearMonthNavigation(
@@ -119,29 +120,45 @@ export const DatePicker = ({
     return null;
   }
 
+  const clearSelectedHandler = () => {
+    clearSelected();
+    if( onDateChange) onDateChange(null);
+  };
+
   return (
     <div className="relative inline-block w-full" ref={dateRef}>
-      <button
-        type="button"
-        onClick={toggleDatepicker}
+      <div
         className={`${
-          error ? primary["error-border"] : "border"
-        } p-2 rounded-lg w-full flex items-center gap-2 dark:text-white dark:bg-black ${
+          error ? primary["error-border"] : "border border-gray-300"
+        } p-2 rounded-lg w-full flex items-center justify-between gap-2  ${
           disabled ? "opacity-50 cursor-not-allowed" : ""
         }`}
-        disabled={disabled}
       >
-        <Icon
-          dimensions={{ width: "20", height: "20" }}
-          elements={calender}
-          svgClass={iconClass["grey-common"]}
-        />
-        <span className={!selectedDate ? "text-gray-400" : ""}>
-          {selectedDate
-            ? selectedDate.toLocaleDateString("en-GB")
-            : placeholder}
-        </span>
-      </button>
+        <button
+          type="button"
+          onClick={toggleDatepicker}
+          disabled={disabled}
+          className="flex items-center gap-2 w-full"
+        >
+          <Icon
+            dimensions={{ width: "20", height: "20" }}
+            elements={calender}
+            svgClass={iconClass["grey-common"]}
+          />
+          <span className={!selectedDate ? "text-gray-400 text-sm" : ""}>
+            {selectedDate
+              ? selectedDate.toLocaleDateString("en-GB")
+              : placeholder}
+          </span>
+        </button>
+
+        {selectedDate && !disabled && (
+          <button onClick={clearSelectedHandler} type="button">
+            <Icon elements={x} svgClass={iconClass["grey-common"]} />
+          </button>
+        )}
+      </div>
+
       {error && <p className={primary["error-primary"]}>{error}</p>}
 
       <input
