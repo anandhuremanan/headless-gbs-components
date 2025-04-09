@@ -8,7 +8,7 @@
 import React, { useState, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import Icon from "../icon/Icon";
-import { eye } from "../icon/iconPaths";
+import { eye, search } from "../icon/iconPaths";
 import type { InputProps } from "./types";
 import { iconClass, inputStyles, primary } from "../globalStyle";
 
@@ -96,6 +96,11 @@ export const Input = ({
                 props.type === "password" && showPassword ? "text" : props.type
               }
             />
+            {props.type === "search" && (
+              <div className="absolute inset-y-0 right-2 flex items-center">
+                <Icon elements={search} svgClass={iconClass["grey-common"]} />
+              </div>
+            )}
             {props.type === "password" && (
               <button
                 type="button"
