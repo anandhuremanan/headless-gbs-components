@@ -13,7 +13,7 @@ import { ModalProps } from "./types";
 
 const defaultClasses = {
   modal:
-    "fixed z-10 overflow-y-auto inset-0 flex items-center justify-center bg-[#2b2426bd]",
+    "fixed z-50 overflow-y-auto inset-0 flex items-center justify-center bg-[#2b2426bd]",
   modalContent: "bg-white m-10 md:w-[80vh] rounded-xl relative",
   modalTitle:
     "p-4 text-lg leading-6 font-medium text-gray-900 flex justify-between items-center",
@@ -137,5 +137,3 @@ export const Modal = memo(
 );
 
 Modal.displayName = "Modal";
-
-export default Modal;
