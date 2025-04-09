@@ -10,6 +10,7 @@ const CONFIG = {
   components: [
     "Card",
     "Select",
+    "SideBar",
     "Grid",
     "MultiSelect",
     "Button",

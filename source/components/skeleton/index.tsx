@@ -20,7 +20,7 @@ interface SkeletonProps {
   keyframes?: string;
 }
 
-const Skeleton: React.FC<SkeletonProps> = memo(
+export const Skeleton: React.FC<SkeletonProps> = memo(
   ({
     type = "text",
     lines = 1,
@@ -93,5 +93,3 @@ const Skeleton: React.FC<SkeletonProps> = memo(
 );
 
 Skeleton.displayName = "Skeleton";
-
-export default Skeleton;
