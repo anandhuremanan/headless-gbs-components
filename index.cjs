@@ -8,6 +8,7 @@ const { hideBin } = require("yargs/helpers");
 // Configuration
 const CONFIG = {
   components: [
+    "Card",
     "Select",
     "Grid",
     "MultiSelect",
