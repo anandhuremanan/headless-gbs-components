@@ -13,4 +13,5 @@ export type ModalProps = {
   titleId?: string;
   closeButtonContent?: React.ReactNode;
   animationDuration?: number;
+  showTitle?: boolean;
 };
