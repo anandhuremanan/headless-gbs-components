@@ -186,7 +186,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
             </div>
           )}
           {filteredItems.length > 0 ? (
-            filteredItems.map(({ value, label }, index) => (
+            filteredItems.map(({ value, label }, index: number) => (
               <button
                 key={value}
                 ref={(el: any) => (itemRefs.current[index] = el)}

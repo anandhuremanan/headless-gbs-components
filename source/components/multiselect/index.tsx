@@ -113,7 +113,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
     return (
       <div className="relative w-full" ref={selectRef}>
         <div
-          className={`relative border w-full flex items-center px-4 py-2 rounded-lg ${
+          className={`relative border border-gary-300 w-full flex items-center px-4 py-2 rounded-lg ${
             error && "border-red-500"
           }`}
         >
