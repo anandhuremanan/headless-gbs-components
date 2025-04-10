@@ -22,6 +22,7 @@ const CONFIG = {
     "Modal",
     "Spinner",
     "Toast",
+    "Tabs",
     "Uploader",
     "FormRenderer",
     "MaterialInput",
