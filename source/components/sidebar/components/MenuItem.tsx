@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { MenuItem, IconComponent } from "../type";
 
 type MenuItemProps = {
@@ -12,6 +13,13 @@ export const MenuItemComponent = ({
   onToggle,
 }: MenuItemProps) => {
   const IconComponent = iconMap[item.icon] || (() => null);
+  const [path, setPath] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPath(window.location.pathname);
+    }
+  }, []);
 
   return (
     <li>
@@ -26,7 +34,7 @@ export const MenuItemComponent = ({
             : undefined
         }
         className={`flex items-center py-2 px-3 rounded-md text-sm ${
-          item.active
+          item.path === path
             ? "bg-gray-100 text-black font-medium"
             : "text-gray-700 hover:bg-gray-50"
         }`}
