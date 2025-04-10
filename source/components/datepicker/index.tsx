@@ -30,6 +30,7 @@ export const DatePicker = ({
   error,
   placeholder = "Select a date",
   disabled = false,
+  ...props
 }: DatePickerProps) => {
   applyScrollbarStyles();
 
@@ -122,7 +123,7 @@ export const DatePicker = ({
 
   const clearSelectedHandler = () => {
     clearSelected();
-    if( onDateChange) onDateChange(null);
+    if (onDateChange) onDateChange(null);
   };
 
   return (
@@ -166,6 +167,7 @@ export const DatePicker = ({
         name={name}
         value={selectedDate?.toDateString() || ""}
         readOnly
+        {...props}
       />
 
       {showDatepicker && !disabled && (
