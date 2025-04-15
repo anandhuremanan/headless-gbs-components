@@ -9,7 +9,7 @@ For detailed documentation on usage and props, Please visit: [Building Block Doc
 ## What's New 🎉 (Ver 0.0.85)
 
 - Updated for bug fixes.
-- New Component Card, Tabs & SideBar Added
+- Experimental Bar Graph Component
 
 ## Authors
 

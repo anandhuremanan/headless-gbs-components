@@ -31,6 +31,7 @@ const CONFIG = {
     "Navbar",
     "DataGrid",
     "BreadCrumb",
+    "Bargraph"
   ],
   // Define component dependencies
   dependencies: {
