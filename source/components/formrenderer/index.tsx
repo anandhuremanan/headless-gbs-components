@@ -12,7 +12,7 @@ import { COMPONENT_MAP, validateField } from "./helperFunctions";
 
 const FormRenderer: React.FC<FormRendererProps> = ({
   onSubmit,
-  sourceData = [],
+  schema = [],
   formFormationClass = "grid grid-cols-1 gap-2",
   formParentClass = "w-96",
 }) => {
@@ -24,7 +24,7 @@ const FormRenderer: React.FC<FormRendererProps> = ({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const requirementErrorItems = sourceData
+    const requirementErrorItems = schema
       .filter((item) => item.required && item.name)
       .reduce((errors: string[], item) => {
         const field = formRef.current?.querySelector(
@@ -76,15 +76,15 @@ const FormRenderer: React.FC<FormRendererProps> = ({
     );
   };
 
-  // If no source data is found, return a message
-  if (!sourceData.length) {
+  // If no schema data is found, return a message
+  if (!schema.length) {
     return <div>No Source Data Found</div>;
   }
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className={formParentClass}>
       <div className={formFormationClass}>
-        {sourceData.map(renderFormComponent)}
+        {schema.map(renderFormComponent)}
       </div>
     </form>
   );
