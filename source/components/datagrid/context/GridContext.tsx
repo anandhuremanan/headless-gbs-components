@@ -31,6 +31,7 @@ interface GridContextType {
   goToEndPage: () => void;
   goToFirstPage: () => void;
   goToPage: (page: number) => void;
+  lazy: boolean;
 
   // Search methods
   handleSearchInput: (e: any) => void;
@@ -137,8 +138,8 @@ export const GridProvider: React.FC<{
 
         // if lazy is true, then totalPages will be taken from pageSettings
         const totalPages =
-          lazy && pageSettings.totalPages
-            ? pageSettings.totalPages
+          lazy && pageSettings.totalCount
+            ? Math.ceil(pageSettings.totalCount / pageSettings.pageNumber)
             : Math.ceil(dataSource.length / pageSettings.pageNumber);
 
         setTotalPages(totalPages);
@@ -163,6 +164,7 @@ export const GridProvider: React.FC<{
     }
   }, [columns]);
 
+  // Adds Search Column
   useEffect(() => {
     if (!columns || columns.length === 0) {
       if (
@@ -379,6 +381,7 @@ export const GridProvider: React.FC<{
     goToEndPage,
     goToFirstPage,
     goToPage,
+    lazy,
 
     // Search methods
     handleSearchInput,

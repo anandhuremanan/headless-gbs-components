@@ -17,6 +17,7 @@ const GridBody = () => {
     gridColumnStyle,
     gridColumnStyleSelectAll,
     rowChange,
+    lazy,
   } = useGridContext();
 
   const renderCell = (rowData: any, column: Column, rowIndex: number) => {
@@ -53,7 +54,9 @@ const GridBody = () => {
 
   const displayStart = currentPage * pageSettings.pageNumber;
   const displayEnd = displayStart + pageSettings.pageNumber;
-  const displayData = workingDataSource.slice(displayStart, displayEnd);
+  const displayData = lazy
+    ? workingDataSource
+    : workingDataSource.slice(displayStart, displayEnd);
 
   return (
     <div className="overflow-x-auto">

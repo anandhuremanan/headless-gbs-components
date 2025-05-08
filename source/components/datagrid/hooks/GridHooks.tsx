@@ -13,6 +13,8 @@ export const useGridPagination = () => {
     nextPage,
     goToEndPage,
     workingDataSource,
+    lazy,
+    pageSettings,
   } = useGridContext();
 
   return {
@@ -26,6 +28,8 @@ export const useGridPagination = () => {
     nextPage,
     goToEndPage,
     workingDataSource,
+    lazy,
+    pageSettings,
   };
 };
 

@@ -2,7 +2,7 @@ import { ChangeEvent } from "react";
 
 interface PageSettingsProps {
   pageNumber: number;
-  totalPages?: number;
+  totalCount?: number;
 }
 
 interface ActiveFilterArrayValue {

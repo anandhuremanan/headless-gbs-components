@@ -20,6 +20,8 @@ const Pagination = () => {
     nextPage,
     goToEndPage,
     workingDataSource,
+    lazy,
+    pageSettings,
   } = useGridPagination();
 
   return (
@@ -96,8 +98,8 @@ const Pagination = () => {
       </div>
 
       <div className="flex text-xs">
-        {currentPage + 1} of {totalPages} pages ({workingDataSource.length})
-        items
+        {currentPage + 1} of {totalPages} pages (
+        {lazy ? pageSettings?.totalCount : workingDataSource.length}) items
       </div>
     </div>
   );
