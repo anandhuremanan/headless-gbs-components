@@ -26,6 +26,7 @@ const GridContent = forwardRef((_, ref) => {
     prevPage,
     goToFirstPage,
     goToEndPage,
+    activeFilterArray,
   } = useGridContext();
 
   // Making Grid Functions Accessible in Parent
@@ -41,6 +42,7 @@ const GridContent = forwardRef((_, ref) => {
         handleSearch,
         handleApplyFilter,
         clearFilter,
+        getActiveFilters: () => activeFilterArray,
       };
     },
     [
@@ -52,6 +54,7 @@ const GridContent = forwardRef((_, ref) => {
       handleSearch,
       handleApplyFilter,
       clearFilter,
+      activeFilterArray,
     ]
   );
 

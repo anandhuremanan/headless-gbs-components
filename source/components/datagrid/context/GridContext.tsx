@@ -92,6 +92,7 @@ export const GridProvider: React.FC<{
     gridColumnStyle = "p-2 text-xs",
     rowChange = () => {},
     pageStatus = () => {},
+    activeFilterArrayValue = [],
   } = props;
 
   // States Handling Grid
@@ -133,9 +134,13 @@ export const GridProvider: React.FC<{
     const handleDataSource = async () => {
       if (Array.isArray(dataSource) && dataSource.length > 0) {
         setWorkingDataSource(dataSource);
-        const totalPages = Math.ceil(
-          dataSource.length / pageSettings.pageNumber
-        );
+
+        // if lazy is true, then totalPages will be taken from pageSettings
+        const totalPages =
+          lazy && pageSettings.totalPages
+            ? pageSettings.totalPages
+            : Math.ceil(dataSource.length / pageSettings.pageNumber);
+
         setTotalPages(totalPages);
         setPageEnd(Math.min(10, totalPages));
       } else if (typeof dataSource === "string") {
@@ -289,6 +294,8 @@ export const GridProvider: React.FC<{
     setWorkingColumns(updatedColumns);
     setWorkingDataSource(updatedFullDataSource);
     setActiveFilterArray(updatedActiveFilterArray);
+    if (activeFilterArrayValue)
+      activeFilterArrayValue(updatedActiveFilterArray);
     resetPage(updatedFullDataSource);
   }
 
@@ -305,6 +312,8 @@ export const GridProvider: React.FC<{
     setWorkingColumns(updatedColumns);
     setWorkingDataSource(updatedDataSource);
     setActiveFilterArray(updatedActiveFilterArray);
+    if (activeFilterArrayValue)
+      activeFilterArrayValue(updatedActiveFilterArray);
     resetPage(updatedDataSource);
   }
 

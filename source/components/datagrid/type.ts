@@ -2,6 +2,13 @@ import { ChangeEvent } from "react";
 
 interface PageSettingsProps {
   pageNumber: number;
+  totalPages?: number;
+}
+
+interface ActiveFilterArrayValue {
+  filterColumn: string;
+  filterCondition: string;
+  filterValue: string;
 }
 
 export type GridProps = {
@@ -29,6 +36,7 @@ export type GridProps = {
   gridColumnStyle?: string;
   rowChange?: any;
   pageStatus?: any;
+  activeFilterArrayValue?: ActiveFilterArrayValue[] | any;
 };
 
 interface GridColumn {
