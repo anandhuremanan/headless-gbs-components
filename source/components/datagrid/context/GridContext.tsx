@@ -94,6 +94,7 @@ export const GridProvider: React.FC<{
     rowChange = () => {},
     pageStatus = () => {},
     activeFilterArrayValue = [],
+    searchParamValue = () => {},
   } = props;
 
   // States Handling Grid
@@ -235,9 +236,12 @@ export const GridProvider: React.FC<{
 
   // *** Search Functions
   const handleSearchInput = (e: any) => {
+    const searchValue = e.target.value;
+    if (searchParamValue) searchParamValue(searchValue);
+
     if (!lazy) {
-      const searchValue = e.target.value;
       setSearchParam(searchValue);
+
       if (searchValue === "") {
         setWorkingDataSource(
           fallbackSourceData.length > 0 ? fallbackSourceData : dataSource

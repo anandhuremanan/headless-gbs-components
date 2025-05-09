@@ -33,7 +33,7 @@ const GridToolbar = () => {
         <div className="flex">
           <input
             type="search"
-            value={searchParam}
+            defaultValue={searchParam}
             onChange={handleSearchInput}
             placeholder="Search..."
             className="outline-none p-2 text-xs rounded-lg max-sm:hidden dark:bg-zinc-800 bg-zinc-200"

@@ -37,6 +37,7 @@ export type GridProps = {
   rowChange?: any;
   pageStatus?: any;
   activeFilterArrayValue?: ActiveFilterArrayValue[] | any;
+  searchParamValue?: (value: string) => void;
 };
 
 interface GridColumn {
