@@ -148,7 +148,9 @@ export const DatePicker = ({
           />
           <span className={!selectedDate ? "text-gray-400 text-sm" : ""}>
             {selectedDate ? (
-              <span className="text-sm">{selectedDate.toLocaleDateString("en-GB")}</span>
+              <span className="text-sm">
+                {selectedDate.toLocaleDateString("en-GB")}
+              </span>
             ) : (
               placeholder
             )}
@@ -344,7 +346,7 @@ export const DatePicker = ({
             <button
               type="button"
               onClick={goToToday}
-              className="text-black hover:text-blue-600 transition duration-150 ease-in-out"
+              className="text-black hover:text-blue-600 transition duration-150 ease-in-out dark:text-gray-500"
             >
               Today
             </button>
