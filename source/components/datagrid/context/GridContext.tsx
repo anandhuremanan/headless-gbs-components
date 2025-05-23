@@ -64,6 +64,8 @@ interface GridContextType {
   gridColumnStyleSelectAll: string;
   gridColumnStyle: string;
   rowChange: (rowData: any) => void;
+  showTotalPages?: boolean;
+  onSearch?: (searchParam: string) => void;
 }
 
 const GridContext = createContext<GridContextType | undefined>(undefined);
@@ -83,7 +85,7 @@ export const GridProvider: React.FC<{
     enablePdfExport = false,
     pdfName = "data",
     pdfOptions = {},
-    gridButtonClass = "px-1 py-2 text-xs rounded bg-zinc-200 dark:bg-zinc-700",
+    gridButtonClass = "px-1 py-2 text-xs rounded bg-zinc-200 dark:bg-zinc-700 cursor-pointer",
     selectAll = false,
     onSelectRow,
     isFetching,
@@ -95,6 +97,8 @@ export const GridProvider: React.FC<{
     pageStatus = () => {},
     activeFilterArrayValue = [],
     searchParamValue = () => {},
+    showTotalPages = false,
+    onSearch = () => {},
   } = props;
 
   // States Handling Grid
@@ -134,7 +138,7 @@ export const GridProvider: React.FC<{
   // Calculates total pages and determine dataSource type
   useEffect(() => {
     const handleDataSource = async () => {
-      if (Array.isArray(dataSource) && dataSource.length > 0) {
+      if (Array.isArray(dataSource)) {
         setWorkingDataSource(dataSource);
 
         // if lazy is true, then totalPages will be taken from pageSettings
@@ -238,11 +242,10 @@ export const GridProvider: React.FC<{
   const handleSearchInput = (e: any) => {
     const searchValue = e.target.value;
     if (searchParamValue) searchParamValue(searchValue);
+    setSearchParam(searchValue);
 
-    if (!lazy) {
-      setSearchParam(searchValue);
-
-      if (searchValue === "") {
+    if (searchValue === "") {
+      if (!lazy) {
         setWorkingDataSource(
           fallbackSourceData.length > 0 ? fallbackSourceData : dataSource
         );
@@ -256,15 +259,17 @@ export const GridProvider: React.FC<{
   };
 
   const handleSearch = (searchParam: string) => {
-    const filteredData = workingDataSource.filter((item: any) =>
-      Object.values(item).some((val: any) => {
-        const trimmedVal = val.toString().toLowerCase().trim();
-        const trimmedSearchParam = searchParam.toLowerCase().trim();
-        return trimmedVal.includes(trimmedSearchParam);
-      })
-    );
-    setWorkingDataSource(filteredData);
-    resetPage(filteredData);
+    if (!lazy) {
+      const filteredData = workingDataSource.filter((item: any) =>
+        Object.values(item).some((val: any) => {
+          const trimmedVal = val.toString().toLowerCase().trim();
+          const trimmedSearchParam = searchParam.toLowerCase().trim();
+          return trimmedVal.includes(trimmedSearchParam);
+        })
+      );
+      setWorkingDataSource(filteredData);
+      resetPage(filteredData);
+    }
   };
 
   // *** Filter Functions
@@ -418,6 +423,8 @@ export const GridProvider: React.FC<{
     gridColumnStyleSelectAll,
     gridColumnStyle,
     rowChange,
+    showTotalPages,
+    onSearch,
   };
 
   return (

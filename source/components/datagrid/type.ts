@@ -38,6 +38,8 @@ export type GridProps = {
   pageStatus?: any;
   activeFilterArrayValue?: ActiveFilterArrayValue[] | any;
   searchParamValue?: (value: string) => void;
+  showTotalPages?: boolean;
+  onSearch?: (value: string) => void;
 };
 
 interface GridColumn {

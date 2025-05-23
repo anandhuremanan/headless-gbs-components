@@ -15,6 +15,7 @@ export const useGridPagination = () => {
     workingDataSource,
     lazy,
     pageSettings,
+    showTotalPages,
   } = useGridContext();
 
   return {
@@ -30,12 +31,13 @@ export const useGridPagination = () => {
     workingDataSource,
     lazy,
     pageSettings,
+    showTotalPages,
   };
 };
 
 // Hook for grid search functionality
 export const useGridSearch = () => {
-  const { searchParam, handleSearchInput, handleSearch, enableSearch } =
+  const { searchParam, handleSearchInput, handleSearch, enableSearch, onSearch } =
     useGridContext();
 
   return {
@@ -43,6 +45,7 @@ export const useGridSearch = () => {
     handleSearchInput,
     handleSearch,
     enableSearch,
+    onSearch,
   };
 };
 

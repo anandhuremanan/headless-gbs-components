@@ -123,7 +123,10 @@ const GridBody = () => {
             </tr>
           ) : displayData.length === 0 ? (
             <tr>
-              <td colSpan={workingColumns.length + (selectAll ? 1 : 0)}>
+              <td
+                colSpan={workingColumns.length + (selectAll ? 1 : 0)}
+                className="text-center py-3"
+              >
                 No data found
               </td>
             </tr>

@@ -8,8 +8,13 @@ import Icon from "../../icon/Icon";
 import { search } from "../../icon/iconPaths";
 
 const GridToolbar = () => {
-  const { searchParam, handleSearchInput, handleSearch, enableSearch } =
-    useGridSearch();
+  const {
+    searchParam,
+    handleSearchInput,
+    handleSearch,
+    enableSearch,
+    onSearch,
+  } = useGridSearch();
 
   const {
     enableExcelExport,
@@ -45,12 +50,15 @@ const GridToolbar = () => {
           />
           <button
             className="rounded-lg w-10 flex items-center justify-center cursor-pointer"
-            onClick={() => handleSearch(searchParam)}
+            onClick={() => {
+              handleSearch(searchParam);
+              if (onSearch) onSearch(searchParam); // Call the onSearch prop if provided
+            }}
           >
             <Icon
               elements={search}
               svgClass={"stroke-gray-500 fill-none dark:stroke-white"}
-            />{" "}
+            />
           </button>
         </div>
       )}
