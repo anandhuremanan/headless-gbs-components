@@ -9,7 +9,7 @@ export const popUp = {
 };
 
 export const iconClass = {
-  "grey-common": "h-4 w-4 stroke-gray-500 fill-none dark:stroke-black",
+  "grey-common": "h-4 w-4 stroke-gray-500 fill-none dark:stroke-white",
   "error-icon": "h-4 w-4 stroke-red-500 fill-none dark:stroke-red-500",
 };
 
