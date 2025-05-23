@@ -27,7 +27,6 @@ const CONFIG = {
     "FormRenderer",
     "MaterialInput",
     "ContextMenu",
-    "Skeleton",
     "Navbar",
     "DataGrid",
     "BreadCrumb",
