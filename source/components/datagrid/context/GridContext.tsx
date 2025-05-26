@@ -150,7 +150,11 @@ export const GridProvider: React.FC<{
             : Math.ceil(dataSource.length / pageSettings.pageNumber);
 
         setTotalPages(totalPages);
-        setPageEnd(Math.min(10, totalPages));
+        if (!lazy) {
+          setPageEnd(Math.min(10, totalPages));
+        } else {
+          setPageEnd(Math.min(pageStart + 10, totalPages));
+        }
       } else if (typeof dataSource === "string") {
         await getGridData();
       }
