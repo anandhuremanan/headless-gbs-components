@@ -66,6 +66,7 @@ interface GridContextType {
   rowChange: (rowData: any) => void;
   showTotalPages?: boolean;
   onSearch?: (searchParam: string) => void;
+  onToolbarButtonClick?: (action: string) => void;
 }
 
 const GridContext = createContext<GridContextType | undefined>(undefined);
@@ -99,6 +100,7 @@ export const GridProvider: React.FC<{
     searchParamValue = () => {},
     showTotalPages = false,
     onSearch = () => {},
+    onToolbarButtonClick = () => {},
   } = props;
 
   // States Handling Grid
@@ -425,6 +427,7 @@ export const GridProvider: React.FC<{
     rowChange,
     showTotalPages,
     onSearch,
+    onToolbarButtonClick,
   };
 
   return (

@@ -37,8 +37,13 @@ export const useGridPagination = () => {
 
 // Hook for grid search functionality
 export const useGridSearch = () => {
-  const { searchParam, handleSearchInput, handleSearch, enableSearch, onSearch } =
-    useGridContext();
+  const {
+    searchParam,
+    handleSearchInput,
+    handleSearch,
+    enableSearch,
+    onSearch,
+  } = useGridContext();
 
   return {
     searchParam,
@@ -90,6 +95,8 @@ export const useGridExport = () => {
     pdfName,
     pdfOptions,
     gridButtonClass,
+    onToolbarButtonClick,
+    lazy,
   } = useGridContext();
 
   return {
@@ -101,5 +108,7 @@ export const useGridExport = () => {
     pdfName,
     pdfOptions,
     gridButtonClass,
+    onToolbarButtonClick,
+    lazy,
   };
 };

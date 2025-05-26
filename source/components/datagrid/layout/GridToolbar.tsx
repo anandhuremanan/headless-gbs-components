@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy } from "react";
 import { useGridExport, useGridSearch } from "../hooks/GridHooks";
 import {
   exportToExcelHelper,
@@ -25,6 +25,7 @@ const GridToolbar = () => {
     pdfName,
     pdfOptions,
     gridButtonClass,
+    onToolbarButtonClick,
   } = useGridExport();
 
   if (!enableSearch && !enableExcelExport && !enablePdfExport) {
@@ -70,7 +71,11 @@ const GridToolbar = () => {
             <button
               className={gridButtonClass}
               onClick={() => {
-                exportToExcelHelper(workingDataSource, columns, excelName);
+                if (!lazy) {
+                  exportToExcelHelper(workingDataSource, columns, excelName);
+                }
+
+                if (onToolbarButtonClick) onToolbarButtonClick("excelExport");
               }}
             >
               Export to Excel
@@ -81,12 +86,15 @@ const GridToolbar = () => {
             <button
               className={gridButtonClass}
               onClick={() => {
-                exportToPDFHelper(
-                  workingDataSource,
-                  columns,
-                  pdfName,
-                  pdfOptions
-                );
+                if (!lazy) {
+                  exportToPDFHelper(
+                    workingDataSource,
+                    columns,
+                    pdfName,
+                    pdfOptions
+                  );
+                }
+                if (onToolbarButtonClick) onToolbarButtonClick("pdfExport");
               }}
             >
               Export to PDF

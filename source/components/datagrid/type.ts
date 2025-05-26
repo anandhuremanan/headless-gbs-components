@@ -40,6 +40,7 @@ export type GridProps = {
   searchParamValue?: (value: string) => void;
   showTotalPages?: boolean;
   onSearch?: (value: string) => void;
+  onToolbarButtonClick?: (action: string) => void;
 };
 
 interface GridColumn {
