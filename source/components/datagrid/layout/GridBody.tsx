@@ -91,12 +91,12 @@ const GridBody = () => {
                         <Icon
                           dimensions={{ width: "12", height: "12" }}
                           elements={listFilter}
-                          svgClass={`ml-2 fill-none dark:stroke-white ${
+                          svgClass={`ml-2 fill-none ${
                             activeFilterArray.some(
                               (filter) => filter.filterColumn === column.field
                             )
-                              ? "stroke-red-400"
-                              : "stroke-black"
+                              ? "stroke-red-400 dark:stroke-red-400"
+                              : "stroke-black dark:stroke-white"
                           }`}
                         />
                       </button>

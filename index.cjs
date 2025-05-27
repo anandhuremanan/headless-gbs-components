@@ -11,7 +11,6 @@ const CONFIG = {
     "Card",
     "Select",
     "SideBar",
-    "Grid",
     "MultiSelect",
     "Button",
     "DatePicker",
