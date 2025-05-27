@@ -1,6 +1,5 @@
-import React from "react";
+import React, { act } from "react";
 import { useGridContext } from "../context/GridContext";
-import { useGridFilter, useGridRowSelection } from "../hooks/GridHooks";
 import FilterPopup from "./FilterPopup";
 import Icon from "../../icon/Icon";
 import { listFilter } from "../../icon/iconPaths";
@@ -18,6 +17,13 @@ const GridBody = () => {
     gridColumnStyleSelectAll,
     rowChange,
     lazy,
+    activeFilterArray,
+    toggleFilterPopup,
+    handleFilterAction,
+    selectAll,
+    handleSelectAll,
+    handleSelect,
+    isRowSelected,
   } = useGridContext();
 
   const renderCell = (rowData: any, column: Column, rowIndex: number) => {
@@ -46,11 +52,6 @@ const GridBody = () => {
 
     return cellValue;
   };
-
-  const { activeFilterArray, toggleFilterPopup, handleFilterAction } =
-    useGridFilter();
-  const { selectAll, handleSelectAll, handleSelect, isRowSelected } =
-    useGridRowSelection();
 
   const displayStart = currentPage * pageSettings.pageNumber;
   const displayEnd = displayStart + pageSettings.pageNumber;

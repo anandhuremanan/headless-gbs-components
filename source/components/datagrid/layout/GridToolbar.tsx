@@ -1,11 +1,11 @@
-import React, { lazy } from "react";
-import { useGridExport, useGridSearch } from "../hooks/GridHooks";
+import React from "react";
 import {
   exportToExcelHelper,
   exportToPDFHelper,
 } from "@grampro/headless-helpers";
 import Icon from "../../icon/Icon";
 import { search } from "../../icon/iconPaths";
+import { useGridContext } from "../context/GridContext";
 
 const GridToolbar = () => {
   const {
@@ -14,9 +14,6 @@ const GridToolbar = () => {
     handleSearch,
     enableSearch,
     onSearch,
-  } = useGridSearch();
-
-  const {
     enableExcelExport,
     enablePdfExport,
     workingDataSource,
@@ -26,7 +23,8 @@ const GridToolbar = () => {
     pdfOptions,
     gridButtonClass,
     onToolbarButtonClick,
-  } = useGridExport();
+    lazy,
+  } = useGridContext();
 
   if (!enableSearch && !enableExcelExport && !enablePdfExport) {
     return null;
@@ -71,6 +69,7 @@ const GridToolbar = () => {
             <button
               className={gridButtonClass}
               onClick={() => {
+                console.log("clicked", lazy.toString());
                 if (!lazy) {
                   exportToExcelHelper(workingDataSource, columns, excelName);
                 }

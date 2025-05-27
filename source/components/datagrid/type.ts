@@ -121,3 +121,60 @@ export type GridBodyProps = {
   gridColumnStyle: string;
   rowChange?: (changes: any) => void;
 };
+
+export interface GridContextType {
+  workingDataSource: any[];
+  fallbackSourceData: any[];
+  workingColumns: any[];
+  currentPage: number;
+  pageStart: number;
+  pageEnd: number;
+  totalPages: number;
+  searchParam: string;
+  activeFilterArray: any[];
+  selectedRows: any[];
+  isFetching: boolean | undefined;
+
+  // Navigation methods
+  nextPage: () => void;
+  prevPage: () => void;
+  goToEndPage: () => void;
+  goToFirstPage: () => void;
+  goToPage: (page: number) => void;
+  lazy: boolean;
+
+  // Search methods
+  handleSearchInput: (e: any) => void;
+  handleSearch: (searchParam: string) => void;
+
+  // Filter methods
+  toggleFilterPopup: (index: number) => void;
+  handleApplyFilter: (event: any) => void;
+  clearFilter: (event: any) => void;
+  handleFilterAction: (action: any, colIndex: number) => void;
+
+  // Row selection methods
+  handleSelectAll: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSelect: (rowData: any) => void;
+  isRowSelected: (rowData: any) => boolean;
+
+  // Grid settings
+  columns: any[];
+  pageSettings: any;
+  enableSearch: boolean;
+  enableExcelExport: boolean;
+  enablePdfExport: boolean;
+  excelName: string;
+  pdfName: string;
+  pdfOptions: any;
+  gridButtonClass: string;
+  selectAll: boolean;
+  tableHeaderStyle: string;
+  gridContainerClass: string;
+  gridColumnStyleSelectAll: string;
+  gridColumnStyle: string;
+  rowChange: (rowData: any) => void;
+  showTotalPages?: boolean;
+  onSearch?: (searchParam: string) => void;
+  onToolbarButtonClick?: (action: string) => void;
+}

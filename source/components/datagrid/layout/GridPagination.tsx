@@ -1,5 +1,4 @@
 import React from "react";
-import { useGridPagination } from "../hooks/GridHooks";
 import Icon from "../../icon/Icon";
 import {
   leftArrow,
@@ -7,6 +6,7 @@ import {
   rightArrow,
   rightArrows,
 } from "../../icon/iconPaths";
+import { useGridContext } from "../context/GridContext";
 
 const Pagination = () => {
   const {
@@ -23,7 +23,7 @@ const Pagination = () => {
     lazy,
     pageSettings,
     showTotalPages,
-  } = useGridPagination();
+  } = useGridContext();
 
   return (
     <div className="w-full flex flex-wrap justify-between items-center text-xs px-2 py-4 bg-zinc-100 dark:bg-zinc-900 gap-2 md:gap-4">
