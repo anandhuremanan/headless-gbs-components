@@ -5,7 +5,7 @@ type MenuSectionProps = {
   section: MenuSectionType;
   sectionIndex: number;
   iconMap: Record<string, IconComponent>;
-  toggleItem: (sectionIndex: number, itemId: number) => void;
+  toggleItem: (sectionIndex: number, itemId: number | string) => void;
 };
 
 export const MenuSection = ({
