@@ -4,7 +4,7 @@ import { MenuSection as MenuSectionComponent } from "./MenuSection";
 type SidebarMenuProps = {
   sections?: MenuSection[];
   iconMap: Record<string, IconComponent>;
-  toggleItem: (sectionIndex: number, itemId: number) => void;
+  toggleItem: (sectionIndex: number, itemId: number | string) => void;
 };
 
 export const SidebarMenu = ({

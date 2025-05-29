@@ -4,7 +4,7 @@ import { MenuData } from "../type";
 export const useSidebarState = (menuData: MenuData) => {
   const [sidebarData, setSidebarData] = useState<MenuData>(menuData);
 
-  const toggleItem = (sectionIndex: number, itemId: number): void => {
+  const toggleItem = (sectionIndex: number, itemId: number | string): void => {
     const newData = { ...sidebarData };
 
     const section = newData.sections?.[sectionIndex];
