@@ -3,14 +3,9 @@ import { MenuItem, IconComponent } from "../type";
 type SidebarFooterProps = {
   footerItems?: MenuItem[];
   iconMap: Record<string, IconComponent>;
-  toggleProMode: () => void;
 };
 
-export const SidebarFooter = ({
-  footerItems,
-  iconMap,
-  toggleProMode,
-}: SidebarFooterProps) => {
+export const SidebarFooter = ({ footerItems, iconMap }: SidebarFooterProps) => {
   if (!footerItems) return null;
   if (!iconMap) return null;
 
@@ -20,28 +15,17 @@ export const SidebarFooter = ({
         {footerItems?.map((item) => {
           const IconComponent = iconMap[item.icon] || (() => null);
 
-          if (item.toggle) {
+          if (item.type === "custom" && item.component) {
+            const CustomComponent = item.component;
             return (
               <li
                 key={item.id}
-                className="flex items-center py-2 px-3 text-sm text-gray-700"
+                className="py-2 px-3 flex items-center text-sm text-gray-700"
               >
                 <span className="mr-3">
                   <IconComponent />
                 </span>
-                <span className="flex-grow">{item.name}</span>
-                <button
-                  onClick={toggleProMode}
-                  className={`w-10 h-5 flex items-center rounded-full p-1 ${
-                    item.active ? "bg-black" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
-                      item.active ? "translate-x-5" : ""
-                    }`}
-                  />
-                </button>
+                <CustomComponent />
               </li>
             );
           }

@@ -11,6 +11,7 @@ export const SidebarMenu = ({
   sections,
   iconMap,
   toggleItem,
+  
 }: SidebarMenuProps) => {
   return (
     <div className="flex-grow overflow-y-auto px-4 py-2">

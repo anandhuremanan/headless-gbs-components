@@ -1,20 +1,25 @@
 export type IconComponent = React.FC;
 
 export type MenuItem = {
-  id: number;
+  id: number | string;
   name: string;
   icon: string;
-  path: string;
+  path?: string;
   active?: boolean;
   expandable?: boolean;
   expanded?: boolean;
   badge?: string;
   toggle?: boolean;
+  type?: string;
+  component?: React.FC;
 };
 
 export type MenuSection = {
+  id?: number | string;
   title: string;
   items: MenuItem[];
+  component?: React.FC;
+  type?: string;
 };
 
 export type MenuData = {

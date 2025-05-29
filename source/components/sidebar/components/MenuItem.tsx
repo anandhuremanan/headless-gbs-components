@@ -21,6 +21,18 @@ export const MenuItemComponent = ({
     }
   }, []);
 
+  if (item.type === "custom" && item.component) {
+    const CustomComponent = item.component;
+    return (
+      <li className="py-2 px-3 flex items-center text-sm text-gray-700">
+        <span className="mr-3">
+          <IconComponent />
+        </span>
+        <CustomComponent />
+      </li>
+    );
+  }
+
   return (
     <li>
       <a

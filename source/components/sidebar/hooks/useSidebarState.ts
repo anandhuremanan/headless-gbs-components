@@ -19,20 +19,23 @@ export const useSidebarState = (menuData: MenuData) => {
     }
   };
 
-  const toggleProMode = (): void => {
+  const toggleMode = (): void => {
     const newData = { ...sidebarData };
     if (!newData.footer) return;
 
-    const proModeIndex = newData.footer.findIndex((item) => item.toggle);
-    if (proModeIndex === -1) return;
+    const toggleModeIndex = newData.footer.findIndex(
+      (item) => item.type === "toggle"
+    );
+    if (toggleModeIndex === -1) return;
 
-    newData.footer[proModeIndex].active = !newData.footer[proModeIndex].active;
+    newData.footer[toggleModeIndex].active =
+      !newData.footer[toggleModeIndex].active;
     setSidebarData({ ...newData });
   };
 
   return {
     sidebarData,
     toggleItem,
-    toggleProMode,
+    toggleMode,
   };
 };
