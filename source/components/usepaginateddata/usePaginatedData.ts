@@ -8,7 +8,8 @@ export const usePaginatedData = (
   apiEndpoint: string,
   initialPageSize = 10,
   method: "GET" | "POST" = "GET",
-  columns: any[] = []
+  columns: any[] = [],
+  additionalParams: any = {}
 ) => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +28,6 @@ export const usePaginatedData = (
       pageSize: number,
       currentFilters: any[] = [],
       search = "",
-      additionalParams: any = {},
       isExportCall: boolean | null = null,
       exportType: string | null = null
     ) => {
@@ -128,9 +128,13 @@ export const usePaginatedData = (
   // Handle search input
   const handleSearch = useCallback(
     (searchTerm: string) => {
-      const updatedFilters = filters.filter((f) => {
-        return !(f as any).searchTerm;
-      });
+      const existingSearch = filters.find(
+        (f) => f.type === "search" && f.value === searchTerm
+      );
+
+      if (existingSearch) return;
+
+      const updatedFilters = filters.filter((f) => f.type !== "search");
 
       const finalFilters = [
         ...updatedFilters,
@@ -146,7 +150,7 @@ export const usePaginatedData = (
   // Handle exports
   const handleExports = useCallback(
     (exportType: string) => {
-      fetchData(method, 0, pagination.pageSize, [], "", {}, true, exportType);
+      fetchData(method, 0, pagination.pageSize, [], "", true, exportType);
     },
     [fetchData, method, pagination.pageSize]
   );
