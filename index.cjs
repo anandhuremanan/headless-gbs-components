@@ -31,6 +31,7 @@ const CONFIG = {
     "BreadCrumb",
     "Bargraph",
     "UsePaginatedData",
+    "UseUploader"
   ],
   // Define component dependencies
   dependencies: {
