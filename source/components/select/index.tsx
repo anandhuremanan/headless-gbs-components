@@ -12,14 +12,12 @@ import React, {
   useEffect,
   useImperativeHandle,
   useRef,
-  useState,
 } from "react";
-import { createPortal } from "react-dom";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
 import type { ItemsProps, SelectHandle, SelectProps } from "./types";
-import { selectStyle } from "./style";
-import { iconClass, popUp, primary } from "../globalStyle";
+import { selectStyle } from "../globalStyle";
+import { iconClass, primary } from "../globalStyle";
 import {
   useSelectState,
   useSelectData,
@@ -27,46 +25,7 @@ import {
   useKeyboardNavigation,
   useClickOutside,
 } from "@grampro/headless-helpers";
-
-// Portal Dropdown Component
-const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
-
-  useEffect(() => {
-    if (isVisible && targetRef.current) {
-      const rect = targetRef.current.getBoundingClientRect();
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
-      const scrollLeft =
-        window.pageXOffset || document.documentElement.scrollLeft;
-
-      setPosition({
-        top: rect.bottom + scrollTop + 4,
-        left: rect.left + scrollLeft,
-        width: rect.width,
-      });
-    }
-  }, [isVisible, targetRef]);
-
-  if (!isVisible) return null;
-
-  return createPortal(
-    <div
-      style={{
-        position: "absolute",
-        top: position.top,
-        left: position.left,
-        width: position.width,
-        zIndex: 1000,
-      }}
-      className={popUp["pop-up-style"]}
-      data-select-portal="true"
-    >
-      {children}
-    </div>,
-    document.body
-  );
-};
+import { PortalDropdown } from "./PortalDropDown";
 
 const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   const {
@@ -222,14 +181,14 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
 
   return (
     <div
-      className="relative w-full mt-2"
+      className="relative w-full"
       ref={selectRef}
       id={id}
       onKeyDown={handleKeyDown}
     >
       <div className="w-full relative">
         <button
-          ref={buttonRef} // Add ref for portal positioning
+          ref={buttonRef}
           className={`${error ? primary["error-border"] : "border"} ${
             selectStyle["select-button"]
           } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}

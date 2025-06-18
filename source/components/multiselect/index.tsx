@@ -21,7 +21,9 @@ import {
 } from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
-import { iconClass, popUp, primary } from "../globalStyle";
+import { iconClass, primary } from "../globalStyle";
+import { selectStyle } from "../globalStyle";
+import { PortalDropdown } from "./PortalDropDown";
 
 const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
   (props, ref) => {
@@ -42,6 +44,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
 
     const inputRef = useRef<HTMLInputElement>(null);
     const selectRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     const {
       showPopover,
@@ -57,9 +60,15 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
       getSelectItems,
     } = useMultiSelectState(items, selectedItems, lazy, onSelect);
 
-    useClickOutside(selectRef as React.RefObject<HTMLElement>, () =>
-      setShowPopover(false)
-    );
+    useClickOutside(selectRef as React.RefObject<HTMLElement>, (event) => {
+      const portalElement = document.querySelector(
+        '[data-select-portal="true"]'
+      );
+      if (portalElement && portalElement.contains(event.target as Node)) {
+        return;
+      }
+      setShowPopover(false);
+    });
 
     useEffect(() => {
       if (showPopover) {
@@ -68,7 +77,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
     }, [showPopover]);
 
     const getSelectedDisplay = useCallback(() => {
-      if (selected.length === 0) return placeholder;
+      // if (selected.length === 0) return placeholder;
       const displayedItems = selected
         .slice(0, 3)
         .map(
@@ -110,42 +119,112 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
       ]
     );
 
+    // Portal dropdown content
+    const dropdownContent = (
+      <>
+        {showSearch && (
+          <div className={selectStyle["input-parent"]}>
+            <Icon elements={search} svgClass={iconClass["grey-common"]} />
+            <input
+              autoComplete="off"
+              type="text"
+              name="search"
+              id="search"
+              placeholder="Search a value"
+              className="w-full outline-none dark:bg-transparent"
+              ref={inputRef}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        )}
+
+        {filteredItems.length > 0 ? (
+          filteredItems.map(({ value, label }) => (
+            <button
+              type="button"
+              key={value}
+              className={selectStyle["filter-button"]}
+              onClick={() => handleSelect(value)}
+            >
+              <Icon
+                elements={check}
+                svgClass={`h-4 w-4 fill-none ${
+                  selected.includes(value) ? "stroke-gray-500" : ""
+                }`}
+              />
+              {label}
+            </button>
+          ))
+        ) : (
+          <div className="text-sm text-center">No Data Found</div>
+        )}
+      </>
+    );
+
+    // Selected display Content
+    const selectedDisplay = (
+      <span className="flex items-center gap-1">
+        {selected
+          .slice(0, truncate && selected.length > 3 ? 3 : selected.length)
+          .map((item: string, index: number) => {
+            return (
+              <span
+                key={index}
+                className="bg-slate-800 text-white px-2 py-1 rounded flex items-center gap-1 text-xs"
+              >
+                {item}{" "}
+                <span
+                  onClick={() => handleSelect(item)}
+                  className="cursor-pointer"
+                >
+                  <Icon elements={x} svgClass={iconClass["grey-common"]} />
+                </span>
+              </span>
+            );
+          })}
+        {truncate && selected.length > 3 && (
+          <span className="bg-slate-800 text-white px-2 py-1 rounded text-xs">
+            +{selected.length - 3} more
+          </span>
+        )}
+      </span>
+    );
+
     return (
       <div className="relative w-full" ref={selectRef}>
-        <div
-          className={`relative border border-gary-300 w-full flex items-center px-4 py-2 rounded-lg ${
-            error && "border-red-500"
-          }`}
-        >
+        <div className="w-full relative">
           <button
+            ref={buttonRef}
+            className={`${error ? primary["error-border"] : "border"} ${
+              selectStyle["select-button"]
+            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
             onClick={togglePopover}
-            className={`flex-grow text-sm text-left font-medium ${
-              disabled ? "opacity-50 cursor-not-allowed" : ""
-            }`}
             type="button"
             disabled={disabled}
           >
-            {getSelectedDisplay()}
-          </button>
-          <div className="flex items-center space-x-2">
-            {selected.length > 0 && (
-              <button
-                className="flex items-center px-2"
-                onClick={handleClear}
-                type="button"
-              >
-                <Icon elements={x} svgClass={iconClass["grey-common"]} />
-              </button>
+            {selected.length == 0 ? (
+              <span>{placeholder}</span>
+            ) : (
+              <span>{selectedDisplay}</span>
             )}
-            <button onClick={togglePopover} type="button">
-              <Icon
-                elements={upDown}
-                svgClass={`${iconClass["grey-common"]} ${
-                  disabled ? "opacity-50" : ""
-                }`}
-              />
+
+            <Icon
+              elements={upDown}
+              svgClass={`${iconClass["grey-common"]} ${
+                disabled ? "opacity-50" : ""
+              }`}
+            />
+          </button>
+          {selected.length > 0 && (
+            <button
+              className={selectStyle["selectedDisplay-Button"]}
+              onClick={handleClear}
+              type="button"
+            >
+              <Icon elements={x} svgClass={iconClass["grey-common"]} />
             </button>
-          </div>
+          )}
         </div>
         {error && <p className={primary["error-primary"]}>{error}</p>}
 
@@ -157,46 +236,12 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
           disabled={disabled}
         />
 
-        {showPopover && !disabled && (
-          <div className={popUp["pop-up-style"]}>
-            {showSearch && (
-              <div className="flex p-2 gap-1 items-center sticky top-0 bg-white border-b dark:bg-black">
-                <Icon elements={search} svgClass={iconClass["grey-common"]} />
-                <input
-                  autoComplete="off"
-                  type="text"
-                  name="search"
-                  id="search"
-                  placeholder="Search a value"
-                  className="w-full outline-none dark:bg-black"
-                  ref={inputRef}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            )}
-            {filteredItems.length > 0 ? (
-              filteredItems.map(({ value, label }) => (
-                <button
-                  type="button"
-                  key={value}
-                  className="flex items-center w-full px-2 py-1 text-left hover:bg-blue-100 gap-2 rounded-lg mt-1 text-sm dark:hover:bg-blue-600"
-                  onClick={() => handleSelect(value)}
-                >
-                  <Icon
-                    elements={check}
-                    svgClass={`h-4 w-4 fill-none ${
-                      selected.includes(value) ? "stroke-gray-500" : ""
-                    }`}
-                  />
-                  {label}
-                </button>
-              ))
-            ) : (
-              <div className="text-sm text-center">No Data Found</div>
-            )}
-          </div>
-        )}
+        <PortalDropdown
+          targetRef={buttonRef}
+          isVisible={showPopover && !disabled}
+        >
+          {dropdownContent}
+        </PortalDropdown>
       </div>
     );
   }

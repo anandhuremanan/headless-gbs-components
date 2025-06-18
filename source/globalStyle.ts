@@ -5,7 +5,7 @@ export const primary = {
 
 export const popUp = {
   "pop-up-style":
-    "w-full absolute overflow-y-auto border px-2 rounded-lg mt-[1px] scrollbar bg-white z-50 scrollbar h-auto dark:bg-black dark:text-white animate-fade-down animate-once animate-duration-200",
+    "w-full absolute overflow-y-auto px-2 border border-slate-200 rounded-lg mt-[2px] scrollbar bg-white z-90 scrollbar h-auto dark:bg-black dark:text-white animate-fade-down animate-once animate-duration-200",
 };
 
 export const iconClass = {
@@ -19,4 +19,15 @@ export const inputStyles = {
   otp: "w-8 h-10 m-1 border border-gray-600 rounded-lg text-center text-black",
   passwordToggle: "absolute inset-y-0 right-0 flex items-center pr-2",
   otpContainer: "otp-container",
+};
+
+export const selectStyle = {
+  "select-button":
+    "flex items-center px-4 py-2 w-full justify-between rounded-lg font-medium text-sm",
+  "filter-button":
+    "flex items-center w-full px-2 py-1 text-left hover:bg-blue-100 gap-2 rounded-lg mt-1 text-xs dark:hover:bg-blue-600",
+  "input-parent":
+    "text-sm flex p-1 mt-1 gap-1 items-center sticky top-0 bg-white border rounded-lg border-slate-200 z-10",
+  "selectedDisplay-Button":
+    "absolute right-8 top-0 h-full flex items-center px-2 z-20",
 };
