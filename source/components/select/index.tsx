@@ -23,9 +23,9 @@ import { iconClass, popUp, primary } from "../globalStyle";
 import {
   useSelectState,
   useSelectData,
-  useClickOutside,
   applyScrollbarStyles,
   useKeyboardNavigation,
+  useClickOutside,
 } from "@grampro/headless-helpers";
 
 // Portal Dropdown Component
@@ -43,7 +43,7 @@ const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
       setPosition({
         top: rect.bottom + scrollTop + 4,
         left: rect.left + scrollLeft,
-        width: rect.width, // Match the width of the select button
+        width: rect.width,
       });
     }
   }, [isVisible, targetRef]);
@@ -109,11 +109,15 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null); // Reference for portal positioning
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
-  useClickOutside(selectRef as React.RefObject<HTMLElement>, () =>
-    setShowPopover(false)
-  );
+  useClickOutside(selectRef as React.RefObject<HTMLElement>, (event) => {
+    const portalElement = document.querySelector('[data-select-portal="true"]');
+    if (portalElement && portalElement.contains(event.target as Node)) {
+      return;
+    }
+    setShowPopover(false);
+  });
 
   // Update the handleSelect to accept a SelectItem
   const handleSelect = useCallback(
