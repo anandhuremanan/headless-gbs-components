@@ -12,6 +12,7 @@ import React, {
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
 } from "react";
 import { createPortal } from "react-dom";
 import Icon from "../icon/Icon";
@@ -22,12 +23,50 @@ import { iconClass, popUp, primary } from "../globalStyle";
 import {
   useSelectState,
   useSelectData,
+  useClickOutside,
   applyScrollbarStyles,
   useKeyboardNavigation,
-  usePortalPopup,
-  getPortalStyles,
-  getAnimationClasses,
 } from "@grampro/headless-helpers";
+
+// Portal Dropdown Component
+const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    if (isVisible && targetRef.current) {
+      const rect = targetRef.current.getBoundingClientRect();
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft =
+        window.pageXOffset || document.documentElement.scrollLeft;
+
+      setPosition({
+        top: rect.bottom + scrollTop + 4,
+        left: rect.left + scrollLeft,
+        width: rect.width, // Match the width of the select button
+      });
+    }
+  }, [isVisible, targetRef]);
+
+  if (!isVisible) return null;
+
+  return createPortal(
+    <div
+      style={{
+        position: "absolute",
+        top: position.top,
+        left: position.left,
+        width: position.width,
+        zIndex: 1000,
+      }}
+      className={popUp["pop-up-style"]}
+      data-select-portal="true"
+    >
+      {children}
+    </div>,
+    document.body
+  );
+};
 
 const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   const {
@@ -70,17 +109,11 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null); // Reference for portal positioning
 
-  // Use the custom portal hooks
-  const position = usePortalPopup({
-    isOpen: showPopover,
-    onClose: () => setShowPopover(false),
-    triggerRef: selectRef,
-    popupHeight: 250,
-    offset: 4,
-    minSpaceRequired: 50,
-    portalSelector: '[data-select-portal="true"]',
-  });
+  useClickOutside(selectRef as React.RefObject<HTMLElement>, () =>
+    setShowPopover(false)
+  );
 
   // Update the handleSelect to accept a SelectItem
   const handleSelect = useCallback(
@@ -130,15 +163,9 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
     selected: selectedItem,
   }));
 
-  // Portal popup content with smart positioning
-  const popupContent = showPopover && !disabled && (
-    <div
-      className={`${popUp["pop-up-style"]} ${getAnimationClasses(
-        position.placement
-      )}`}
-      style={getPortalStyles(position, 250)}
-      data-select-portal="true"
-    >
+  // Portal dropdown content
+  const dropdownContent = (
+    <>
       {showSearch && (
         <div className={selectStyle["input-parent"]}>
           <Icon elements={search} svgClass={iconClass["grey-common"]} />
@@ -182,61 +209,61 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
       ) : (
         <div className="text-sm text-center p-2">No Data Found</div>
       )}
-    </div>
+    </>
   );
 
   return (
-    <>
-      <div
-        className="relative w-full mt-2"
-        ref={selectRef}
-        id={id}
-        onKeyDown={handleKeyDown}
-      >
-        <div className="w-full relative">
-          <button
-            className={`${error ? primary["error-border"] : "border"} ${
-              selectStyle["select-button"]
-            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-            onClick={togglePopover}
-            type="button"
-            disabled={disabled}
-          >
-            {selectedDisplay || placeholder}
-            <Icon
-              elements={upDown}
-              svgClass={`${iconClass["grey-common"]} ${
-                disabled ? "opacity-50" : ""
-              } ${
-                showPopover && position.placement === "top" ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-          {selectedDisplay && !disabled && (
-            <button
-              className={selectStyle["selectedDisplay-Button"]}
-              onClick={handleClear}
-            >
-              <Icon elements={x} svgClass={iconClass["grey-common"]} />
-            </button>
-          )}
-          {error && <p className={primary["error-primary"]}>{error}</p>}
-        </div>
-
-        <input
-          type="hidden"
-          name={name}
-          value={selectedItem || ""}
-          readOnly
+    <div
+      className="relative w-full mt-2"
+      ref={selectRef}
+      id={id}
+      onKeyDown={handleKeyDown}
+    >
+      <div className="w-full relative">
+        <button
+          ref={buttonRef} // Add ref for portal positioning
+          className={`${error ? primary["error-border"] : "border"} ${
+            selectStyle["select-button"]
+          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+          onClick={togglePopover}
+          type="button"
           disabled={disabled}
-        />
+        >
+          {selectedDisplay || placeholder}
+          <Icon
+            elements={upDown}
+            svgClass={`${iconClass["grey-common"]} ${
+              disabled ? "opacity-50" : ""
+            }`}
+          />
+        </button>
+        {selectedDisplay && !disabled && (
+          <button
+            className={selectStyle["selectedDisplay-Button"]}
+            onClick={handleClear}
+          >
+            <Icon elements={x} svgClass={iconClass["grey-common"]} />
+          </button>
+        )}
+        {error && <p className={primary["error-primary"]}>{error}</p>}
       </div>
 
-      {/* Render popup in portal to document.body */}
-      {typeof document !== "undefined" &&
-        popupContent &&
-        createPortal(popupContent, document.body)}
-    </>
+      <input
+        type="hidden"
+        name={name}
+        value={selectedItem || ""}
+        readOnly
+        disabled={disabled}
+      />
+
+      {/* Portal Dropdown - renders to document.body */}
+      <PortalDropdown
+        targetRef={buttonRef}
+        isVisible={showPopover && !disabled}
+      >
+        {dropdownContent}
+      </PortalDropdown>
+    </div>
   );
 });
 
