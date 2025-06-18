@@ -13,6 +13,7 @@ import React, {
   useImperativeHandle,
   useRef,
 } from "react";
+import { createPortal } from "react-dom";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
 import type { ItemsProps, SelectHandle, SelectProps } from "./types";
@@ -21,9 +22,11 @@ import { iconClass, popUp, primary } from "../globalStyle";
 import {
   useSelectState,
   useSelectData,
-  useClickOutside,
   applyScrollbarStyles,
   useKeyboardNavigation,
+  usePortalPopup,
+  getPortalStyles,
+  getAnimationClasses,
 } from "@grampro/headless-helpers";
 
 const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
@@ -68,9 +71,16 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const selectRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside(selectRef as React.RefObject<HTMLElement>, () =>
-    setShowPopover(false)
-  );
+  // Use the custom portal hooks
+  const position = usePortalPopup({
+    isOpen: showPopover,
+    onClose: () => setShowPopover(false),
+    triggerRef: selectRef,
+    popupHeight: 250,
+    offset: 4,
+    minSpaceRequired: 50,
+    portalSelector: '[data-select-portal="true"]',
+  });
 
   // Update the handleSelect to accept a SelectItem
   const handleSelect = useCallback(
@@ -120,97 +130,113 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
     selected: selectedItem,
   }));
 
-  return (
+  // Portal popup content with smart positioning
+  const popupContent = showPopover && !disabled && (
     <div
-      className="relative w-full mt-2"
-      ref={selectRef}
-      id={id}
-      onKeyDown={handleKeyDown}
+      className={`${popUp["pop-up-style"]} ${getAnimationClasses(
+        position.placement
+      )}`}
+      style={getPortalStyles(position, 250)}
+      data-select-portal="true"
     >
-      <div className="w-full relative">
-        <button
-          className={`${error ? primary["error-border"] : "border"} ${
-            selectStyle["select-button"]
-          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
-          onClick={togglePopover}
-          type="button"
-          disabled={disabled}
-        >
-          {selectedDisplay || placeholder}
-          <Icon
-            elements={upDown}
-            svgClass={`${iconClass["grey-common"]} ${
-              disabled ? "opacity-50" : ""
-            }`}
+      {showSearch && (
+        <div className={selectStyle["input-parent"]}>
+          <Icon elements={search} svgClass={iconClass["grey-common"]} />
+          <input
+            autoComplete="off"
+            type="text"
+            name="search"
+            id="search"
+            placeholder="Search a value"
+            className="w-full outline-none dark:bg-transparent"
+            ref={inputRef}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (onFiltering) onFiltering(e.target.value);
+              setFocusedIndex(-1);
+            }}
           />
-        </button>
-        {selectedDisplay && !disabled && (
-          <button
-            className={selectStyle["selectedDisplay-Button"]}
-            onClick={handleClear}
-          >
-            <Icon elements={x} svgClass={iconClass["grey-common"]} />
-          </button>
-        )}
-        {error && <p className={primary["error-primary"]}>{error}</p>}
-      </div>
-
-      <input
-        type="hidden"
-        name={name}
-        value={selectedItem || ""}
-        readOnly
-        disabled={disabled}
-      />
-
-      {showPopover && !disabled && (
-        <div className={popUp["pop-up-style"]}>
-          {showSearch && (
-            <div className={selectStyle["input-parent"]}>
-              <Icon elements={search} svgClass={iconClass["grey-common"]} />
-              <input
-                autoComplete="off"
-                type="text"
-                name="search"
-                id="search"
-                placeholder="Search a value"
-                className="w-full outline-none"
-                ref={inputRef}
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  if (onFiltering) onFiltering(e.target.value);
-                  setFocusedIndex(-1);
-                }}
-              />
-            </div>
-          )}
-          {filteredItems.length > 0 ? (
-            filteredItems.map(({ value, label }, index: number) => (
-              <button
-                key={value}
-                ref={(el: any) => (itemRefs.current[index] = el)}
-                className={`${selectStyle["filter-button"]} ${
-                  focusedIndex === index ? "bg-gray-100" : ""
-                }`}
-                onClick={() => handleSelect({ value, label })}
-                onMouseEnter={() => setFocusedIndex(index)}
-              >
-                <Icon
-                  elements={check}
-                  svgClass={`h-4 w-4 fill-none ${
-                    selectedItem === value ? "stroke-gray-500" : ""
-                  }`}
-                />
-                {label}
-              </button>
-            ))
-          ) : (
-            <div className="text-sm text-center">No Data Found</div>
-          )}
         </div>
       )}
+      {filteredItems.length > 0 ? (
+        filteredItems.map(({ value, label }, index: number) => (
+          <button
+            key={value}
+            ref={(el: any) => (itemRefs.current[index] = el)}
+            className={`${selectStyle["filter-button"]} ${
+              focusedIndex === index ? "bg-gray-100 dark:bg-gray-700" : ""
+            }`}
+            onClick={() => handleSelect({ value, label })}
+            onMouseEnter={() => setFocusedIndex(index)}
+          >
+            <Icon
+              elements={check}
+              svgClass={`h-4 w-4 fill-none ${
+                selectedItem === value ? "stroke-gray-500" : ""
+              }`}
+            />
+            {label}
+          </button>
+        ))
+      ) : (
+        <div className="text-sm text-center p-2">No Data Found</div>
+      )}
     </div>
+  );
+
+  return (
+    <>
+      <div
+        className="relative w-full mt-2"
+        ref={selectRef}
+        id={id}
+        onKeyDown={handleKeyDown}
+      >
+        <div className="w-full relative">
+          <button
+            className={`${error ? primary["error-border"] : "border"} ${
+              selectStyle["select-button"]
+            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            onClick={togglePopover}
+            type="button"
+            disabled={disabled}
+          >
+            {selectedDisplay || placeholder}
+            <Icon
+              elements={upDown}
+              svgClass={`${iconClass["grey-common"]} ${
+                disabled ? "opacity-50" : ""
+              } ${
+                showPopover && position.placement === "top" ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+          {selectedDisplay && !disabled && (
+            <button
+              className={selectStyle["selectedDisplay-Button"]}
+              onClick={handleClear}
+            >
+              <Icon elements={x} svgClass={iconClass["grey-common"]} />
+            </button>
+          )}
+          {error && <p className={primary["error-primary"]}>{error}</p>}
+        </div>
+
+        <input
+          type="hidden"
+          name={name}
+          value={selectedItem || ""}
+          readOnly
+          disabled={disabled}
+        />
+      </div>
+
+      {/* Render popup in portal to document.body */}
+      {typeof document !== "undefined" &&
+        popupContent &&
+        createPortal(popupContent, document.body)}
+    </>
   );
 });
 
