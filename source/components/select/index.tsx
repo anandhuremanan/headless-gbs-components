@@ -194,7 +194,11 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
         filteredItems.map(({ value, label }, index: number) => (
           <button
             key={value}
-            ref={(el: any) => (itemRefs.current[index] = el)}
+            ref={(el: any) => {
+              if (itemRefs.current) {
+                itemRefs.current[index] = el;
+              }
+            }}
             className={`${selectStyle["filter-button"]} ${
               focusedIndex === index ? "bg-gray-100 dark:bg-gray-700" : ""
             }`}
