@@ -170,7 +170,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
                 selectedItem === value ? "stroke-gray-500" : ""
               }`}
             />
-            {label}
+            {label.length > 20 ? `${label.substring(0, 20)}...` : label}
           </button>
         ))
       ) : (
