@@ -70,7 +70,7 @@ export const GridProvider: React.FC<{
     goToFirstPage,
     goToPage,
     resetPage,
-  } = usePagination(totalPages, lazy);
+  } = usePagination(totalPages, lazy, workingDataSource, pageSettings);
 
   // Search functionality
   const { searchParam, handleSearchInput, handleSearch } = useSearch({
