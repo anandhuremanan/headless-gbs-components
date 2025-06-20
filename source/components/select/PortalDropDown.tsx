@@ -14,7 +14,7 @@ export const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
         window.pageXOffset || document.documentElement.scrollLeft;
 
       setPosition({
-        top: rect.bottom + scrollTop + 4,
+        top: rect.bottom + scrollTop + 1,
         left: rect.left + scrollLeft,
         width: rect.width,
       });
@@ -31,6 +31,7 @@ export const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
         left: position.left,
         width: position.width,
         zIndex: 1000,
+        visibility: position.top === 0 ? "hidden" : "visible",
       }}
       className={popUp["pop-up-style"]}
       data-select-portal="true"
