@@ -4,6 +4,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
+const readline = require("readline");
 
 // Configuration
 const CONFIG = {
@@ -31,7 +32,8 @@ const CONFIG = {
     "BreadCrumb",
     "Bargraph",
     "UsePaginatedData",
-    "UseUploader"
+    "UseUploader",
+    "DataGridBeta"
   ],
   // Define component dependencies
   dependencies: {
@@ -118,18 +120,182 @@ const installComponentWithDependencies = async (component, destPath) => {
   console.log(`\nFor documentation visit: ${CONFIG.docs}`);
 };
 
+const installMultipleComponents = async (components, destPath) => {
+  const allComponentsToInstall = new Set();
+
+  // Collect all components and their dependencies
+  components.forEach((component) => {
+    const dependencies = CONFIG.dependencies[component] || [];
+    allComponentsToInstall.add(component);
+    dependencies.forEach((dep) => allComponentsToInstall.add(dep));
+  });
+
+  // Filter out already installed components
+  const pendingInstalls = Array.from(allComponentsToInstall).filter(
+    (comp) => !checkComponentExists(comp, destPath)
+  );
+
+  if (pendingInstalls.length === 0) {
+    console.log(
+      "✓ All selected components and their dependencies are already installed."
+    );
+    return;
+  }
+
+  console.log(`\nInstalling ${pendingInstalls.length} components...`);
+
+  // Install all pending components
+  for (const comp of pendingInstalls) {
+    await copyComponent(comp, destPath);
+  }
+
+  // Show dependency information
+  const allDependencies = new Set();
+  components.forEach((component) => {
+    const dependencies = CONFIG.dependencies[component] || [];
+    dependencies.forEach((dep) => allDependencies.add(dep));
+  });
+
+  if (allDependencies.size > 0) {
+    console.log(`\nDependencies installed:`);
+    Array.from(allDependencies).forEach((dep) => {
+      console.log(`- ${dep}`);
+    });
+  }
+
+  console.log(`\nFor documentation visit: ${CONFIG.docs}`);
+};
+
+const interactiveComponentSelector = async () => {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    let selectedComponents = new Set();
+    let currentIndex = 0;
+
+    const renderMenu = () => {
+      console.clear();
+      console.log("🚀 Component Installer - Interactive Mode");
+      console.log(
+        "Use ↑/↓ arrow keys to navigate, SPACE to select/deselect, ENTER to install\n"
+      );
+
+      CONFIG.components.forEach((component, index) => {
+        const isSelected = selectedComponents.has(component);
+        const isCurrentIndex = index === currentIndex;
+        const deps = CONFIG.dependencies[component]
+          ? ` (requires: ${CONFIG.dependencies[component].join(", ")})`
+          : "";
+
+        const prefix = isCurrentIndex ? ">" : " ";
+        const checkbox = isSelected ? "☑" : "☐";
+        const line = `${prefix} ${checkbox} ${component}${deps}`;
+
+        if (isCurrentIndex) {
+          console.log(`\x1b[36m${line}\x1b[0m`); // Cyan highlight
+        } else {
+          console.log(line);
+        }
+      });
+
+      console.log(`\nSelected: ${selectedComponents.size} components`);
+      console.log("Press ENTER to install selected components, or 'q' to quit");
+    };
+
+    const handleKeyPress = (key) => {
+      switch (key) {
+        case "\u001b[A": // Up arrow
+          currentIndex = Math.max(0, currentIndex - 1);
+          renderMenu();
+          break;
+        case "\u001b[B": // Down arrow
+          currentIndex = Math.min(
+            CONFIG.components.length - 1,
+            currentIndex + 1
+          );
+          renderMenu();
+          break;
+        case " ": // Space bar
+          const component = CONFIG.components[currentIndex];
+          if (selectedComponents.has(component)) {
+            selectedComponents.delete(component);
+          } else {
+            selectedComponents.add(component);
+          }
+          renderMenu();
+          break;
+        case "\r": // Enter
+          if (selectedComponents.size > 0) {
+            rl.close();
+            resolve(Array.from(selectedComponents));
+          }
+          break;
+        case "q":
+          rl.close();
+          resolve([]);
+          break;
+      }
+    };
+
+    // Enable raw mode to capture arrow keys
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", handleKeyPress);
+
+    renderMenu();
+
+    rl.on("close", () => {
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+    });
+  });
+};
+
+const parseMultipleComponents = (componentString) => {
+  return componentString
+    .split(",")
+    .map((comp) => comp.trim())
+    .filter((comp) => comp.length > 0);
+};
+
+const validateComponents = (components) => {
+  const invalidComponents = components.filter(
+    (comp) => !CONFIG.components.includes(comp)
+  );
+  if (invalidComponents.length > 0) {
+    console.error(`Invalid components: ${invalidComponents.join(", ")}`);
+    console.log("\nAvailable components:");
+    CONFIG.components.forEach((comp) => console.log(`- ${comp}`));
+    return false;
+  }
+  return true;
+};
+
 const main = async () => {
   const argv = yargs(hideBin(process.argv))
     .option("add", {
       alias: "a",
-      describe: "Component to install",
+      describe:
+        "Component to install (single component or comma-separated list)",
       type: "string",
+    })
+    .option("interactive", {
+      alias: "i",
+      describe: "Interactive component selection mode",
+      type: "boolean",
     })
     .option("list", {
       alias: "l",
       describe: "List available components",
       type: "boolean",
     })
+    .example("$0 -a Button", "Install a single component")
+    .example("$0 -a Button,Card,Modal", "Install multiple components")
+    .example("$0 -i", "Interactive selection mode")
     .help().argv;
 
   // List components if requested
@@ -144,17 +310,43 @@ const main = async () => {
     return;
   }
 
+  // Interactive mode
+  if (argv.interactive) {
+    console.log("Starting interactive component selector...\n");
+    const selectedComponents = await interactiveComponentSelector();
+
+    if (selectedComponents.length === 0) {
+      console.log("No components selected. Exiting...");
+      return;
+    }
+
+    // Create destination directory in project root
+    const destPath = DEFAULT_DEST_PATH;
+    await fs.ensureDir(destPath);
+
+    // Copy common files if they don't exist
+    if (!fs.existsSync(path.join(destPath, "utils.ts"))) {
+      await copyCommonFiles(destPath);
+    }
+
+    // Install selected components
+    await installMultipleComponents(selectedComponents, destPath);
+    return;
+  }
+
   if (!argv.add) {
-    console.error("Please specify a component to install using -a or --add");
+    console.error(
+      "Please specify a component to install using -a/--add, use -i/--interactive for interactive mode, or -l/--list to see available components"
+    );
     process.exit(1);
   }
 
-  // Validate component name
-  const component = argv.add;
-  if (!CONFIG.components.includes(component)) {
-    console.error(`Invalid component: ${component}`);
-    console.log("\nAvailable components:");
-    CONFIG.components.forEach((comp) => console.log(`- ${comp}`));
+  // Parse components (single or multiple)
+  const componentInput = argv.add;
+  const components = parseMultipleComponents(componentInput);
+
+  // Validate all components
+  if (!validateComponents(components)) {
     process.exit(1);
   }
 
@@ -167,8 +359,14 @@ const main = async () => {
     await copyCommonFiles(destPath);
   }
 
-  // Install component and its dependencies
-  await installComponentWithDependencies(component, destPath);
+  // Install components
+  if (components.length === 1) {
+    // Single component installation (existing behavior)
+    await installComponentWithDependencies(components[0], destPath);
+  } else {
+    // Multiple components installation
+    await installMultipleComponents(components, destPath);
+  }
 };
 
 main().catch((error) => {
