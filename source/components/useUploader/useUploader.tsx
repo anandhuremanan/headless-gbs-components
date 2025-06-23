@@ -29,7 +29,7 @@ interface UseChunkedUploadOptions {
 }
 
 interface UseChunkedUploadReturn {
-  uploadFiles: (files: File[]) => Promise<void>;
+  uploadFiles: (files: File[], customParams?: any) => Promise<void>;
   isUploading: boolean;
   uploadProgress: UploadProgress;
   uploadStatus: string;
@@ -87,10 +87,17 @@ async function uploadChunk(
   formData.append("chunkIndex", chunkIndex.toString());
   formData.append("totalChunks", totalChunks.toString());
   formData.append("fileSize", originalFile.size.toString());
+  formData.append(
+    "additionalParams",
+    additionalParams ? JSON.stringify(additionalParams) : "{}"
+  );
 
-  Object.entries(additionalParams).forEach(([key, value]: any) => {
-    formData.append(key, value);
-  });
+  // If you have additional parameters to send, you can append them here
+  // Uncomment the following lines if you want to include additionalParams in the formData
+
+  // Object.entries(additionalParams).forEach(([key, value]: any) => {
+  //   formData.append(key, value);
+  // });
 
   const response = await fetch(`${baseUrl}`, {
     method: "POST",
@@ -141,7 +148,7 @@ export function useChunkedUpload(
   }, []);
 
   const uploadFiles = useCallback(
-    async (files: File[]) => {
+    async (files: File[], customParams?: any) => {
       if (files.length === 0) {
         throw new Error("No files selected for upload.");
       }
@@ -189,7 +196,7 @@ export function useChunkedUpload(
                 currentChunk.totalChunks,
                 baseUrl,
                 controller.signal,
-                additionalParams
+                { ...additionalParams, ...customParams }
               );
 
               results.push(result);
