@@ -11,7 +11,8 @@ For detailed documentation on usage and props, Please visit: [Building Block Doc
 - Data Grid Enhancement
 - End of Support for Grid Component
 - Select Enhancement
-- Interactive mode
+- Interactive mode when installing components
+- New Component TextArea
 
 ## Authors
 

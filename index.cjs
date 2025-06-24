@@ -26,6 +26,7 @@ const CONFIG = {
     "Uploader",
     "FormRenderer",
     "MaterialInput",
+    "TextArea",
     "ContextMenu",
     "Navbar",
     "DataGrid",
