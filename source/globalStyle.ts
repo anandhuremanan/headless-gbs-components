@@ -5,7 +5,7 @@ export const primary = {
 
 export const popUp = {
   "pop-up-style":
-    "w-full absolute overflow-y-auto px-2 border border-slate-200 rounded-lg mt-[2px] scrollbar bg-white z-90 scrollbar h-auto dark:bg-black dark:text-black animate-fade-down animate-once animate-duration-200",
+    "w-full px-1 absolute overflow-y-auto border border-slate-200 rounded-lg mt-[2px] scrollbar bg-white z-90 scrollbar h-40 dark:bg-black dark:text-white animate-fade-down animate-once animate-duration-200",
 };
 
 export const iconClass = {
@@ -27,7 +27,7 @@ export const selectStyle = {
   "filter-button":
     "flex items-center w-full px-2 py-1 text-left hover:bg-blue-100 gap-2 rounded-lg mt-1 text-xs dark:hover:bg-blue-600",
   "input-parent":
-    "text-sm flex p-1 mt-1 gap-1 items-center sticky top-0 bg-white border rounded-lg border-slate-200 z-10",
+    "text-sm flex p-1 mt-0 gap-1 items-center sticky top-0 border-b rounded-lg border-slate-200 z-50 bg-white dark:bg-black",
   "selectedDisplay-Button":
     "absolute right-8 top-0 h-full flex items-center px-2 z-20",
 };

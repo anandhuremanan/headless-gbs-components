@@ -100,7 +100,9 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
 
   useEffect(() => {
     if (showPopover) {
-      inputRef.current?.focus();
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
   }, [showPopover]);
 
@@ -138,7 +140,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
             name="search"
             id="search"
             placeholder="Search a value"
-            className="w-full outline-none dark:bg-transparent"
+            className="w-full outline-none "
             ref={inputRef}
             value={searchTerm}
             onChange={(e) => {
