@@ -5,7 +5,7 @@ export const primary = {
 
 export const popUp = {
   "pop-up-style":
-    "w-full absolute overflow-y-auto px-2 border border-slate-200 rounded-lg mt-[2px] scrollbar bg-white z-90 scrollbar h-auto dark:bg-black dark:text-white animate-fade-down animate-once animate-duration-200",
+    "w-full absolute overflow-y-auto px-2 border border-slate-200 rounded-lg mt-[2px] scrollbar bg-white z-90 scrollbar h-auto dark:bg-black dark:text-black animate-fade-down animate-once animate-duration-200",
 };
 
 export const iconClass = {
