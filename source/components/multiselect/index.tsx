@@ -72,7 +72,9 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
 
     useEffect(() => {
       if (showPopover) {
-        inputRef.current?.focus();
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 0);
       }
     }, [showPopover]);
 
