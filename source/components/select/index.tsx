@@ -198,7 +198,9 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
           type="button"
           disabled={disabled}
         >
-          {selectedDisplay || placeholder}
+          {selectedDisplay.length > 20
+            ? `${selectedDisplay.substring(0, 20)}...` // We will truncate the display text if it exceeds 20 characters
+            : selectedDisplay || placeholder}
           <Icon
             elements={upDown}
             svgClass={`${iconClass["grey-common"]} ${

@@ -79,7 +79,6 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
     }, [showPopover]);
 
     const getSelectedDisplay = useCallback(() => {
-      // if (selected.length === 0) return placeholder;
       const displayedItems = selected
         .slice(0, 3)
         .map(
@@ -164,33 +163,40 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
       </>
     );
 
-    // Selected display Content
     const selectedDisplay = (
-      <span className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap pr-16">
         {selected
           .slice(0, truncate && selected.length > 3 ? 3 : selected.length)
-          .map((item: string, index: number) => {
+          .map((value: string, index: number) => {
+            const item = workingDataSource.find(
+              (dataItem) => dataItem.value === value
+            );
+            const label = item?.label || value;
+
             return (
               <span
                 key={index}
-                className="bg-slate-800 text-white px-2 py-1 rounded flex items-center gap-1 text-xs"
+                className="bg-slate-800 text-white px-2 py-1 rounded flex items-center gap-1 text-xs whitespace-nowrap"
               >
-                {item}{" "}
+                {label.length > 15 ? `${label.substring(0, 15)}...` : label}
                 <span
-                  onClick={() => handleSelect(item)}
-                  className="cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect(value);
+                  }}
+                  className="cursor-pointer hover:bg-slate-700 rounded p-0.5"
                 >
-                  <Icon elements={x} svgClass={iconClass["grey-common"]} />
+                  <Icon elements={x} svgClass="h-3 w-3 stroke-white" />
                 </span>
               </span>
             );
           })}
         {truncate && selected.length > 3 && (
-          <span className="bg-slate-800 text-white px-2 py-1 rounded text-xs">
+          <span className="bg-slate-800 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
             +{selected.length - 3} more
           </span>
         )}
-      </span>
+      </div>
     );
 
     return (
@@ -200,28 +206,34 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
             ref={buttonRef}
             className={`${error ? primary["error-border"] : "border"} ${
               selectStyle["select-button"]
-            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+            } ${disabled ? "opacity-50 cursor-not-allowed" : ""} relative`}
             onClick={togglePopover}
             type="button"
             disabled={disabled}
           >
             {selected.length == 0 ? (
-              <span>{placeholder}</span>
+              <span className="pr-8">{placeholder}</span>
             ) : (
-              <span>{selectedDisplay}</span>
+              selectedDisplay
             )}
 
-            <Icon
-              elements={upDown}
-              svgClass={`${iconClass["grey-common"]} ${
-                disabled ? "opacity-50" : ""
-              }`}
-            />
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <Icon
+                elements={upDown}
+                svgClass={`${iconClass["grey-common"]} ${
+                  disabled ? "opacity-50" : ""
+                }`}
+              />
+            </div>
           </button>
+
           {selected.length > 0 && (
             <button
-              className={selectStyle["selectedDisplay-Button"]}
-              onClick={handleClear}
+              className={`${selectStyle["selectedDisplay-Button"]}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClear();
+              }}
               type="button"
             >
               <Icon elements={x} svgClass={iconClass["grey-common"]} />
