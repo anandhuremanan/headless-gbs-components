@@ -131,49 +131,52 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
   // Portal dropdown content
   const dropdownContent = (
     <>
-      {showSearch && (
-        <div className={selectStyle["input-parent"]}>
-          <Icon elements={search} svgClass={iconClass["grey-common"]} />
-          <input
-            autoComplete="off"
-            type="text"
-            name="search"
-            id="search"
-            placeholder="Search a value"
-            className="w-full outline-none "
-            ref={inputRef}
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              if (onFiltering) onFiltering(e.target.value);
-              setFocusedIndex(-1);
-            }}
-          />
-        </div>
-      )}
+      <div className={selectStyle["input-parent"]}>
+        {showSearch && (
+          <div className="flex items-center gap-2 px-2 py-1">
+            <Icon elements={search} svgClass={iconClass["grey-common"]} />
+            <input
+              autoComplete="off"
+              type="text"
+              name="search"
+              id="search"
+              placeholder="Search a value"
+              className="w-full outline-none "
+              ref={inputRef}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (onFiltering) onFiltering(e.target.value);
+                setFocusedIndex(-1);
+              }}
+            />
+          </div>
+        )}
+      </div>
       {filteredItems.length > 0 ? (
         filteredItems.map(({ value, label }, index: number) => (
-          <button
-            key={value}
-            ref={(el: any) => {
-              if (itemRefs.current) {
-                itemRefs.current[index] = el;
-              }
-            }}
-            className={`${selectStyle["filter-button"]} ${
-              focusedIndex === index ? "bg-gray-100 dark:bg-gray-700" : ""
-            }`}
-            onClick={() => handleSelect({ value, label })}
-            onMouseEnter={() => setFocusedIndex(index)}
-          >
-            <Icon
-              elements={check}
-              svgClass={`h-4 w-4 fill-none ${
-                selectedItem === value ? "stroke-gray-500" : ""
+          <div className="w-full px-1" key={value}>
+            <button
+              ref={(el: any) => {
+                if (itemRefs.current) {
+                  itemRefs.current[index] = el;
+                }
+              }}
+              className={`${selectStyle["filter-button"]} ${
+                focusedIndex === index ? "bg-gray-100 dark:bg-gray-700" : ""
               }`}
-            />
-            {label.length > 20 ? `${label.substring(0, 20)}...` : label}
-          </button>
+              onClick={() => handleSelect({ value, label })}
+              onMouseEnter={() => setFocusedIndex(index)}
+            >
+              <Icon
+                elements={check}
+                svgClass={`h-4 w-4 fill-none ${
+                  selectedItem === value ? "stroke-gray-500" : ""
+                }`}
+              />
+              {label.length > 20 ? `${label.substring(0, 20)}...` : label}
+            </button>
+          </div>
         ))
       ) : (
         <div className="text-sm text-center p-2">No Data Found</div>

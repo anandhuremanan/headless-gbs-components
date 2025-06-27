@@ -123,39 +123,42 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
     // Portal dropdown content
     const dropdownContent = (
       <>
-        {showSearch && (
-          <div className={selectStyle["input-parent"]}>
-            <Icon elements={search} svgClass={iconClass["grey-common"]} />
-            <input
-              autoComplete="off"
-              type="text"
-              name="search"
-              id="search"
-              placeholder="Search a value"
-              className="w-full outline-none dark:bg-transparent"
-              ref={inputRef}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        )}
+        <div className={selectStyle["input-parent"]}>
+          {showSearch && (
+            <div className="flex items-center gap-2 px-2 py-1">
+              <Icon elements={search} svgClass={iconClass["grey-common"]} />
+              <input
+                autoComplete="off"
+                type="text"
+                name="search"
+                id="search"
+                placeholder="Search a value"
+                className="w-full outline-none dark:bg-transparent"
+                ref={inputRef}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          )}
+        </div>
 
         {filteredItems.length > 0 ? (
           filteredItems.map(({ value, label }) => (
-            <button
-              type="button"
-              key={value}
-              className={selectStyle["filter-button"]}
-              onClick={() => handleSelect(value)}
-            >
-              <Icon
-                elements={check}
-                svgClass={`h-4 w-4 fill-none ${
-                  selected.includes(value) ? "stroke-gray-500" : ""
-                }`}
-              />
-              {label.length > 20 ? `${label.substring(0, 20)}...` : label}
-            </button>
+            <div className="w-full px-1" key={value}>
+              <button
+                type="button"
+                className={selectStyle["filter-button"]}
+                onClick={() => handleSelect(value)}
+              >
+                <Icon
+                  elements={check}
+                  svgClass={`h-4 w-4 fill-none ${
+                    selected.includes(value) ? "stroke-gray-500" : ""
+                  }`}
+                />
+                {label.length > 20 ? `${label.substring(0, 20)}...` : label}
+              </button>
+            </div>
           ))
         ) : (
           <div className="text-sm text-center">No Data Found</div>
