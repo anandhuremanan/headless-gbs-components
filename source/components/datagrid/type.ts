@@ -5,7 +5,7 @@ interface PageSettingsProps {
   totalCount?: number;
 }
 
-interface ActiveFilterArrayValue {
+export interface ActiveFilterArrayValue {
   filterColumn: string;
   filterCondition: string;
   filterValue: string;

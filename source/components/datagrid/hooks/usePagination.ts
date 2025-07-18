@@ -29,9 +29,9 @@ export const usePagination = (
   }, [totalPages, lazy, pageStart]);
 
   // This will handle the case when dataSource changes
-  // and adjust the current page accordingly
+  // and adjust the current page accordingly in managed workflow
   useEffect(() => {
-    if (dataSource && prevDataLength > 0) {
+    if (lazy && dataSource && prevDataLength > 0) {
       const currentDataLength = dataSource.length;
 
       if (currentDataLength > prevDataLength) {

@@ -37,7 +37,7 @@ export const GridProvider: React.FC<{
     gridColumnStyle = "p-2 text-xs",
     rowChange = () => {},
     pageStatus = () => {},
-    activeFilterArrayValue = [],
+    activeFilterArrayValue,
     searchParamValue = () => {},
     showTotalPages = false,
     onSearch = () => {},

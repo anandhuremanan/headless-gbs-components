@@ -3,6 +3,7 @@ import {
   clearFilterHelper,
   handleApplyFilterHelper,
 } from "@grampro/headless-helpers";
+import { ActiveFilterArrayValue } from "../type";
 
 interface UseFilteringProps {
   columns: any[];
@@ -15,7 +16,7 @@ interface UseFilteringProps {
   resetPage: (data: any[], settings: any) => number;
   setTotalPages: (pages: number) => void;
   pageSettings: any;
-  activeFilterArrayValue?: (filters: any[]) => void;
+  activeFilterArrayValue?: (filters: ActiveFilterArrayValue[]) => void;
 }
 
 export const useFiltering = ({
@@ -58,7 +59,8 @@ export const useFiltering = ({
       setWorkingDataSource(updatedFullDataSource);
       setActiveFilterArray(updatedActiveFilterArray);
       if (activeFilterArrayValue)
-        activeFilterArrayValue(updatedActiveFilterArray);
+        activeFilterArrayValue?.(updatedActiveFilterArray);
+
       const totalPages = resetPage(updatedFullDataSource, pageSettings);
       setTotalPages(totalPages);
     },
@@ -89,7 +91,8 @@ export const useFiltering = ({
       setWorkingDataSource(updatedDataSource);
       setActiveFilterArray(updatedActiveFilterArray);
       if (activeFilterArrayValue)
-        activeFilterArrayValue(updatedActiveFilterArray);
+        activeFilterArrayValue?.(updatedActiveFilterArray);
+
       const totalPages = resetPage(updatedDataSource, pageSettings);
       setTotalPages(totalPages);
     },
