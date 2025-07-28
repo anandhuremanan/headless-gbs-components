@@ -40,7 +40,7 @@ const CONFIG = {
   dependencies: {
     FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
   },
-  docs: "https://blackmax-designs.gitbook.io/building-block-v2.0",
+  docs: "https://gramprokit.imanandhu.in",
 };
 
 const SOURCE_PATH = path.join(__dirname, "source", "components");
