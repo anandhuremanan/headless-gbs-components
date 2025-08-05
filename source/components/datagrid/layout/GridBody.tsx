@@ -3,7 +3,7 @@ import { useGridContext } from "../context/GridContext";
 import FilterPopup from "./FilterPopup";
 import Icon from "../../icon/Icon";
 import { listFilter } from "../../icon/iconPaths";
-import { Column } from "../type";
+import type { Column } from "../type";
 
 const GridBody = () => {
   const {

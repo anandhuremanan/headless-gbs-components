@@ -3,7 +3,7 @@ import {
   clearFilterHelper,
   handleApplyFilterHelper,
 } from "@grampro/headless-helpers";
-import { ActiveFilterArrayValue } from "../type";
+import type { ActiveFilterArrayValue } from "../type";
 
 interface UseFilteringProps {
   columns: any[];

@@ -8,6 +8,7 @@
  * https://psychedelic-step-e70.notion.site/Data-GRID-by-GBS-R-D-20ff97c899d24bc590215a6196435fa3
  */
 
+import React from "react";
 import { GridMemoised as GridComponent } from "./layout";
 import { memo } from "react";
 

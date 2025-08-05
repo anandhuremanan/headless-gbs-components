@@ -110,8 +110,8 @@ export const GridProvider: React.FC<{
   const { selectedRows, handleSelectAll, handleSelect, isRowSelected } =
     useRowSelection(workingDataSource, onSelectRow);
 
-  // Page status reporting
-  usePageStatus(currentPage, totalPages, pageStatus);
+  // Page status reporting - Bug Report - causes re-rendering when currentPage or totalPages change
+  // usePageStatus(currentPage, totalPages, pageStatus);
 
   // Context value
   const contextValue: GridContextType = {

@@ -34,13 +34,13 @@ const CONFIG = {
     "Bargraph",
     "UsePaginatedData",
     "UseUploader",
-    "DataGridBeta"
+    "DataGridBeta",
   ],
   // Define component dependencies
   dependencies: {
     FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
   },
-  docs: "https://headless-lib-docs.vercel.app",
+  docs: "https://gramprokit.vercel.app/",
 };
 
 const SOURCE_PATH = path.join(__dirname, "source", "components");
