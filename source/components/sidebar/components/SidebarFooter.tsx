@@ -1,4 +1,4 @@
-import { MenuItem, IconComponent } from "../type";
+import type { MenuItem, IconComponent } from "../type";
 
 type SidebarFooterProps = {
   footerItems?: MenuItem[];

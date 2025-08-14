@@ -1,4 +1,4 @@
-import { Toast } from "./types";
+import type { Toast } from "./types";
 import { useToastStore } from "./toastStore";
 
 export function useToast() {

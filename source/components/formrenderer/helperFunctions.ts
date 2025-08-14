@@ -3,7 +3,7 @@ import SelectHandles from "./componentHandles/SelectHandles";
 import MultiHandles from "./componentHandles/MultiHandles";
 import DatePickerHandles from "./componentHandles/DatePickerHandles";
 import CheckboxHandles from "./componentHandles/CheckBoxHandles";
-import { FormItem } from "./types";
+import type { FormItem } from "./types";
 
 // Component Map
 export const COMPONENT_MAP = {

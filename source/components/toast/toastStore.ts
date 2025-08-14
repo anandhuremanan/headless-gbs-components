@@ -1,5 +1,5 @@
 import React from "react";
-import { Toast } from "./types";
+import type { Toast } from "./types";
 
 type ToastState = {
   toasts: Toast[];

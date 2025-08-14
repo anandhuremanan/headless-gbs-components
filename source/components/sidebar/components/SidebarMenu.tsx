@@ -1,4 +1,4 @@
-import { IconComponent, MenuSection } from "../type";
+import type { IconComponent, MenuSection } from "../type";
 import { MenuSection as MenuSectionComponent } from "./MenuSection";
 
 type SidebarMenuProps = {

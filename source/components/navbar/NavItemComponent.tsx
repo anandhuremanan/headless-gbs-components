@@ -1,5 +1,5 @@
 import React from "react";
-import { NavItem, NavItemComponentProps } from "./types";
+import type { NavItem, NavItemComponentProps } from "./types";
 
 const NavItemComponent: React.FC<NavItemComponentProps> = ({
   items,

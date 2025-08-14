@@ -1,4 +1,4 @@
-import { SidebarProps } from "./type";
+import type { SidebarProps } from "./type";
 import { useSidebarState } from "./hooks/useSidebarState";
 import { SidebarLogo } from "./components/SidebarLogo";
 import { SidebarMenu } from "./components/SidebarMenu";

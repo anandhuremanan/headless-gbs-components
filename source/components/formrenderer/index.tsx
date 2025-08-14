@@ -7,7 +7,7 @@
 
 import React, { useRef, useState, FormEvent } from "react";
 import { useFormContext } from "@grampro/headless-helpers";
-import { FormItem, FormRendererProps } from "./types";
+import type { FormItem, FormRendererProps } from "./types";
 import { COMPONENT_MAP, validateField } from "./helperFunctions";
 
 const FormRenderer: React.FC<FormRendererProps> = ({

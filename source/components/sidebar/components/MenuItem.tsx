@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MenuItem, IconComponent } from "../type";
+import type { MenuItem, IconComponent } from "../type";
 
 type MenuItemProps = {
   item: MenuItem;

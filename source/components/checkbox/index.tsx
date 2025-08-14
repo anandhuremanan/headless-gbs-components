@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import React, { InputHTMLAttributes } from "react";
+import React, { type InputHTMLAttributes } from "react";
 
 export const Checkbox = ({
   ...props

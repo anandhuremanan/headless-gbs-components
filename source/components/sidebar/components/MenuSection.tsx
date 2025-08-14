@@ -1,4 +1,4 @@
-import { MenuSection as MenuSectionType, IconComponent } from "../type";
+import type { MenuSection as MenuSectionType, IconComponent } from "../type";
 import { MenuItemComponent } from "./MenuItem";
 
 type MenuSectionProps = {

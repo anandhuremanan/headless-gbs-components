@@ -9,7 +9,7 @@ import React from "react";
 import { useLocation } from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
 import { rightArrow } from "../icon/iconPaths";
-import { BreadcrumbsProps } from "./types";
+import type { BreadcrumbsProps } from "./types";
 
 export const Breadcrumb = ({
   showHome = true,

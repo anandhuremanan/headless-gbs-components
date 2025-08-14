@@ -10,7 +10,7 @@ import NavItemComponent from "./NavItemComponent";
 import SearchBar from "./SearchBar";
 import AuthSection from "./AuthSection";
 import MobileToggle from "./MobileToggle";
-import { NavbarProps } from "./types";
+import type { NavbarProps } from "./types";
 import {
   getContainerClasses,
   getPositionClasses,

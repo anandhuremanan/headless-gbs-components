@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { validateInput } from "../helperFunctions";
 import { Input } from "../../input";
-import { InputHandlesProps } from "../types";
+import type { InputHandlesProps } from "../types";
 import { evaluateExpression } from "@grampro/headless-helpers";
 import { twMerge } from "tailwind-merge";
 

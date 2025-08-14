@@ -1,5 +1,5 @@
 import React from "react";
-import { AuthSectionProps } from "./types";
+import type { AuthSectionProps } from "./types";
 
 const AuthSection: React.FC<AuthSectionProps> = ({
   showAuthButtons,

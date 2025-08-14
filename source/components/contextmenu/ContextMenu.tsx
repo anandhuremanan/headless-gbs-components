@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, MouseEvent } from "react";
-import { ContextMenuProps, Position } from "./types";
+import type { ContextMenuProps, Position } from "./types";
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({ children }) => {
   const [isVisible, setIsVisible] = useState<boolean>(false);

@@ -9,7 +9,7 @@ import React, { useEffect, useCallback, memo, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 import Icon from "../icon/Icon";
 import { x } from "../icon/iconPaths";
-import { ModalProps } from "./types";
+import type { ModalProps } from "./types";
 
 const defaultClasses = {
   modal:

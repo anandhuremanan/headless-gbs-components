@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { ToastPosition } from "./types";
+import type { ToastPosition } from "./types";
 import { useToastStore } from "./toastStore";
 import { ToastComponent } from "./ToastComponent";
 

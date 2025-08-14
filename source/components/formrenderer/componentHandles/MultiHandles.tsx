@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { MultiSelectHandlesProps } from "../types";
+import type { MultiSelectHandlesProps } from "../types";
 import { MultiSelect } from "../../multiselect";
 import { evaluateExpression } from "@grampro/headless-helpers";
 

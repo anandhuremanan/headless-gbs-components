@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Select } from "../../select";
-import { Option, SelectHandlesProps } from "../types";
+import type { Option, SelectHandlesProps } from "../types";
 import { evaluateExpression } from "@grampro/headless-helpers";
 
 export default function SelectHandles({

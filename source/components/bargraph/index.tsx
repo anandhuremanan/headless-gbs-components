@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { BarChartProps } from "./type";
+import type { BarChartProps } from "./type";
 
 export const BarChart: React.FC<BarChartProps> = ({
   data,

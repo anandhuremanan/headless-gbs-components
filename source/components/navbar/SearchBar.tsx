@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { SearchBarProps } from "./types";
+import type { SearchBarProps } from "./types";
 
 const SearchBar: React.FC<SearchBarProps> = ({
   variant,

@@ -177,3 +177,24 @@ export const cloudDownload: any = [
     key: "ui1hmy",
   },
 ];
+
+export const plus: any = [
+  { type: "path", d: "M12 5v14", key: "vertical" },
+  { type: "path", d: "M5 12h14", key: "horizontal" },
+];
+
+export const trash: any = [
+  {
+    type: "path",
+    d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6",
+    key: "bin",
+    fill: "none",
+  },
+  { type: "path", d: "M3 6h18", key: "lid", fill: "none" },
+  {
+    type: "path",
+    d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2",
+    key: "handle",
+    fill: "none",
+  },
+];

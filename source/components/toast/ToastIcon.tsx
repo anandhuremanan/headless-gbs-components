@@ -1,4 +1,4 @@
-import { Toast } from "./types";
+import type { Toast } from "./types";
 
 const ToastIcon = ({ type }: { type: Toast["type"] }) => {
   if (!type) return null;

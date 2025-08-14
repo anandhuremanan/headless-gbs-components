@@ -1,5 +1,5 @@
 import React from "react";
-import { MobileToggleProps } from "./types";
+import type { MobileToggleProps } from "./types";
 
 const MobileToggle: React.FC<MobileToggleProps> = ({ isOpen, toggleMenu }) => {
   return (

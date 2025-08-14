@@ -6,7 +6,7 @@
  */
 
 import { useState } from "react";
-import { TabsProps } from "./types";
+import type { TabsProps } from "./types";
 
 export function Tabs({
   tabs,

@@ -1,4 +1,4 @@
-import { ContextMenuItemProps } from "./types";
+import type { ContextMenuItemProps } from "./types";
 
 export const ContextMenuItem: React.FC<ContextMenuItemProps> = ({
   onClick,

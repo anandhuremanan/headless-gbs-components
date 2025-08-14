@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useRef } from "react";
-import { MaterialInputProps } from "./types";
+import type { MaterialInputProps } from "./types";
 
 const MaterialInput = ({
   label,

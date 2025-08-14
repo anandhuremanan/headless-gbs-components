@@ -1,4 +1,4 @@
-import { MenuData } from "../type";
+import type { MenuData } from "../type";
 
 type SidebarLogoProps = {
   logo: MenuData["logo"];

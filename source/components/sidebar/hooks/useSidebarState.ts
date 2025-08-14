@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MenuData } from "../type";
+import type { MenuData } from "../type";
 
 export const useSidebarState = (menuData: MenuData) => {
   const [sidebarData, setSidebarData] = useState<MenuData>(menuData);

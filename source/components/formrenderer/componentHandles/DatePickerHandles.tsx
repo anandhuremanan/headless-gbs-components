@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { DatePicker } from "../../datepicker";
-import { DatePickerHandlesProps } from "../types";
+import type { DatePickerHandlesProps } from "../types";
 import { evaluateExpression } from "@grampro/headless-helpers";
 
 export default function DatePickerHandles({
