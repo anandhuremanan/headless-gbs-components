@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v1.0.30)
+# GBS Building Blocks 2.0 (v1.0.31)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -6,9 +6,9 @@ Latest and upgraded version of GBS building blocks with headless UI and removed 
 
 For detailed documentation on usage and props, Please visit: [Building Block Documentation v2.0](https://gramprokit.vercel.app)
 
-## What's New 🎉 (Ver 1.0.30)
+## What's New 🎉 (Ver 1.0.31)
 
-- Type Import Update
+- Minor Bug Fix
 
 ## Authors
 

@@ -35,7 +35,7 @@ export type GridProps = {
   gridColumnStyleSelectAll?: string;
   gridColumnStyle?: string;
   rowChange?: any;
-  pageStatus?: any;
+  pageStatus?: ({ currentPage }: { currentPage: number }) => void;
   activeFilterArrayValue?: ActiveFilterArrayValue[] | any;
   searchParamValue?: (value: string) => void;
   showTotalPages?: boolean;

@@ -7,7 +7,6 @@ import {
   useSearch,
   useFiltering,
   useRowSelection,
-  usePageStatus,
 } from "../hooks";
 
 const GridContext = createContext<GridContextType | undefined>(undefined);
@@ -70,7 +69,13 @@ export const GridProvider: React.FC<{
     goToFirstPage,
     goToPage,
     resetPage,
-  } = usePagination(totalPages, lazy, workingDataSource, pageSettings);
+  } = usePagination(
+    totalPages,
+    lazy,
+    workingDataSource,
+    pageSettings,
+    pageStatus
+  );
 
   // Search functionality
   const { searchParam, handleSearchInput, handleSearch } = useSearch({
@@ -109,9 +114,6 @@ export const GridProvider: React.FC<{
   // Row selection functionality
   const { selectedRows, handleSelectAll, handleSelect, isRowSelected } =
     useRowSelection(workingDataSource, onSelectRow);
-
-  // Page status reporting - Bug Report - causes re-rendering when currentPage or totalPages change
-  // usePageStatus(currentPage, totalPages, pageStatus);
 
   // Context value
   const contextValue: GridContextType = {
