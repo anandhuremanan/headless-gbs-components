@@ -146,14 +146,10 @@ export const DatePicker = ({
             elements={calender}
             svgClass={iconClass["grey-common"]}
           />
-          <span className={!selectedDate ? "text-gray-400 text-sm" : ""}>
-            {selectedDate ? (
-              <span className="text-sm">
-                {selectedDate.toLocaleDateString("en-GB")}
-              </span>
-            ) : (
-              placeholder
-            )}
+          <span className={!selectedDate ? "text-gray-400 text-sm" : "text-sm"}>
+            {selectedDate
+              ? selectedDate.toLocaleDateString("en-GB")
+              : placeholder}
           </span>
         </button>
 
@@ -175,8 +171,8 @@ export const DatePicker = ({
       />
 
       {showDatepicker && !disabled && (
-        <div className={popUp["pop-up-style"]}>
-          <div className="flex justify-between items-center p-2">
+        <div className={popUp["pop-up-style-calender"]}>
+          <div className="flex justify-between items-center p-2 text-xs">
             <div className="flex items-center space-x-2">
               <span className="text-md font-semibold">
                 {new Date(currentYear, currentMonth).toLocaleString("default", {
@@ -301,14 +297,17 @@ export const DatePicker = ({
           ) : (
             <div className="grid grid-cols-7 gap-1 p-2">
               {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                <div key={day} className="text-center font-bold text-sm p-1">
+                <div key={day} className="text-center font-bold text-xs p-1">
                   {day}
                 </div>
               ))}
               {days.flat().map((day: Date | null, index: number) => {
                 if (!day) {
                   return (
-                    <div key={index} className="text-center p-1 w-8 h-8"></div>
+                    <div
+                      key={index}
+                      className="text-center p-1 w-8 h-8 text-xs"
+                    ></div>
                   );
                 }
                 const isDisabled: boolean | undefined =
@@ -326,7 +325,7 @@ export const DatePicker = ({
                     key={index}
                     onClick={() => !isDisabled && selectDate(day)}
                     disabled={isDisabled}
-                    className={`text-center p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
+                    className={`text-center text-xs p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
                       isSelected
                         ? "bg-black text-white hover:bg-gray-800 dark:bg-zinc-500"
                         : ""
@@ -342,7 +341,7 @@ export const DatePicker = ({
               })}
             </div>
           )}
-          <div className="px-2 py-2 flex justify-between mb-8">
+          <div className="px-2 py-2 flex justify-between mb-8 text-xs">
             <button
               type="button"
               onClick={goToToday}
