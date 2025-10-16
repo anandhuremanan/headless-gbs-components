@@ -45,15 +45,17 @@ export const Breadcrumb = ({
                 >
                   {segment.label}
                 </a>
-                <span className="mx-2 text-gray-400">
-                  <Icon
-                    elements={rightArrow}
-                    dimensions={{ width: 14, height: 14 }}
-                    svgClass={
-                      "stroke-black fill-none dark:stroke-white cursor-pointer"
-                    }
-                  />
-                </span>
+                {!isLast && (
+                  <span className="mx-2 text-gray-400">
+                    <Icon
+                      elements={rightArrow}
+                      dimensions={{ width: 14, height: 14 }}
+                      svgClass={
+                        "stroke-black fill-none dark:stroke-white cursor-pointer"
+                      }
+                    />
+                  </span>
+                )}
               </>
             </li>
           );
