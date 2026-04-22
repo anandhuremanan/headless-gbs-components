@@ -17,6 +17,8 @@ interface UseFilteringProps {
   setTotalPages: (pages: number) => void;
   pageSettings: any;
   activeFilterArrayValue?: (filters: ActiveFilterArrayValue[]) => void;
+  lazy: boolean;
+  initialFilters?: any[];
 }
 
 export const useFiltering = ({
@@ -31,8 +33,10 @@ export const useFiltering = ({
   setTotalPages,
   pageSettings,
   activeFilterArrayValue,
+  lazy,
+  initialFilters = [],
 }: UseFilteringProps) => {
-  const [activeFilterArray, setActiveFilterArray] = useState<any>([]);
+  const [activeFilterArray, setActiveFilterArray] = useState<any>(initialFilters);
 
   const toggleFilterPopup = useCallback(
     (index: number) => {
@@ -56,13 +60,21 @@ export const useFiltering = ({
       } = handleApplyFilterHelper(event, columns, workingDataSource);
 
       setWorkingColumns(updatedColumns);
-      setWorkingDataSource(updatedFullDataSource);
-      setActiveFilterArray(updatedActiveFilterArray);
-      if (activeFilterArrayValue)
-        activeFilterArrayValue?.(updatedActiveFilterArray);
+      
+      const newActiveFilters = updatedActiveFilterArray;
+      setActiveFilterArray(newActiveFilters);
 
-      const totalPages = resetPage(updatedFullDataSource, pageSettings);
-      setTotalPages(totalPages);
+      if (!lazy) {
+        setWorkingDataSource(updatedFullDataSource);
+        const totalPages = resetPage(updatedFullDataSource, pageSettings);
+        setTotalPages(totalPages);
+      } else {
+        // In lazy mode, we reset page to 0 but keep totalPages from pageSettings
+        resetPage(workingDataSource, pageSettings);
+      }
+      
+      if (activeFilterArrayValue)
+        activeFilterArrayValue?.(newActiveFilters);
     },
     [
       columns,
@@ -73,6 +85,8 @@ export const useFiltering = ({
       resetPage,
       pageSettings,
       setTotalPages,
+      lazy,
+      activeFilterArray,
     ]
   );
 
@@ -88,13 +102,28 @@ export const useFiltering = ({
       } = clearFilterHelper(event, workingColumns, clearDataSource);
 
       setWorkingColumns(updatedColumns);
-      setWorkingDataSource(updatedDataSource);
-      setActiveFilterArray(updatedActiveFilterArray);
-      if (activeFilterArrayValue)
-        activeFilterArrayValue?.(updatedActiveFilterArray);
 
-      const totalPages = resetPage(updatedDataSource, pageSettings);
-      setTotalPages(totalPages);
+      // Manual fallback: ensure the filter is removed from the active array
+      let newActiveFilters = updatedActiveFilterArray;
+      if (event.type === "clearFilter" && event.columnHeader) {
+        newActiveFilters = activeFilterArray.filter(
+          (f: any) => f.filterColumn !== event.columnHeader
+        );
+      }
+      
+      setActiveFilterArray(newActiveFilters);
+
+      if (!lazy) {
+        setWorkingDataSource(updatedDataSource);
+        const totalPages = resetPage(updatedDataSource, pageSettings);
+        setTotalPages(totalPages);
+      } else {
+        // In lazy mode, we reset page to 0 but keep totalPages from pageSettings
+        resetPage(workingDataSource, pageSettings);
+      }
+
+      if (activeFilterArrayValue)
+        activeFilterArrayValue?.(newActiveFilters);
     },
     [
       dataSource,
@@ -106,6 +135,8 @@ export const useFiltering = ({
       resetPage,
       pageSettings,
       setTotalPages,
+      lazy,
+      activeFilterArray,
     ]
   );
 

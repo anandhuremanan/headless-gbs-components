@@ -10,6 +10,7 @@ interface UseSearchProps {
   resetPage: (data: any[], settings: any) => number;
   setTotalPages: (pages: number) => void;
   searchParamValue?: (value: string) => void;
+  initialSearchParam?: string;
 }
 
 export const useSearch = ({
@@ -22,8 +23,9 @@ export const useSearch = ({
   resetPage,
   setTotalPages,
   searchParamValue,
+  initialSearchParam = "",
 }: UseSearchProps) => {
-  const [searchParam, setSearchParam] = useState("");
+  const [searchParam, setSearchParam] = useState(initialSearchParam);
 
   const handleSearchInput = useCallback(
     (e: any) => {
@@ -66,6 +68,8 @@ export const useSearch = ({
         setWorkingDataSource(filteredData);
         const totalPages = resetPage(filteredData, pageSettings);
         setTotalPages(totalPages);
+      } else {
+        resetPage(workingDataSource, pageSettings);
       }
     },
     [

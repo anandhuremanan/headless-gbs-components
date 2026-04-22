@@ -41,6 +41,8 @@ export const GridProvider: React.FC<{
     showTotalPages = false,
     onSearch = () => {},
     onToolbarButtonClick = () => {},
+    initialFilters = [],
+    initialSearchParam = "",
   } = props;
 
   // Data source management
@@ -88,6 +90,7 @@ export const GridProvider: React.FC<{
     resetPage,
     setTotalPages,
     searchParamValue,
+    initialSearchParam,
   });
 
   // Filtering functionality
@@ -109,6 +112,8 @@ export const GridProvider: React.FC<{
     setTotalPages,
     pageSettings,
     activeFilterArrayValue,
+    lazy,
+    initialFilters,
   });
 
   // Row selection functionality

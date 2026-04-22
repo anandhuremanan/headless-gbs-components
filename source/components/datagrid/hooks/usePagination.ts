@@ -41,33 +41,16 @@ export const usePagination = (
   // This will handle the case when dataSource changes
   // and adjust the current page accordingly in managed workflow
   useEffect(() => {
-    if (lazy && dataSource && prevDataLength > 0) {
-      const currentDataLength = dataSource.length;
-
-      if (currentDataLength > prevDataLength) {
-        const lastPage = totalPages - 1;
-        setCurrentPage(lastPage);
-        updatePageRange(lastPage);
-      } else if (currentDataLength < prevDataLength) {
-        const rowsPerPage = lazy ? 1 : pageSettings?.pageNumber || 10;
-        const startIndex = currentPage * rowsPerPage;
-
-        if (startIndex >= currentDataLength && currentPage > 0) {
-          const newPage = currentPage - 1;
-          setCurrentPage(newPage);
-          updatePageRange(newPage);
-        }
-      }
-    }
     setPrevDataLength(dataSource?.length || 0);
-  }, [
-    dataSource?.length,
-    totalPages,
-    updatePageRange,
-    prevDataLength,
-    currentPage,
-    lazy,
-  ]);
+  }, [dataSource?.length]);
+
+  // Defensive check: if current page is out of bounds due to totalPages shrinking, reset to 0
+  useEffect(() => {
+    if (totalPages > 0 && currentPage >= totalPages) {
+      setCurrentPage(0);
+      updatePageRange(0);
+    }
+  }, [totalPages, currentPage, updatePageRange]);
 
   const nextPage = useCallback(() => {
     setCurrentPage((prevPage) => {
@@ -111,14 +94,16 @@ export const usePagination = (
   );
 
   const resetPage = useCallback((dataSource: any, pageSettings: any) => {
-    const newTotalPages = Math.ceil(
-      dataSource.length / pageSettings.pageNumber
-    );
+    const newTotalPages =
+      lazy && pageSettings?.totalCount
+        ? Math.ceil(pageSettings.totalCount / pageSettings.pageNumber)
+        : Math.ceil((dataSource?.length || 0) / (pageSettings?.pageNumber || 10));
+
     setCurrentPage(0);
     setPageStart(0);
     setPageEnd(Math.min(10, newTotalPages));
     return newTotalPages;
-  }, []);
+  }, [lazy]);
 
   return {
     currentPage,

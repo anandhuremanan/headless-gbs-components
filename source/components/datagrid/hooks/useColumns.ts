@@ -27,7 +27,7 @@ export const useColumns = (columns: any[], workingDataSource: any[]) => {
         return prevColumns;
       });
     }
-  }, [columns, workingDataSource]);
+  }, [columns]); // Remove workingDataSource from dependencies to prevent reset on data fetch
 
   return { workingColumns, setWorkingColumns };
 };

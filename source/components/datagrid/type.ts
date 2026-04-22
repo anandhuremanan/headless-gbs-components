@@ -41,6 +41,8 @@ export type GridProps = {
   showTotalPages?: boolean;
   onSearch?: (value: string) => void;
   onToolbarButtonClick?: (action: string) => void;
+  initialFilters?: ActiveFilterArrayValue[];
+  initialSearchParam?: string;
 };
 
 interface GridColumn {

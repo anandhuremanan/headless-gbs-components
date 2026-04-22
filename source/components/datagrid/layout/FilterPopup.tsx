@@ -1,10 +1,17 @@
 import React from "react";
 import { useState } from "react";
 
-export default function FilterPopup({ show, columnHeader, filterAction }: any) {
-  const [filterValue, setFilterValue] = useState("");
-  const [filterType, setFilterType] = useState("contains");
-  const [isFilterActive, setIsFilterActive] = useState(false);
+export default function FilterPopup({
+  show,
+  columnHeader,
+  filterAction,
+  activeFilter,
+}: any) {
+  const [filterValue, setFilterValue] = useState(activeFilter?.filterValue || "");
+  const [filterType, setFilterType] = useState(
+    activeFilter?.filterCondition || activeFilter?.filterType || "contains"
+  );
+  const [isFilterActive, setIsFilterActive] = useState(!!activeFilter);
 
   const handleFilterInput = (e: any) => {
     const filterKeyword = e.target.value;

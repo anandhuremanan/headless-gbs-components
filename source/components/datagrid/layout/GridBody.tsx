@@ -104,6 +104,9 @@ const GridBody = () => {
                       <FilterPopup
                         show={column.showFilterPopup ?? false}
                         columnHeader={column.field}
+                        activeFilter={activeFilterArray.find(
+                          (f) => f.filterColumn === column.field
+                        )}
                         filterAction={(action: any) =>
                           handleFilterAction(action, colIndex)
                         }
