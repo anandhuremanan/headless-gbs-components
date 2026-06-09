@@ -8,4 +8,5 @@ export type BarChartProps = {
   height?: number;
   title?: string;
   showXValue?: boolean;
+  barColor?: string;
 };

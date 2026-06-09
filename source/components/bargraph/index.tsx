@@ -7,6 +7,7 @@ export const BarChart: React.FC<BarChartProps> = ({
   height = 300,
   title = "Title",
   showXValue = true,
+  barColor = "bg-black dark:bg-zinc-800",
 }) => {
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
   const maxValue = Math.max(...data.map((d) => d.value));
@@ -14,11 +15,11 @@ export const BarChart: React.FC<BarChartProps> = ({
 
   // Calculate y-axis ticks
   const yAxisTicks = Array.from({ length: 6 }, (_, i) =>
-    Math.round((maxValue * i) / 5)
+    Math.round((maxValue * i) / 5),
   );
 
   return (
-    <div className="w-full p-4">
+    <div className="w-100 p-4">
       <h2 className="text-sm font-bold mb-16 text-gray-800 text-left">
         {title}
       </h2>
@@ -57,7 +58,7 @@ export const BarChart: React.FC<BarChartProps> = ({
                     {/* Bar */}
                     <div
                       className={`w-full ${
-                        isHovered ? "bg-zinc-800" : "bg-black"
+                        isHovered ? "bg-zinc-800" : barColor
                       } rounded-t transition-all duration-200 ease-in-out relative`}
                       style={{
                         height: `${barHeight}px`,

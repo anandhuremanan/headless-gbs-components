@@ -31,7 +31,7 @@ export const GridProvider: React.FC<{
     onSelectRow,
     isFetching,
     tableHeaderStyle = "text-left px-2 py-4 bg-zinc-200 dark:bg-zinc-800",
-    gridContainerClass = "flex flex-col rounded-md overflow-hidden",
+    gridContainerClass = "flex flex-col rounded-md overflow-hidden dark:text-white",
     gridColumnStyleSelectAll = "px-4 text-xs",
     gridColumnStyle = "p-2 text-xs",
     rowChange = () => {},
@@ -57,7 +57,7 @@ export const GridProvider: React.FC<{
   // Column management
   const { workingColumns, setWorkingColumns } = useColumns(
     columns,
-    workingDataSource
+    workingDataSource,
   );
 
   // Pagination management
@@ -76,7 +76,7 @@ export const GridProvider: React.FC<{
     lazy,
     workingDataSource,
     pageSettings,
-    pageStatus
+    pageStatus,
   );
 
   // Search functionality
