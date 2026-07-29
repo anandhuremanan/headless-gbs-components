@@ -1,0 +1,364 @@
+/**
+ * Copyright (c) Grampro Business Services and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import React, { useRef } from "react";
+import {
+  useDatePickerState,
+  useYearMonthNavigation,
+  useClickOutside,
+  isAtYearLimit,
+  months,
+  applyScrollbarStyles,
+} from "@grampro/headless-helpers";
+import Icon from "../icon/Icon";
+import { calender, down, leftArrow, rightArrow, x } from "../icon/iconPaths";
+import type { DatePickerProps } from "./types";
+import { iconClass, popUp, primary } from "../globalStyle";
+
+export const DatePicker = ({
+  selectedDateValue,
+  minDate = null,
+  maxDate = null,
+  yearLimitStart = 50,
+  yearLimitEnd = 0,
+  onDateChange,
+  name,
+  error,
+  placeholder = "Select a date",
+  disabled = false,
+  ...props
+}: DatePickerProps) => {
+  applyScrollbarStyles();
+
+  const dateRef = useRef<HTMLDivElement>(null);
+  const today = new Date();
+  const actualCurrentYear = today.getFullYear();
+
+  const {
+    showDatepicker,
+    setShowDatepicker,
+    showYearMonthPicker,
+    setShowYearMonthPicker,
+    currentMonth,
+    setCurrentMonth,
+    currentYear,
+    setCurrentYear,
+    days,
+    selectedDate,
+    setSelectedDate,
+    tempSelectedDate,
+    setTempSelectedDate,
+    hasMounted,
+    clearSelected,
+  } = useDatePickerState(selectedDateValue || null);
+
+  const { prevMonth, nextMonth } = useYearMonthNavigation(
+    currentMonth,
+    currentYear,
+    yearLimitStart,
+    yearLimitEnd,
+    setCurrentMonth,
+    setCurrentYear
+  );
+
+  useClickOutside(
+    dateRef as React.RefObject<HTMLElement>,
+    () => {
+      setShowDatepicker(false);
+      setTempSelectedDate(selectedDate || new Date());
+    },
+    [selectedDate]
+  );
+
+  const years = Array.from(
+    { length: yearLimitStart + yearLimitEnd + 1 },
+    (_, i) => actualCurrentYear - yearLimitStart + i
+  ).sort((a, b) => b - a);
+
+  const toggleDatepicker = () => {
+    setShowDatepicker(!showDatepicker);
+    setShowYearMonthPicker(false);
+    if (!showDatepicker) {
+      setTempSelectedDate(selectedDate || new Date());
+      const date = selectedDate || new Date();
+      setCurrentMonth(date.getMonth());
+      setCurrentYear(date.getFullYear());
+    }
+  };
+
+  const toggleYearMonthPicker = () => {
+    setShowYearMonthPicker(!showYearMonthPicker);
+  };
+
+  const selectDate = (date: Date) => {
+    setSelectedDate(date);
+    setTempSelectedDate(date);
+    setShowDatepicker(false);
+    if (onDateChange) onDateChange(date);
+  };
+
+  const selectYearMonth = (year: number, month: number) => {
+    setCurrentYear(year);
+    setCurrentMonth(month);
+    setShowYearMonthPicker(false);
+  };
+
+  const goToToday = () => {
+    const today = new Date();
+    setCurrentMonth(today.getMonth());
+    setCurrentYear(today.getFullYear());
+    setSelectedDate(today);
+    setTempSelectedDate(today);
+    if (onDateChange) onDateChange(today);
+    setShowDatepicker(false);
+  };
+
+  if (!hasMounted) {
+    return null;
+  }
+
+  const clearSelectedHandler = () => {
+    clearSelected();
+    if (onDateChange) onDateChange(null);
+  };
+
+  return (
+    <div className="relative inline-block w-full" ref={dateRef}>
+      <div
+        className={`${
+          error ? primary["error-border"] : "border border-gray-300"
+        } p-2 rounded-lg w-full flex items-center justify-between gap-2  ${
+          disabled ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+      >
+        <button
+          type="button"
+          onClick={toggleDatepicker}
+          disabled={disabled}
+          className="flex items-center gap-2 w-full cursor-pointer"
+        >
+          <Icon
+            dimensions={{ width: "20", height: "20" }}
+            elements={calender}
+            svgClass={iconClass["grey-common"]}
+          />
+          <span className={!selectedDate ? "text-gray-400 text-sm" : "text-sm"}>
+            {selectedDate
+              ? selectedDate.toLocaleDateString("en-GB")
+              : placeholder}
+          </span>
+        </button>
+
+        {selectedDate && !disabled && (
+          <button onClick={clearSelectedHandler} type="button">
+            <Icon elements={x} svgClass={iconClass["grey-common"]} />
+          </button>
+        )}
+      </div>
+
+      {error && <p className={primary["error-primary"]}>{error}</p>}
+
+      <input
+        type="hidden"
+        name={name}
+        value={selectedDate?.toDateString() || ""}
+        readOnly
+        {...props}
+      />
+
+      {showDatepicker && !disabled && (
+        <div className={popUp["pop-up-style-calender"]}>
+          <div className="flex justify-between items-center p-2 text-xs">
+            <div className="flex items-center space-x-2">
+              <span className="text-md font-semibold">
+                {new Date(currentYear, currentMonth).toLocaleString("default", {
+                  month: "long",
+                })}{" "}
+                {currentYear}
+              </span>
+              <button
+                onClick={toggleYearMonthPicker}
+                className=""
+                type="button"
+              >
+                <Icon
+                  elements={down}
+                  svgClass={"stroke-black fill-none dark:stroke-white"}
+                  dimensions={{ width: "20", height: "20" }}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={prevMonth}
+                disabled={isAtYearLimit(
+                  "prev",
+                  currentMonth,
+                  currentYear,
+                  yearLimitStart,
+                  yearLimitEnd
+                )}
+                className={`text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ${
+                  isAtYearLimit(
+                    "prev",
+                    currentMonth,
+                    currentYear,
+                    yearLimitStart,
+                    yearLimitEnd
+                  )
+                    ? "opacity-50"
+                    : ""
+                }`}
+              >
+                <Icon
+                  elements={leftArrow}
+                  svgClass={"stroke-black fill-none dark:stroke-white"}
+                  dimensions={{ width: "20", height: "20" }}
+                />
+              </button>
+
+              <button
+                type="button"
+                onClick={nextMonth}
+                disabled={isAtYearLimit(
+                  "next",
+                  currentMonth,
+                  currentYear,
+                  yearLimitStart,
+                  yearLimitEnd
+                )}
+                className={`text-gray-500 hover:text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 ${
+                  isAtYearLimit(
+                    "next",
+                    currentMonth,
+                    currentYear,
+                    yearLimitStart,
+                    yearLimitEnd
+                  )
+                    ? "opacity-50"
+                    : ""
+                }`}
+              >
+                <Icon
+                  elements={rightArrow}
+                  svgClass={"stroke-black fill-none dark:stroke-white"}
+                  dimensions={{ width: "20", height: "20" }}
+                />
+              </button>
+            </div>
+          </div>
+          {showYearMonthPicker ? (
+            <div className="flex p-2 h-[224px] scrollbar">
+              <div className="w-1/2 pr-1">
+                <h3 className="text-sm font-semibold mb-1">Month</h3>
+                <div className="overflow-y-auto h-[200px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar">
+                  {months.map((month, index) => (
+                    <button
+                      type="button"
+                      key={month}
+                      onClick={() => selectYearMonth(currentYear, index)}
+                      className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
+                        index === currentMonth
+                          ? "bg-black text-white dark:bg-zinc-500"
+                          : ""
+                      }`}
+                    >
+                      {month}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="w-1/2 pl-1">
+                <h3 className="text-sm font-semibold mb-1">Year</h3>
+                <div className="overflow-y-auto h-[200px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 scrollbar">
+                  {years.map((year) => (
+                    <button
+                      type="button"
+                      key={year}
+                      onClick={() => selectYearMonth(year, currentMonth)}
+                      className={`w-full text-left p-2 cursor-pointer rounded hover:bg-gray-200 transition duration-150 ease-in-out ${
+                        year === currentYear
+                          ? "bg-black text-white dark:bg-zinc-500"
+                          : ""
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-1 p-2">
+              {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                <div key={day} className="text-center font-bold text-xs p-1">
+                  {day}
+                </div>
+              ))}
+              {days.flat().map((day: Date | null, index: number) => {
+                if (!day) {
+                  return (
+                    <div
+                      key={index}
+                      className="text-center p-1 w-8 h-8 text-xs"
+                    ></div>
+                  );
+                }
+                const isDisabled: boolean | undefined =
+                  (minDate && day < minDate) ||
+                  (maxDate && day > maxDate) ||
+                  undefined;
+                const isSelected =
+                  day.getDate() === tempSelectedDate?.getDate() &&
+                  day.getMonth() === tempSelectedDate?.getMonth() &&
+                  day.getFullYear() === tempSelectedDate?.getFullYear();
+
+                return (
+                  <button
+                    type="button"
+                    key={index}
+                    onClick={() => !isDisabled && selectDate(day)}
+                    disabled={isDisabled}
+                    className={`text-center text-xs p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
+                      isSelected
+                        ? "bg-black text-white hover:bg-gray-800 dark:bg-zinc-500"
+                        : ""
+                    } ${
+                      isDisabled
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "hover:bg-gray-200"
+                    }`}
+                  >
+                    {day.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <div className="px-2 py-2 flex justify-between mb-8 text-xs">
+            <button
+              type="button"
+              onClick={goToToday}
+              className="text-black hover:text-blue-600 transition duration-150 ease-in-out dark:text-gray-500"
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={toggleDatepicker}
+              className="text-gray-500 hover:text-gray-600 transition duration-150 ease-in-out"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

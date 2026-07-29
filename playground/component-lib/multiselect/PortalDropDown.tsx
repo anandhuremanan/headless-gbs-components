@@ -1,12 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { popUp } from "../globalStyle";
 
 export const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
 
-  const updatePosition = useCallback(() => {
-    if (targetRef && targetRef.current) {
+  useEffect(() => {
+    if (isVisible && targetRef.current) {
       const rect = targetRef.current.getBoundingClientRect();
       const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
@@ -19,23 +19,7 @@ export const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
         width: rect.width,
       });
     }
-  }, [targetRef]);
-
-  useEffect(() => {
-    if (isVisible) {
-      updatePosition();
-
-      // Listen to scroll events anywhere in the document (use capture to catch scroll inside elements)
-      window.addEventListener("scroll", updatePosition, true);
-      // Listen to window resizing
-      window.addEventListener("resize", updatePosition);
-    }
-
-    return () => {
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [isVisible, updatePosition]);
+  }, [isVisible, targetRef]);
 
   if (!isVisible) return null;
 
