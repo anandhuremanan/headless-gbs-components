@@ -60,9 +60,9 @@ export const useSearch = ({
       if (!lazy) {
         const filteredData = workingDataSource.filter((item: any) =>
           Object.values(item).some((val: any) => {
-            const trimmedVal = val.toString().toLowerCase().trim();
-            const trimmedSearchParam = searchParam.toLowerCase().trim();
-            return trimmedVal.includes(trimmedSearchParam);
+            const trimmedVal = val?.toString()?.toLowerCase()?.trim();
+            const trimmedSearchParam = searchParam?.toLowerCase()?.trim();
+            return trimmedVal?.includes(trimmedSearchParam);
           })
         );
         setWorkingDataSource(filteredData);

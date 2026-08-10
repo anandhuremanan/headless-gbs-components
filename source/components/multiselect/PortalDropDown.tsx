@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { popUp } from "../../globalStyle";
+import { popUp } from "../globalStyle";
 
 export const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });

@@ -14,7 +14,8 @@ export interface ActiveFilterArrayValue {
 export type GridProps = {
   dataSource: any[] | string;
   columns?: any[];
-  pageSettings: PageSettingsProps;
+  pageSettings?: PageSettingsProps;
+  pageSize?: number;
   enableSearch?: boolean;
   lazy?: boolean;
   enableExcelExport?: boolean;
@@ -24,6 +25,11 @@ export type GridProps = {
   gridContainerClass?: string;
   gridButtonClass?: string;
   gridHeaderClass?: string;
+  gridToolbarClass?: string;
+  gridPaginationClass?: string;
+  gridRowEvenClass?: string;
+  gridRowOddClass?: string;
+  gridRowSelectedClass?: string;
   gridGlobalSearchButtonClass?: string;
   gridPaginationButtonClass?: string;
   pdfOptions?: any;
@@ -34,10 +40,14 @@ export type GridProps = {
   tableHeaderStyle?: string;
   gridColumnStyleSelectAll?: string;
   gridColumnStyle?: string;
-  rowChange?: any;
+  rowChange?: (rowData: any) => void;
+  onRowClick?: (rowData: any) => void;
   pageStatus?: ({ currentPage }: { currentPage: number }) => void;
+  onPageChange?: ({ currentPage }: { currentPage: number }) => void;
   activeFilterArrayValue?: ActiveFilterArrayValue[] | any;
+  onFilterChange?: (filters: ActiveFilterArrayValue[]) => void;
   searchParamValue?: (value: string) => void;
+  onSearchChange?: (value: string) => void;
   showTotalPages?: boolean;
   onSearch?: (value: string) => void;
   onToolbarButtonClick?: (action: string) => void;
@@ -163,6 +173,7 @@ export interface GridContextType {
   // Grid settings
   columns: any[];
   pageSettings: any;
+  pageSize: number;
   enableSearch: boolean;
   enableExcelExport: boolean;
   enablePdfExport: boolean;
@@ -173,6 +184,11 @@ export interface GridContextType {
   selectAll: boolean;
   tableHeaderStyle: string;
   gridContainerClass: string;
+  gridToolbarClass: string;
+  gridPaginationClass: string;
+  gridRowEvenClass: string;
+  gridRowOddClass: string;
+  gridRowSelectedClass: string;
   gridColumnStyleSelectAll: string;
   gridColumnStyle: string;
   rowChange: (rowData: any) => void;

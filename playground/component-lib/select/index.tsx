@@ -164,7 +164,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
                 }
               }}
               className={`${selectStyle["filter-button"]} ${
-                focusedIndex === index ? "bg-sky-50 text-sky-700 dark:bg-sky-950" : ""
+                focusedIndex === index ? "bg-zinc-100 text-black dark:bg-zinc-900 dark:text-white" : ""
               }`}
               onClick={() => handleSelect({ value, label })}
               onMouseEnter={() => setFocusedIndex(index)}
@@ -172,7 +172,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
               <Icon
                 elements={check}
                 svgClass={`h-4 w-4 fill-none ${
-                  selectedItem === value ? "stroke-sky-600" : ""
+                  selectedItem === value ? "stroke-black dark:stroke-white" : ""
                 }`}
               />
               {label.length > 20 ? `${label.substring(0, 20)}...` : label}
@@ -246,5 +246,4 @@ Select.displayName = "Select";
 
 const MemoizedSelect = memo(Select);
 export { MemoizedSelect as Select };
-
 

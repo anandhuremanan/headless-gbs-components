@@ -4,20 +4,20 @@ const ToastIcon = ({ type }: { type: Toast["type"] }) => {
   if (!type) return null;
 
   const iconColors = {
-    default: "text-gray-800",
-    success: "text-green-600",
-    error: "text-red-600",
-    warning: "text-yellow-600",
+    default: "text-zinc-500",
+    success: "text-emerald-500",
+    error: "text-rose-500",
+    warning: "text-amber-500",
   } as const;
 
   return (
-    <div className={`h-5 w-5 ${iconColors[type]}`}>
+    <div className={`h-4.5 w-4.5 ${iconColors[type]}`}>
       {type === "success" && (
         <svg
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="2.5"
         >
           <path
             strokeLinecap="round"
@@ -31,7 +31,7 @@ const ToastIcon = ({ type }: { type: Toast["type"] }) => {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="2.5"
         >
           <path
             strokeLinecap="round"
@@ -45,7 +45,7 @@ const ToastIcon = ({ type }: { type: Toast["type"] }) => {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="2.5"
         >
           <path
             strokeLinecap="round"

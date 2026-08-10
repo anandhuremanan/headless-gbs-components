@@ -26,7 +26,7 @@ export const createTemplate = (
             type={config.type || "text"}
             className={
               config.className ||
-              "p-1 text-xs outline-none w-full rounded focus:border-b-2 border-blue-600"
+              "p-1 text-xs outline-none w-full rounded focus:border-b-2 border-black dark:border-white dark:bg-zinc-900"
             }
             placeholder={config.placeholder || `Enter ${field}`}
             defaultValue={rowData[field]}
@@ -41,7 +41,7 @@ export const createTemplate = (
             key={`${field}-${rowData.id}`}
             className={
               config.className ||
-              "p-1 w-full text-xs rounded outline-none focus:border-b-2 border-blue-600 dark:bg-zinc-900"
+              "p-1 w-full text-xs rounded outline-none focus:border-b-2 border-black dark:border-white dark:bg-zinc-900"
             }
             defaultValue={rowData[field]}
             onChange={handleSelectChange}

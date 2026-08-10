@@ -11,8 +11,8 @@ import type { SpinnerProps } from "./types";
 
 export const Spinner: React.FC<SpinnerProps> = ({
   size = "h-10 w-10",
-  color = "border-blue-600",
-  fullCircleColor = "border-t-red-400",
+  color = "border-blue-500",
+  fullCircleColor = "border-t-blue-400",
   dotColor = "bg-blue-500",
   duration = "duration-500",
   type = "circle",

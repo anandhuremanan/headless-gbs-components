@@ -38,7 +38,7 @@ const NavItemComponent: React.FC<NavItemComponentProps> = ({
                 onClick={(e) => toggleSubmenu(item.id, e)}
                 className={`
                   flex items-center justify-between px-3 py-2 rounded-md
-                  ${item.highlight ? "font-medium text-blue-600" : ""}
+                  ${item.highlight ? "font-bold text-black dark:text-white" : ""}
                   ${
                     isMobile
                       ? "w-full text-left"
@@ -92,7 +92,7 @@ const NavItemComponent: React.FC<NavItemComponentProps> = ({
               href={item.href}
               className={`
                 flex items-center px-3 py-2 rounded-md
-                ${item.highlight ? "font-medium text-blue-600" : ""}
+                ${item.highlight ? "font-bold text-black dark:text-white" : ""}
                 ${
                   isMobile
                     ? "block w-full"

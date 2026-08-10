@@ -7,8 +7,8 @@
 
 import React, { type ButtonHTMLAttributes, type ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
-import { buttonStyles } from "../../globalStyle";
-import type { ComponentSize, ComponentVariant } from "../../theme";
+import { buttonStyles } from "../globalStyle";
+import type { ComponentSize, ComponentVariant } from "../theme";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;

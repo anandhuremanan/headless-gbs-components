@@ -4,13 +4,11 @@ export const usePagination = (
   totalPages: number,
   lazy: boolean,
   dataSource?: any[],
-  pageSettings?: { pageNumber: number },
   pageStatus?: ({ currentPage }: { currentPage: number }) => void
 ) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageStart, setPageStart] = useState(0);
   const [pageEnd, setPageEnd] = useState(10);
-  const [prevDataLength, setPrevDataLength] = useState(0);
 
   // Update page range based on current page
   const updatePageRange = useCallback(
@@ -37,12 +35,6 @@ export const usePagination = (
       pageStatus({ currentPage });
     }
   }, [currentPage, pageStatus]);
-
-  // This will handle the case when dataSource changes
-  // and adjust the current page accordingly in managed workflow
-  useEffect(() => {
-    setPrevDataLength(dataSource?.length || 0);
-  }, [dataSource?.length]);
 
   // Defensive check: if current page is out of bounds due to totalPages shrinking, reset to 0
   useEffect(() => {

@@ -223,7 +223,7 @@ export const FileUploader = ({
         ref={dropZoneRef}
         className={`flex flex-col items-center border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
           isDragging
-            ? "border-blue-500 bg-blue-50"
+            ? "border-black bg-zinc-50 dark:border-white dark:bg-zinc-900"
             : "border-gray-300 hover:border-gray-400"
         }`}
         onClick={() => fileInputRef.current.click()}

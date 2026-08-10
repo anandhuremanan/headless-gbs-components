@@ -7,35 +7,28 @@ interface ToastProps {
   toast: Toast;
 }
 
-const bgColors = {
-  default: "bg-white hover:bg-gray-50",
-  success: "bg-green-50 hover:bg-green-100",
-  error: "bg-red-50 hover:bg-red-100",
-  warning: "bg-yellow-50 hover:bg-yellow-100",
-} as const;
-
-const toastAnimation = {
-  default: "",
-  error: "animate-shake animate-once animate-duration-200",
-  success: "animate-jump-in animate-once animate-duration-200",
-  warning: "animate-jump-in animate-once animate-duration-200",
+const leftBorderColors = {
+  default: "border-l-zinc-550 dark:border-l-zinc-600",
+  success: "border-l-emerald-500",
+  error: "border-l-rose-500",
+  warning: "border-l-amber-500",
 } as const;
 
 const CloseButton = ({ onDismiss }: { onDismiss: () => void }) => (
   <button
     onClick={onDismiss}
-    className="shrink-0 rounded-lg p-1 transition-colors hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-black/10"
+    className="shrink-0 rounded-md p-1 transition-colors text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 focus:outline-none"
   >
     <svg
-      className="h-4 w-4"
+      className="h-3.5 w-3.5"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
+      strokeWidth={2.5}
     >
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth={2}
         d="M6 18L18 6M6 6l12 12"
       />
     </svg>
@@ -58,7 +51,7 @@ export function ToastComponent({ toast }: ToastProps) {
 
   if (toast.content) {
     return (
-      <div className="relative">
+      <div className="relative pointer-events-auto rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 shadow-lg">
         {toast.content}
         <div className="absolute top-2 right-2">
           <CloseButton onDismiss={handleDismiss} />
@@ -67,32 +60,40 @@ export function ToastComponent({ toast }: ToastProps) {
     );
   }
 
+  const borderClass = leftBorderColors[toast.type || "default"];
+
   return (
     <div
       className={`
-        ${bgColors[toast.type || "default"]}
-        ${toastAnimation[toast.type || "default"]}
         transform transition-all duration-300 ease-in-out
-        pointer-events-auto relative flex w-full items-center justify-between
-        overflow-hidden rounded-full border px-4 py-3 shadow-lg
+        pointer-events-auto relative flex w-full items-start justify-between
+        overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 py-3.5 shadow-lg
+        border-l-4 ${borderClass}
+        animate-fade-in
       `}
       role="alert"
     >
       <div className="flex items-start gap-3 w-full">
-        <ToastIcon type={toast.type} />
-        <div className="flex-1">
+        <div className="mt-0.5 shrink-0">
+          <ToastIcon type={toast.type} />
+        </div>
+        <div className="flex-1 min-w-0">
           {toast.title && (
-            <div className="font-medium text-sm text-gray-900">
+            <div className="font-bold text-sm text-zinc-900 dark:text-white tracking-tight leading-none">
               {toast.title}
             </div>
           )}
           {toast.description && (
-            <div className="text-sm text-gray-500 mt-1">
+            <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mt-1">
               {toast.description}
             </div>
           )}
         </div>
-        {toast.action}
+        {toast.action && (
+          <div className="shrink-0 flex items-center gap-2">
+            {toast.action}
+          </div>
+        )}
         <CloseButton onDismiss={handleDismiss} />
       </div>
     </div>

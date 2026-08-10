@@ -23,10 +23,11 @@ const Pagination = () => {
     lazy,
     pageSettings,
     showTotalPages,
+    gridPaginationClass,
   } = useGridContext();
 
   return (
-    <div className="w-full flex flex-wrap justify-between items-center text-xs px-2 py-4 bg-zinc-100 dark:bg-zinc-900 gap-2 md:gap-4">
+    <div className={gridPaginationClass}>
       <div className="flex text-xs">
         Showing {currentPage + 1} of {totalPages} pages
         {showTotalPages && (
@@ -76,7 +77,7 @@ const Pagination = () => {
                 className={`hidden md:block px-2 py-1 text-sm rounded-md transition-colors duration-200 ease-in-out ${
                   currentPage === pageStart + i
                     ? "bg-black text-white dark:bg-white dark:text-black"
-                    : "bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600"
+                    : "bg-gray-200 dark:bg-zinc-700 text-black dark:text-white hover:bg-gray-300 dark:hover:bg-zinc-600"
                 }`}
               >
                 {pageStart + i + 1}

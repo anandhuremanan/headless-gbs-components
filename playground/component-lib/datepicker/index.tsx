@@ -325,14 +325,14 @@ export const DatePicker = ({
                     key={index}
                     onClick={() => !isDisabled && selectDate(day)}
                     disabled={isDisabled}
-                    className={`text-center text-xs p-1 w-8 h-8 cursor-pointer rounded-md hover:bg-gray-200 transition duration-150 ease-in-out ${
+                    className={`text-center text-xs p-1 w-8 h-8 cursor-pointer rounded-md transition duration-150 ease-in-out ${
                       isSelected
-                        ? "bg-black text-white hover:bg-gray-800 dark:bg-zinc-500"
-                        : ""
+                        ? "bg-black text-white hover:bg-zinc-900 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
+                        : "hover:bg-gray-200 dark:hover:bg-zinc-800"
                     } ${
                       isDisabled
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "hover:bg-gray-200"
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-zinc-900 dark:text-zinc-600"
+                        : ""
                     }`}
                   >
                     {day.getDate()}
@@ -345,7 +345,7 @@ export const DatePicker = ({
             <button
               type="button"
               onClick={goToToday}
-              className="text-black hover:text-blue-600 transition duration-150 ease-in-out dark:text-gray-500"
+              className="text-black hover:text-zinc-650 transition duration-150 ease-in-out dark:text-zinc-400 dark:hover:text-zinc-200 font-semibold"
             >
               Today
             </button>
@@ -362,5 +362,4 @@ export const DatePicker = ({
     </div>
   );
 };
-
 

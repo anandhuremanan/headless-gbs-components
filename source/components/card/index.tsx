@@ -1,6 +1,6 @@
 import React, { type HTMLAttributes, type ReactNode } from "react";
 import { twMerge } from "tailwind-merge";
-import { cardStyles } from "../../globalStyle";
+import { cardStyles } from "../globalStyle";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;

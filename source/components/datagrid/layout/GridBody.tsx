@@ -1,4 +1,4 @@
-import React, { act } from "react";
+import React from "react";
 import { useGridContext } from "../context/GridContext";
 import FilterPopup from "./FilterPopup";
 import Icon from "../../icon/Icon";
@@ -24,6 +24,9 @@ const GridBody = () => {
     handleSelectAll,
     handleSelect,
     isRowSelected,
+    gridRowEvenClass,
+    gridRowOddClass,
+    gridRowSelectedClass,
   } = useGridContext();
 
   const renderCell = (rowData: any, column: Column, rowIndex: number) => {
@@ -140,10 +143,10 @@ const GridBody = () => {
                 key={rowIndex}
                 className={
                   isRowSelected(rowData)
-                    ? "bg-blue-100 dark:bg-blue-900"
+                    ? gridRowSelectedClass
                     : rowIndex % 2 === 0
-                    ? "bg-gray-50 dark:bg-zinc-800 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                    : "bg-white dark:bg-zinc-900 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                    ? gridRowEvenClass
+                    : gridRowOddClass
                 }
                 onClick={() => rowChange(rowData)}
               >

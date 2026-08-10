@@ -1,5 +1,6 @@
 import React, { createContext, useContext } from "react";
 import type { GridContextType, GridProps } from "../type";
+import { gridStyles } from "../../globalStyle";
 import {
   useDataSource,
   useColumns,
@@ -18,7 +19,6 @@ export const GridProvider: React.FC<{
   const {
     dataSource,
     columns = [],
-    pageSettings,
     enableSearch = false,
     lazy = false,
     enableExcelExport = false,
@@ -26,24 +26,40 @@ export const GridProvider: React.FC<{
     enablePdfExport = false,
     pdfName = "data",
     pdfOptions = {},
-    gridButtonClass = "px-1 py-2 text-xs rounded bg-zinc-200 dark:bg-zinc-700 cursor-pointer",
     selectAll = false,
     onSelectRow,
     isFetching,
-    tableHeaderStyle = "text-left px-2 py-4 bg-zinc-200 dark:bg-zinc-800",
-    gridContainerClass = "flex flex-col rounded-md overflow-hidden dark:text-white",
     gridColumnStyleSelectAll = "px-4 text-xs",
     gridColumnStyle = "p-2 text-xs",
-    rowChange = () => {},
-    pageStatus = () => {},
-    activeFilterArrayValue,
-    searchParamValue = () => {},
     showTotalPages = false,
     onSearch = () => {},
     onToolbarButtonClick = () => {},
     initialFilters = [],
     initialSearchParam = "",
   } = props;
+
+  // Resolve pageSize with fallbacks
+  const resolvedPageSize = props.pageSize || props.pageSettings?.pageNumber || 10;
+  const resolvedPageSettings = {
+    pageNumber: resolvedPageSize,
+    totalCount: props.pageSettings?.totalCount,
+  };
+
+  // Resolve callback aliases
+  const resolvedRowChange = props.onRowClick || props.rowChange || (() => {});
+  const resolvedPageStatus = props.onPageChange || props.pageStatus || (() => {});
+  const resolvedActiveFilterArrayValue = props.onFilterChange || props.activeFilterArrayValue;
+  const resolvedSearchParamValue = props.onSearchChange || props.searchParamValue || (() => {});
+
+  // Resolve CSS classes using design tokens from theme presets
+  const gridContainerClass = props.gridContainerClass || gridStyles.container;
+  const gridButtonClass = props.gridButtonClass || gridStyles.button;
+  const tableHeaderStyle = props.tableHeaderStyle || gridStyles.tableHeader;
+  const gridToolbarClass = props.gridToolbarClass || gridStyles.toolbar;
+  const gridPaginationClass = props.gridPaginationClass || gridStyles.pagination;
+  const gridRowEvenClass = props.gridRowEvenClass || gridStyles.rowEven;
+  const gridRowOddClass = props.gridRowOddClass || gridStyles.rowOdd;
+  const gridRowSelectedClass = props.gridRowSelectedClass || gridStyles.rowSelected;
 
   // Data source management
   const {
@@ -52,7 +68,7 @@ export const GridProvider: React.FC<{
     fallbackSourceData,
     totalPages,
     setTotalPages,
-  } = useDataSource(dataSource, pageSettings, lazy);
+  } = useDataSource(dataSource, resolvedPageSettings, lazy);
 
   // Column management
   const { workingColumns, setWorkingColumns } = useColumns(
@@ -75,8 +91,7 @@ export const GridProvider: React.FC<{
     totalPages,
     lazy,
     workingDataSource,
-    pageSettings,
-    pageStatus,
+    resolvedPageStatus,
   );
 
   // Search functionality
@@ -86,10 +101,10 @@ export const GridProvider: React.FC<{
     fallbackSourceData,
     dataSource,
     lazy,
-    pageSettings,
+    pageSettings: resolvedPageSettings,
     resetPage,
     setTotalPages,
-    searchParamValue,
+    searchParamValue: resolvedSearchParamValue,
     initialSearchParam,
   });
 
@@ -110,8 +125,8 @@ export const GridProvider: React.FC<{
     fallbackSourceData,
     resetPage,
     setTotalPages,
-    pageSettings,
-    activeFilterArrayValue,
+    pageSettings: resolvedPageSettings,
+    activeFilterArrayValue: resolvedActiveFilterArrayValue,
     lazy,
     initialFilters,
   });
@@ -160,7 +175,8 @@ export const GridProvider: React.FC<{
 
     // Grid settings
     columns,
-    pageSettings,
+    pageSettings: resolvedPageSettings,
+    pageSize: resolvedPageSize,
     enableSearch,
     enableExcelExport,
     enablePdfExport,
@@ -171,9 +187,14 @@ export const GridProvider: React.FC<{
     selectAll,
     tableHeaderStyle,
     gridContainerClass,
+    gridToolbarClass,
+    gridPaginationClass,
+    gridRowEvenClass,
+    gridRowOddClass,
+    gridRowSelectedClass,
     gridColumnStyleSelectAll,
     gridColumnStyle,
-    rowChange,
+    rowChange: resolvedRowChange,
     showTotalPages,
     onSearch,
     onToolbarButtonClick,

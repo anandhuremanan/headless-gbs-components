@@ -16,11 +16,10 @@ export const Checkbox = ({
     <input
       type="checkbox"
       className={twMerge(
-        "h-5 w-5 cursor-pointer rounded border-slate-300 text-sky-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55",
+        "h-5 w-5 cursor-pointer rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-black dark:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black dark:focus-visible:ring-white focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55",
         className
       )}
       {...props}
     />
   );
 };
-

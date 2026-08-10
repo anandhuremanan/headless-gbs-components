@@ -105,7 +105,7 @@ export default function UploadedFilePreview({
                 <Icon
                   dimensions={{ width: "18", height: "18" }}
                   elements={cloudDownload}
-                  svgClass={"stroke-blue-800 fill-none dark:stroke-white"}
+                  svgClass={"stroke-zinc-700 dark:stroke-zinc-400 fill-none"}
                 />
               </button>
               {isRemovable && (

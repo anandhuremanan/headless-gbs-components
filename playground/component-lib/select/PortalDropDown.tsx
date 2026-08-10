@@ -57,4 +57,3 @@ export const PortalDropdown = ({ targetRef, children, isVisible }: any) => {
     document.body
   );
 };
-

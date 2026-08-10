@@ -17,7 +17,8 @@ const DataGrid = memo(GridComponent, (prevProps, nextProps) => {
   return (
     prevProps.dataSource === nextProps.dataSource &&
     prevProps.columns === nextProps.columns &&
-    prevProps.pageSettings.pageNumber === nextProps.pageSettings.pageNumber &&
+    prevProps.pageSize === nextProps.pageSize &&
+    prevProps.pageSettings?.pageNumber === nextProps.pageSettings?.pageNumber &&
     prevProps.enableSearch === nextProps.enableSearch &&
     prevProps.enablePdfExport === nextProps.enablePdfExport &&
     prevProps.enableExcelExport === nextProps.enableExcelExport

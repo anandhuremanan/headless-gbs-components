@@ -24,6 +24,7 @@ const GridToolbar = () => {
     gridButtonClass,
     onToolbarButtonClick,
     lazy,
+    gridToolbarClass,
   } = useGridContext();
 
   if (!enableSearch && !enableExcelExport && !enablePdfExport) {
@@ -31,7 +32,7 @@ const GridToolbar = () => {
   }
 
   return (
-    <div className="flex bg-zinc-100 dark:bg-zinc-900 justify-end space-x-2 px-2 py-4">
+    <div className={gridToolbarClass}>
       {/* Search input */}
       {enableSearch && (
         <div className="flex">

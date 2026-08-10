@@ -29,7 +29,22 @@ const AestheticProcessingAnimation = ({
 const AestheticProcessingAnimationWithStyles = ({
   progressPercentage,
 }: AestheticProcessingAnimationProps) => (
-  <AestheticProcessingAnimation progressPercentage={progressPercentage} />
+  <>
+    <style dangerouslySetInnerHTML={{ __html: `
+      @keyframes processing {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(300%);
+        }
+      }
+      .animate-processing {
+        animation: processing 2s ease-in-out infinite;
+      }
+    ` }} />
+    <AestheticProcessingAnimation progressPercentage={progressPercentage} />
+  </>
 );
 
 export default AestheticProcessingAnimationWithStyles;

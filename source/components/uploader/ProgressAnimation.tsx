@@ -30,7 +30,7 @@ const AestheticProcessingAnimationWithStyles = ({
   progressPercentage,
 }: AestheticProcessingAnimationProps) => (
   <>
-    <style jsx global>{`
+    <style dangerouslySetInnerHTML={{ __html: `
       @keyframes processing {
         0% {
           transform: translateX(-100%);
@@ -42,7 +42,7 @@ const AestheticProcessingAnimationWithStyles = ({
       .animate-processing {
         animation: processing 2s ease-in-out infinite;
       }
-    `}</style>
+    ` }} />
     <AestheticProcessingAnimation progressPercentage={progressPercentage} />
   </>
 );

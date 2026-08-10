@@ -10,7 +10,7 @@ import { twMerge } from "tailwind-merge";
 import Icon from "../icon/Icon";
 import { eye, search } from "../icon/iconPaths";
 import type { InputProps } from "./types";
-import { iconClass, inputStyles, primary } from "../../globalStyle";
+import { iconClass, inputStyles, primary } from "../globalStyle";
 
 export const Input = ({
   OTPField = false,

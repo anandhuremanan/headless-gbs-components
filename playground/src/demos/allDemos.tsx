@@ -36,19 +36,25 @@ export const ButtonDemo = () => (
   <div className="space-y-4">
     <h3 className="text-xl font-bold text-white mb-2">Button Component</h3>
     <div className="flex flex-wrap gap-4">
-      <Button onClick={() => alert("Primary button clicked!")}>
+      <Button
+        onClick={() => alert("Primary button clicked!")}
+        variant="primary"
+      >
         Primary Button
       </Button>
-      <Button buttonClass="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition duration-200">
-        Indigo Custom Button
-      </Button>
-      <Button buttonClass="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold shadow-lg">
-        Danger Button
+      <Button
+        variant="primary"
+        buttonClass="bg-blue-500 text-black dark:bg-blue-600 hover:bg-blue-700 dark:text-white dark:hover:bg-blue-700"
+      >
+        Custom Button
       </Button>
       <Button
-        disabled
-        buttonClass="px-4 py-2 bg-gray-600 text-gray-400 rounded-lg cursor-not-allowed"
+        variant="danger"
+        buttonClass="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold shadow-lg"
       >
+        Danger Button
+      </Button>
+      <Button disabled variant="outline">
         Disabled Button
       </Button>
     </div>
@@ -305,6 +311,9 @@ export const SpinnerDemo = () => (
       <span className="text-sm text-slate-400 animate-pulse">
         Loading workspace files...
       </span>
+      <Spinner type="circle-bg" />
+      <Spinner type="stroke" />
+      <Spinner type="dot" />
     </div>
   </div>
 );
@@ -502,7 +511,8 @@ export const DataGridDemo = () => {
       <DataGrid
         dataSource={mockData}
         columns={columns}
-        pageSettings={{ pageNumber: 1 }}
+        pageSize={1}
+        onRowClick={(row) => alert(`Clicked Row: ${JSON.stringify(row)}`)}
       />
     </div>
   );

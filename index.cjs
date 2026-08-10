@@ -50,6 +50,7 @@ const copyCommonFiles = async (destPath) => {
   const commonFiles = [
     { src: ["..", "utils.ts"], dest: "utils.ts" },
     { src: ["..", "globalStyle.ts"], dest: "globalStyle.ts" },
+    { src: ["..", "theme.ts"], dest: "theme.ts" },
     { src: ["..", "icon"], dest: "icon" },
   ];
 

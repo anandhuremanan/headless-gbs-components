@@ -21,8 +21,8 @@ import {
 } from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
-import { iconClass, primary } from "../../globalStyle";
-import { selectStyle } from "../../globalStyle";
+import { iconClass, primary } from "../globalStyle";
+import { selectStyle } from "../globalStyle";
 import { PortalDropdown } from "./PortalDropDown";
 
 const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
@@ -153,7 +153,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
                 <Icon
                   elements={check}
                   svgClass={`h-4 w-4 fill-none ${
-                    selected.includes(value) ? "stroke-gray-500" : ""
+                    selected.includes(value) ? "stroke-black dark:stroke-white" : ""
                   }`}
                 />
                 {label.length > 20 ? `${label.substring(0, 20)}...` : label}
@@ -179,7 +179,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
             return (
               <span
                 key={index}
-                className="bg-slate-800 text-white px-2 py-1 rounded flex items-center gap-1 text-xs whitespace-nowrap"
+                className="bg-black text-white dark:bg-zinc-900 px-2 py-1 rounded flex items-center gap-1 text-xs whitespace-nowrap border border-transparent dark:border-zinc-800"
               >
                 {label.length > 15 ? `${label.substring(0, 15)}...` : label}
                 <span
@@ -187,7 +187,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
                     e.stopPropagation();
                     handleSelect(value);
                   }}
-                  className="cursor-pointer hover:bg-slate-700 rounded p-0.5"
+                  className="cursor-pointer hover:bg-zinc-800 dark:hover:bg-zinc-700 rounded p-0.5"
                 >
                   <Icon elements={x} svgClass="h-3 w-3 stroke-white" />
                 </span>
@@ -195,7 +195,7 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
             );
           })}
         {truncate && selected.length > 3 && (
-          <span className="bg-slate-800 text-white px-2 py-1 rounded text-xs whitespace-nowrap">
+          <span className="bg-black text-white dark:bg-zinc-900 px-2 py-1 rounded text-xs whitespace-nowrap border border-transparent dark:border-zinc-800">
             +{selected.length - 3} more
           </span>
         )}

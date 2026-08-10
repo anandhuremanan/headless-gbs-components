@@ -27,7 +27,7 @@ const AuthSection: React.FC<AuthSectionProps> = ({
               alt={userProfile.name}
             />
           ) : (
-            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
+            <div className="h-8 w-8 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-bold">
               {userProfile.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -75,11 +75,11 @@ const AuthSection: React.FC<AuthSectionProps> = ({
       <button
         onClick={onLogin}
         className={`
-          px-4 py-2 text-sm font-medium rounded-md
+          px-4 py-2 text-sm font-medium rounded-md border border-zinc-300 dark:border-zinc-700
           ${
             variant === "dark"
-              ? "text-white hover:bg-gray-700"
-              : "text-blue-600 hover:bg-blue-50"
+              ? "text-white hover:bg-zinc-850"
+              : "text-black hover:bg-zinc-100 dark:text-white dark:hover:bg-zinc-900"
           }
         `}
       >
@@ -87,7 +87,7 @@ const AuthSection: React.FC<AuthSectionProps> = ({
       </button>
       <button
         onClick={onSignup}
-        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+        className="px-4 py-2 text-sm font-medium text-white bg-black dark:bg-white dark:text-black rounded-md hover:bg-zinc-900 dark:hover:bg-zinc-100 transition-colors"
       >
         Sign up
       </button>
