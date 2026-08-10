@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { twMerge } from "tailwind-merge";
 import type { TextAreaProps } from "./types";
 
 export const TextArea = ({
@@ -18,131 +19,103 @@ export const TextArea = ({
 }: TextAreaProps) => {
   const [isFocused, setIsFocused] = useState(false);
   const [charCount, setCharCount] = useState(0);
-  const textareaRef = useRef(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (value) {
+    if (typeof value === "string") {
       setCharCount(value.length);
     }
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value;
-    setCharCount(newValue.length);
+    setCharCount(e.target.value.length);
     if (onChange) {
       onChange(e);
     }
   };
 
-  const handleFocus = () => {
-    setIsFocused(true);
-  };
+  const isFloating = variant === "minimal" && (isFocused || Boolean(value));
 
-  const handleBlur = () => {
-    setIsFocused(false);
-  };
-
-  const getVariantClasses = () => {
-    switch (variant) {
-      case "minimal":
-        return {
-          container: "relative",
-          textarea: `w-full px-0 py-3 text-gray-900 placeholder-gray-400 bg-transparent border-0 border-b-2 border-gray-200 resize-none focus:border-blue-500 focus:outline-none ${
-            disabled ? "opacity-50 cursor-not-allowed" : ""
-          }`,
-          label: `absolute left-0 transition-all duration-200 pointer-events-none ${
-            isFocused || value
-              ? "-top-6 text-sm text-blue-500"
-              : "top-3 text-base text-gray-400"
-          }`,
-        };
-      default:
-        return {
-          container: "relative",
-          textarea: `w-full px-4 py-3 text-gray-900 placeholder-gray-400 bg-white border-2 border-gray-200 rounded-lg resize-none focus:border-blue-500 focus:ring-blue-500/20 focus:outline-none transition-all duration-200 shadow-sm hover:border-gray-300 ${
-            error
-              ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
-              : ""
-          } ${disabled ? "opacity-50 cursor-not-allowed bg-gray-50" : ""}`,
-          label: `block text-sm font-medium text-gray-700 mb-2 ${
-            required ? "after:content-['*'] after:text-red-500 after:ml-1" : ""
-          }`,
-        };
-    }
-  };
-
-  const variantClasses = getVariantClasses();
+  const variantClasses = {
+    default: {
+      textarea:
+        "border border-slate-300 bg-white text-slate-900 shadow-sm hover:border-slate-400 focus:border-sky-500 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100",
+      label: "mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200",
+    },
+    minimal: {
+      textarea:
+        "border-0 border-b-2 border-slate-200 bg-transparent px-0 shadow-none focus:border-sky-500 dark:border-slate-700 dark:text-slate-100",
+      label: twMerge(
+        "absolute left-0 pointer-events-none transition-all duration-200",
+        isFloating ? "-top-5 text-xs text-sky-600" : "top-3 text-sm text-slate-400"
+      ),
+    },
+    glass: {
+      textarea:
+        "border border-white/40 bg-white/70 text-slate-900 shadow-sm backdrop-blur hover:border-white/70 focus:border-sky-500 focus:ring-sky-500/20 dark:border-white/10 dark:bg-slate-950/70 dark:text-slate-100",
+      label: "mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200",
+    },
+  }[variant];
 
   return (
-    <div className={`${variantClasses.container} ${className}`}>
-      {label && <label className={variantClasses.label}>{label}</label>}
+    <div className={twMerge("relative w-full", className)}>
+      {label && variant !== "minimal" && (
+        <label className={variantClasses.label}>
+          {label}
+          {required && <span className="ml-1 text-rose-500">*</span>}
+        </label>
+      )}
 
       <div className="relative">
         <textarea
           ref={textareaRef}
           value={value}
           onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder={
-            variant === "minimal" && isFocused
-              ? placeholder
-              : variant === "minimal"
-              ? ""
-              : placeholder
-          }
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={variant === "minimal" ? (isFocused ? placeholder : "") : placeholder}
           rows={rows}
           maxLength={maxLength}
           required={required}
           disabled={disabled}
-          className={variantClasses.textarea}
+          className={twMerge(
+            "w-full resize-none rounded-lg px-3 py-3 text-sm outline-none transition-all duration-200 focus:ring-2 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:opacity-60",
+            variantClasses.textarea,
+            error ? "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20" : ""
+          )}
           {...props}
         />
 
-        {/* Floating label for minimal variant */}
         {variant === "minimal" && label && (
-          <label className={variantClasses.label}>{label}</label>
+          <label
+            className={variantClasses.label}
+            onClick={() => textareaRef.current?.focus()}
+          >
+            {label}
+            {required && <span className="ml-1 text-rose-500">*</span>}
+          </label>
         )}
       </div>
 
-      {/* Bottom section with helper text, error, and character count */}
-      <div className="flex justify-between items-start mt-2">
-        <div className="flex-1">
-          {error && (
-            <p className="text-sm text-red-600 flex items-center">
-              <svg
-                className="w-4 h-4 mr-1 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {error}
-            </p>
-          )}
-          {!error && helperText && (
-            <p className="text-sm text-gray-500">{helperText}</p>
-          )}
+      <div className="mt-2 flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {error ? (
+            <p className="text-xs font-medium text-rose-600">{error}</p>
+          ) : helperText ? (
+            <p className="text-xs text-slate-500">{helperText}</p>
+          ) : null}
         </div>
 
         {maxLength && (
-          <div className="ml-4 flex-shrink-0">
-            <span
-              className={`text-sm ${
-                charCount > maxLength * 0.9
-                  ? "text-amber-600"
-                  : charCount === maxLength
-                  ? "text-red-600"
-                  : "text-gray-400"
-              }`}
-            >
-              {charCount}/{maxLength}
-            </span>
-          </div>
+          <span
+            className={twMerge(
+              "shrink-0 text-xs text-slate-400",
+              charCount > maxLength * 0.9 ? "text-amber-600" : "",
+              charCount === maxLength ? "text-rose-600" : ""
+            )}
+          >
+            {charCount}/{maxLength}
+          </span>
         )}
       </div>
     </div>

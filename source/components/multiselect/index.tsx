@@ -21,8 +21,8 @@ import {
 } from "@grampro/headless-helpers";
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
-import { iconClass, primary } from "../globalStyle";
-import { selectStyle } from "../globalStyle";
+import { iconClass, primary } from "../../globalStyle";
+import { selectStyle } from "../../globalStyle";
 import { PortalDropdown } from "./PortalDropDown";
 
 const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
@@ -266,3 +266,4 @@ const MultiSelect = forwardRef<MultiSelectHandle, MultiSelectProps>(
 
 const MemoizedMultiSelect = memo(MultiSelect);
 export { MemoizedMultiSelect as MultiSelect };
+

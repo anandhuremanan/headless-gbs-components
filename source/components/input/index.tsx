@@ -10,7 +10,7 @@ import { twMerge } from "tailwind-merge";
 import Icon from "../icon/Icon";
 import { eye, search } from "../icon/iconPaths";
 import type { InputProps } from "./types";
-import { iconClass, inputStyles, primary } from "../globalStyle";
+import { iconClass, inputStyles, primary } from "../../globalStyle";
 
 export const Input = ({
   OTPField = false,
@@ -19,6 +19,7 @@ export const Input = ({
   OTPClass = inputStyles.otp,
   onOTPValueChange,
   error = undefined,
+  className,
   ...props
 }: InputProps) => {
   const [otpValues, setOtpValues] = useState(new Array(OTPLength).fill(""));
@@ -53,24 +54,20 @@ export const Input = ({
       e.preventDefault();
       inputRefs.current[index - 1]?.focus();
       setTimeout(() => {
-        if (inputRefs.current[index - 1]) {
-          const inputEl = inputRefs.current[index - 1];
-          if (inputEl) {
-            const length = inputEl.value.length;
-            inputEl.setSelectionRange(length, length);
-          }
+        const inputEl = inputRefs.current[index - 1];
+        if (inputEl) {
+          const length = inputEl.value.length;
+          inputEl.setSelectionRange(length, length);
         }
       }, 0);
     } else if (e.key === "ArrowRight" && index < OTPLength - 1) {
       e.preventDefault();
       inputRefs.current[index + 1]?.focus();
       setTimeout(() => {
-        if (inputRefs.current[index + 1]) {
-          const inputEl = inputRefs.current[index + 1];
-          if (inputEl) {
-            const length = inputEl.value.length;
-            inputEl.setSelectionRange(length, length);
-          }
+        const inputEl = inputRefs.current[index + 1];
+        if (inputEl) {
+          const length = inputEl.value.length;
+          inputEl.setSelectionRange(length, length);
         }
       }, 0);
     }
@@ -83,13 +80,14 @@ export const Input = ({
   return (
     <div>
       {!OTPField ? (
-        <div className="text-input-container w-full relative flex flex-col">
+        <div className="text-input-container relative flex w-full flex-col">
           <div className="relative">
             <input
               className={twMerge(
                 inputStyles.default,
                 error ? inputStyles.error : "",
-                "w-full text-black pr-10"
+                "w-full pr-10",
+                className
               )}
               {...props}
               type={
@@ -104,7 +102,7 @@ export const Input = ({
             {props.type === "password" && (
               <button
                 type="button"
-                className="absolute inset-y-0 right-2 flex items-center"
+                className="absolute inset-y-0 right-2 flex items-center rounded-md p-1"
                 onClick={toggleTypeForPassword}
               >
                 <Icon

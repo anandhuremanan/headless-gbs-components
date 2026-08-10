@@ -240,7 +240,10 @@ export const DatePickerDemo = () => {
   return (
     <div className="space-y-4 max-w-xs">
       <h3 className="text-xl font-bold text-white mb-2">DatePicker</h3>
-      <DatePicker selectedDateValue={date} onDateChange={(newDate) => setDate(newDate || undefined)} />
+      <DatePicker
+        selectedDateValue={date}
+        onDateChange={(newDate) => setDate(newDate || undefined)}
+      />
       <p className="text-xs text-slate-500">
         Selected Date: {date ? date.toLocaleDateString("en-GB") : "none"}
       </p>

@@ -6,11 +6,21 @@
  */
 
 import React, { type InputHTMLAttributes } from "react";
+import { twMerge } from "tailwind-merge";
 
 export const Checkbox = ({
+  className,
   ...props
 }: InputHTMLAttributes<HTMLInputElement>) => {
   return (
-    <input type="checkbox" className="w-5 h-5 cursor-pointer" {...props} />
+    <input
+      type="checkbox"
+      className={twMerge(
+        "h-5 w-5 cursor-pointer rounded border-slate-300 text-sky-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-55",
+        className
+      )}
+      {...props}
+    />
   );
 };
+

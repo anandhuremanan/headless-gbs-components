@@ -13,13 +13,21 @@ import type { ModalProps } from "./types";
 
 const defaultClasses = {
   modal:
-    "fixed z-50 overflow-y-auto inset-0 flex items-center justify-center bg-[#2b2426bd]",
-  modalContent: "bg-white m-10 md:w-[80vh] rounded-xl relative",
+    "fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/55 p-4 backdrop-blur-sm",
+  modalContent:
+    "relative max-h-[90vh] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-950",
   modalTitle:
-    "p-4 text-lg leading-6 font-medium text-gray-900 flex justify-between items-center",
+    "flex items-center justify-between gap-4 px-5 py-4 text-base font-semibold text-slate-950 dark:text-slate-50",
   closeButton:
-    "absolute top-2 right-2 p-2 hover:bg-gray-100 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-300",
-  closeIcon: "h-5 w-5 stroke-gray-500 fill-none",
+    "absolute right-3 top-3 rounded-md p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:hover:bg-slate-800 dark:hover:text-white",
+  closeIcon: "h-5 w-5 stroke-current fill-none",
+};
+
+const sizeClasses = {
+  sm: "w-full max-w-sm",
+  md: "w-full max-w-lg",
+  lg: "w-full max-w-2xl",
+  xl: "w-full max-w-4xl",
 };
 
 export const Modal = memo(
@@ -32,6 +40,8 @@ export const Modal = memo(
     classModalContent = "",
     modalTitleClass = defaultClasses.modalTitle,
     classModalTitle = "",
+    className = "",
+    size = "md",
     children,
     showCloseButton = false,
     dismissible = false,
@@ -43,7 +53,6 @@ export const Modal = memo(
     const modalRef = useRef<HTMLDivElement>(null);
     const previousActiveElement = useRef<HTMLElement | null>(null);
 
-    // Handle ESC key press to close modal
     const handleEscKey = useCallback(
       (event: KeyboardEvent) => {
         if (event.key === "Escape" && showModal && dismissible) {
@@ -53,7 +62,6 @@ export const Modal = memo(
       [showModal, dismissible, setShowModal]
     );
 
-    // Handle click outside modal to close
     const handleOutsideClick = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget && dismissible) {
@@ -63,12 +71,10 @@ export const Modal = memo(
       [dismissible, setShowModal]
     );
 
-    // Handle close button click
     const handleClose = useCallback(() => {
       setShowModal(false);
     }, [setShowModal]);
 
-    // Manage focus trap and keyboard events
     useEffect(() => {
       if (showModal) {
         previousActiveElement.current = document.activeElement as HTMLElement;
@@ -87,7 +93,6 @@ export const Modal = memo(
       };
     }, [showModal, handleEscKey]);
 
-    // Animation styles
     const modalStyles: React.CSSProperties = {
       transition: `opacity ${animationDuration}ms ease-in-out`,
       opacity: showModal ? 1 : 0,
@@ -109,7 +114,12 @@ export const Modal = memo(
       >
         <div
           ref={modalRef}
-          className={twMerge(modalContentClass, classModalContent)}
+          className={twMerge(
+            modalContentClass,
+            sizeClasses[size],
+            className,
+            classModalContent
+          )}
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
           role="document"
           tabIndex={-1}
@@ -129,8 +139,10 @@ export const Modal = memo(
               </button>
             )}
           </div>
-          {showTitle && <hr className="border-gray-200" />}
-          <div className="p-4">{children}</div>
+          {showTitle && <hr className="border-slate-200 dark:border-slate-700" />}
+          <div className="max-h-[calc(90vh-73px)] overflow-y-auto p-5 text-sm text-slate-700 dark:text-slate-200">
+            {children}
+          </div>
         </div>
       </div>
     );

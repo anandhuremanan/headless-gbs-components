@@ -6,19 +6,36 @@
  */
 
 import React, { type ButtonHTMLAttributes, type ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
+import { buttonStyles } from "../../globalStyle";
+import type { ComponentSize, ComponentVariant } from "../../theme";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
+  variant?: ComponentVariant;
+  size?: ComponentSize;
   buttonClass?: string;
 }
 
 export const Button = ({
   children,
-  buttonClass = "px-2 py-1 bg-black text-white rounded-md hover:bg-gray-700",
+  variant = "primary",
+  size = "md",
+  buttonClass,
+  className,
   ...props
 }: ButtonProps) => {
   return (
-    <button className={buttonClass} {...props}>
+    <button
+      className={twMerge(
+        buttonStyles.base,
+        buttonStyles.sizes[size],
+        buttonStyles.variants[variant],
+        className,
+        buttonClass
+      )}
+      {...props}
+    >
       {children}
     </button>
   );

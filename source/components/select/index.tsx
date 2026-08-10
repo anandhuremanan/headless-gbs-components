@@ -16,8 +16,8 @@ import React, {
 import Icon from "../icon/Icon";
 import { check, search, upDown, x } from "../icon/iconPaths";
 import type { ItemsProps, SelectHandle, SelectProps } from "./types";
-import { selectStyle } from "../globalStyle";
-import { iconClass, primary } from "../globalStyle";
+import { selectStyle } from "../../globalStyle";
+import { iconClass, primary } from "../../globalStyle";
 import {
   useSelectState,
   useSelectData,
@@ -40,6 +40,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
     error = undefined,
     onFiltering,
     disabled = false,
+    className = "",
   } = props;
 
   applyScrollbarStyles();
@@ -141,7 +142,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
               name="search"
               id="search"
               placeholder="Search a value"
-              className="w-full outline-none "
+              className="w-full bg-transparent outline-none text-slate-900 placeholder:text-slate-400 dark:text-slate-100"
               ref={inputRef}
               value={searchTerm}
               onChange={(e) => {
@@ -163,7 +164,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
                 }
               }}
               className={`${selectStyle["filter-button"]} ${
-                focusedIndex === index ? "bg-gray-100 dark:bg-gray-700" : ""
+                focusedIndex === index ? "bg-sky-50 text-sky-700 dark:bg-sky-950" : ""
               }`}
               onClick={() => handleSelect({ value, label })}
               onMouseEnter={() => setFocusedIndex(index)}
@@ -171,7 +172,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
               <Icon
                 elements={check}
                 svgClass={`h-4 w-4 fill-none ${
-                  selectedItem === value ? "stroke-gray-500" : ""
+                  selectedItem === value ? "stroke-sky-600" : ""
                 }`}
               />
               {label.length > 20 ? `${label.substring(0, 20)}...` : label}
@@ -186,7 +187,7 @@ const Select = forwardRef<SelectHandle, SelectProps>((props, ref) => {
 
   return (
     <div
-      className="relative w-full"
+      className={`relative w-full ${className}`}
       ref={selectRef}
       id={id}
       onKeyDown={handleKeyDown}
@@ -245,3 +246,4 @@ Select.displayName = "Select";
 
 const MemoizedSelect = memo(Select);
 export { MemoizedSelect as Select };
+

@@ -12,4 +12,5 @@ export interface TabsProps {
   renderContent: (activeTabId: string) => ReactNode;
   onChange?: (tabId: string) => void;
   className?: string;
+  variant?: "line" | "pills";
 }

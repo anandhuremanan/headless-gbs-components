@@ -17,7 +17,7 @@ import {
 import Icon from "../icon/Icon";
 import { calender, down, leftArrow, rightArrow, x } from "../icon/iconPaths";
 import type { DatePickerProps } from "./types";
-import { iconClass, popUp, primary } from "../globalStyle";
+import { iconClass, popUp, primary } from "../../globalStyle";
 
 export const DatePicker = ({
   selectedDateValue,
@@ -362,3 +362,4 @@ export const DatePicker = ({
     </div>
   );
 };
+

@@ -1,10 +1,31 @@
-import React, { type ReactNode } from "react";
+import React, { type HTMLAttributes, type ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
+import { cardStyles } from "../../globalStyle";
 
-interface CardProps {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
   cardClass?: string;
+  interactive?: boolean;
 }
 
-export function Card({ children, cardClass = "shadow-md rounded-xl p-4" }: CardProps) {
-  return <div className={cardClass}>{children}</div>;
+export function Card({
+  children,
+  cardClass,
+  className,
+  interactive = false,
+  ...props
+}: CardProps) {
+  return (
+    <div
+      className={twMerge(
+        cardStyles.base,
+        interactive ? cardStyles.interactive : "",
+        className,
+        cardClass
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
 }
