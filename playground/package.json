@@ -11,7 +11,7 @@
     "install-components": "node ../index.cjs"
   },
   "dependencies": {
-    "@grampro/headless-helpers": "^1.0.21",
+    "@grampro/headless-helpers": "^1.0.22",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwind-merge": "^3.6.0"
