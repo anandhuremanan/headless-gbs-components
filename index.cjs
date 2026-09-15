@@ -82,7 +82,7 @@ const copyComponent = async (component, destPath) => {
         component === "Grid"
           ? "This Version of Grid will be deprecated soon. Please Install The New Data Grid Component"
           : ""
-      }`
+      }`,
     );
   } catch (error) {
     console.error(`Error installing component ${component}:`, error.message);
@@ -97,12 +97,12 @@ const installComponentWithDependencies = async (component, destPath) => {
 
   // Check which components need to be installed
   const pendingInstalls = Array.from(componentsToInstall).filter(
-    (comp) => !checkComponentExists(comp, destPath)
+    (comp) => !checkComponentExists(comp, destPath),
   );
 
   if (pendingInstalls.length === 0) {
     console.log(
-      `✓ ${component} and all its dependencies are already installed.`
+      `✓ ${component} and all its dependencies are already installed.`,
     );
     return;
   }
@@ -134,12 +134,12 @@ const installMultipleComponents = async (components, destPath) => {
 
   // Filter out already installed components
   const pendingInstalls = Array.from(allComponentsToInstall).filter(
-    (comp) => !checkComponentExists(comp, destPath)
+    (comp) => !checkComponentExists(comp, destPath),
   );
 
   if (pendingInstalls.length === 0) {
     console.log(
-      "✓ All selected components and their dependencies are already installed."
+      "✓ All selected components and their dependencies are already installed.",
     );
     return;
   }
@@ -182,7 +182,7 @@ const interactiveComponentSelector = async () => {
       console.clear();
       console.log("🚀 Component Installer - Interactive Mode");
       console.log(
-        "Use ↑/↓ arrow keys to navigate, SPACE to select/deselect, ENTER to install\n"
+        "Use ↑/↓ arrow keys to navigate, SPACE to select/deselect, ENTER to install\n",
       );
 
       CONFIG.components.forEach((component, index) => {
@@ -216,7 +216,7 @@ const interactiveComponentSelector = async () => {
         case "\u001b[B": // Down arrow
           currentIndex = Math.min(
             CONFIG.components.length - 1,
-            currentIndex + 1
+            currentIndex + 1,
           );
           renderMenu();
           break;
@@ -266,7 +266,7 @@ const parseMultipleComponents = (componentString) => {
 
 const validateComponents = (components) => {
   const invalidComponents = components.filter(
-    (comp) => !CONFIG.components.includes(comp)
+    (comp) => !CONFIG.components.includes(comp),
   );
   if (invalidComponents.length > 0) {
     console.error(`Invalid components: ${invalidComponents.join(", ")}`);
@@ -338,7 +338,7 @@ const main = async () => {
 
   if (!argv.add) {
     console.error(
-      "Please specify a component to install using -a/--add, use -i/--interactive for interactive mode, or -l/--list to see available components"
+      "Please specify a component to install using -a/--add, use -i/--interactive for interactive mode, or -l/--list to see available components",
     );
     process.exit(1);
   }
