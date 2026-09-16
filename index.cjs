@@ -38,7 +38,7 @@ const CONFIG = {
   betaComponents: ["DataGrid", "Combobox", "DatePicker"],
   // Define component dependencies
   dependencies: {
-    FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
+    FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker", "toaster"],
   },
   docs: "https://gramprokit.vercel.app/",
 };
