@@ -34,8 +34,10 @@ const CONFIG = {
     "Bargraph",
     "UsePaginatedData",
     "UseUploader",
-    "DataGridBeta",
-    "Combobox"
+  ],
+  betaComponents: [
+    "DataGrid",
+    "Combobox",
   ],
   // Define component dependencies
   dependencies: {
@@ -45,7 +47,18 @@ const CONFIG = {
 };
 
 const SOURCE_PATH = path.join(__dirname, "source", "components");
+const BETA_SOURCE_PATH = path.join(__dirname, "source", "beta-components");
 const DEFAULT_DEST_PATH = path.join(process.cwd(), "component-lib");
+
+const normalizeComponent = (component, availableComponents) =>
+  availableComponents.find(
+    (available) => available.toLowerCase() === component.toLowerCase(),
+  );
+
+const getAvailableComponents = (beta = false) =>
+  beta ? CONFIG.betaComponents : CONFIG.components;
+
+const getSourcePath = (beta = false) => (beta ? BETA_SOURCE_PATH : SOURCE_PATH);
 
 const copyCommonFiles = async (destPath) => {
   const commonFiles = [
@@ -68,13 +81,15 @@ const checkComponentExists = (component, destPath) => {
   return fs.existsSync(componentPath);
 };
 
-const copyComponent = async (component, destPath) => {
+const copyComponent = async (component, destPath, beta = false) => {
   try {
-    const componentSrc = path.join(SOURCE_PATH, component.toLowerCase());
+    const componentSrc = path.join(getSourcePath(beta), component.toLowerCase());
     const componentDest = path.join(destPath, component.toLowerCase());
 
     if (!fs.existsSync(componentSrc)) {
-      throw new Error(`Component ${component} not found in source directory.`);
+      throw new Error(
+        `Component ${component} not found in ${beta ? "beta " : ""}source directory.`,
+      );
     }
 
     await fs.copy(componentSrc, componentDest, { overwrite: true });
@@ -91,15 +106,17 @@ const copyComponent = async (component, destPath) => {
   }
 };
 
-const installComponentWithDependencies = async (component, destPath) => {
+const installComponentWithDependencies = async (component, destPath, beta = false) => {
   // Get dependencies for the component
   const dependencies = CONFIG.dependencies[component] || [];
   const componentsToInstall = new Set([component, ...dependencies]);
 
   // Check which components need to be installed
-  const pendingInstalls = Array.from(componentsToInstall).filter(
-    (comp) => !checkComponentExists(comp, destPath),
-  );
+  const pendingInstalls = beta
+    ? Array.from(componentsToInstall)
+    : Array.from(componentsToInstall).filter(
+        (comp) => !checkComponentExists(comp, destPath),
+      );
 
   if (pendingInstalls.length === 0) {
     console.log(
@@ -110,7 +127,7 @@ const installComponentWithDependencies = async (component, destPath) => {
 
   // Install all pending components
   for (const comp of pendingInstalls) {
-    await copyComponent(comp, destPath);
+    await copyComponent(comp, destPath, beta);
   }
 
   if (dependencies.length > 0) {
@@ -123,7 +140,7 @@ const installComponentWithDependencies = async (component, destPath) => {
   console.log(`\nFor documentation visit: ${CONFIG.docs}`);
 };
 
-const installMultipleComponents = async (components, destPath) => {
+const installMultipleComponents = async (components, destPath, beta = false) => {
   const allComponentsToInstall = new Set();
 
   // Collect all components and their dependencies
@@ -134,9 +151,11 @@ const installMultipleComponents = async (components, destPath) => {
   });
 
   // Filter out already installed components
-  const pendingInstalls = Array.from(allComponentsToInstall).filter(
-    (comp) => !checkComponentExists(comp, destPath),
-  );
+  const pendingInstalls = beta
+    ? Array.from(allComponentsToInstall)
+    : Array.from(allComponentsToInstall).filter(
+        (comp) => !checkComponentExists(comp, destPath),
+      );
 
   if (pendingInstalls.length === 0) {
     console.log(
@@ -149,7 +168,7 @@ const installMultipleComponents = async (components, destPath) => {
 
   // Install all pending components
   for (const comp of pendingInstalls) {
-    await copyComponent(comp, destPath);
+    await copyComponent(comp, destPath, beta);
   }
 
   // Show dependency information
@@ -169,7 +188,7 @@ const installMultipleComponents = async (components, destPath) => {
   console.log(`\nFor documentation visit: ${CONFIG.docs}`);
 };
 
-const interactiveComponentSelector = async () => {
+const interactiveComponentSelector = async (beta = false) => {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
@@ -186,7 +205,9 @@ const interactiveComponentSelector = async () => {
         "Use ↑/↓ arrow keys to navigate, SPACE to select/deselect, ENTER to install\n",
       );
 
-      CONFIG.components.forEach((component, index) => {
+      const availableComponents = getAvailableComponents(beta);
+
+      availableComponents.forEach((component, index) => {
         const isSelected = selectedComponents.has(component);
         const isCurrentIndex = index === currentIndex;
         const deps = CONFIG.dependencies[component]
@@ -216,13 +237,13 @@ const interactiveComponentSelector = async () => {
           break;
         case "\u001b[B": // Down arrow
           currentIndex = Math.min(
-            CONFIG.components.length - 1,
+            getAvailableComponents(beta).length - 1,
             currentIndex + 1,
           );
           renderMenu();
           break;
         case " ": // Space bar
-          const component = CONFIG.components[currentIndex];
+          const component = getAvailableComponents(beta)[currentIndex];
           if (selectedComponents.has(component)) {
             selectedComponents.delete(component);
           } else {
@@ -265,21 +286,29 @@ const parseMultipleComponents = (componentString) => {
     .filter((comp) => comp.length > 0);
 };
 
-const validateComponents = (components) => {
+const validateComponents = (components, beta = false) => {
+  const availableComponents = getAvailableComponents(beta);
   const invalidComponents = components.filter(
-    (comp) => !CONFIG.components.includes(comp),
+    (comp) => !availableComponents.includes(comp),
   );
   if (invalidComponents.length > 0) {
     console.error(`Invalid components: ${invalidComponents.join(", ")}`);
-    console.log("\nAvailable components:");
-    CONFIG.components.forEach((comp) => console.log(`- ${comp}`));
+    console.log(`\nAvailable ${beta ? "beta " : ""}components:`);
+    availableComponents.forEach((comp) => console.log(`- ${comp}`));
+    if (!beta) {
+      console.log("\nRedesigned beta components (install with -beta):");
+      CONFIG.betaComponents.forEach((comp) => console.log(`- ${comp}`));
+    }
     return false;
   }
   return true;
 };
 
 const main = async () => {
-  const argv = yargs(hideBin(process.argv))
+  const args = hideBin(process.argv).map((arg) =>
+    arg === "-beta" ? "--beta" : arg,
+  );
+  const argv = yargs(args)
     .option("add", {
       alias: "a",
       describe:
@@ -296,27 +325,39 @@ const main = async () => {
       describe: "List available components",
       type: "boolean",
     })
+    .option("beta", {
+      describe: "Install redesigned beta components",
+      type: "boolean",
+      default: false,
+    })
     .example("$0 -a Button", "Install a single component")
     .example("$0 -a Button,Card,Modal", "Install multiple components")
+    .example("$0 -a DataGrid -beta", "Install the redesigned beta DataGrid")
+    .example("$0 -a Combobox -beta", "Install the redesigned beta Combobox")
     .example("$0 -i", "Interactive selection mode")
     .help().argv;
 
   // List components if requested
   if (argv.list) {
-    console.log("\nAvailable components:");
-    CONFIG.components.forEach((comp) => {
+    const availableComponents = getAvailableComponents(argv.beta);
+    console.log(`\nAvailable ${argv.beta ? "beta " : ""}components:`);
+    availableComponents.forEach((comp) => {
       const deps = CONFIG.dependencies[comp]
         ? ` (requires: ${CONFIG.dependencies[comp].join(", ")})`
         : "";
       console.log(`- ${comp}${deps}`);
     });
+    if (!argv.beta) {
+      console.log("\nRedesigned beta components (install with -beta):");
+      CONFIG.betaComponents.forEach((comp) => console.log(`- ${comp}`));
+    }
     return;
   }
 
   // Interactive mode
   if (argv.interactive) {
     console.log("Starting interactive component selector...\n");
-    const selectedComponents = await interactiveComponentSelector();
+    const selectedComponents = await interactiveComponentSelector(argv.beta);
 
     if (selectedComponents.length === 0) {
       console.log("No components selected. Exiting...");
@@ -333,7 +374,7 @@ const main = async () => {
     }
 
     // Install selected components
-    await installMultipleComponents(selectedComponents, destPath);
+    await installMultipleComponents(selectedComponents, destPath, argv.beta);
     return;
   }
 
@@ -346,10 +387,12 @@ const main = async () => {
 
   // Parse components (single or multiple)
   const componentInput = argv.add;
-  const components = parseMultipleComponents(componentInput);
+  const components = parseMultipleComponents(componentInput).map((component) =>
+    normalizeComponent(component, getAvailableComponents(argv.beta)) || component,
+  );
 
   // Validate all components
-  if (!validateComponents(components)) {
+  if (!validateComponents(components, argv.beta)) {
     process.exit(1);
   }
 
@@ -365,10 +408,10 @@ const main = async () => {
   // Install components
   if (components.length === 1) {
     // Single component installation (existing behavior)
-    await installComponentWithDependencies(components[0], destPath);
+    await installComponentWithDependencies(components[0], destPath, argv.beta);
   } else {
     // Multiple components installation
-    await installMultipleComponents(components, destPath);
+    await installMultipleComponents(components, destPath, argv.beta);
   }
 };
 
