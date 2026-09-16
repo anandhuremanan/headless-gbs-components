@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v1.2.9)
+# GBS Building Blocks 2.0 (v1.2.10)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -15,7 +15,7 @@ npx gbs-add-block -a DataGrid -beta
 npx gbs-add-block -a Combobox -beta
 ```
 
-## What's New 🎉 (Ver 1.2.9)
+## What's New 🎉 (Ver 1.2.10)
 
 - Update Candidate for next major change 2.0.0
 
