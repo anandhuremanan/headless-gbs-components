@@ -35,10 +35,7 @@ const CONFIG = {
     "UsePaginatedData",
     "UseUploader",
   ],
-  betaComponents: [
-    "DataGrid",
-    "Combobox",
-  ],
+  betaComponents: ["DataGrid", "Combobox", "DatePicker"],
   // Define component dependencies
   dependencies: {
     FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
@@ -83,7 +80,10 @@ const checkComponentExists = (component, destPath) => {
 
 const copyComponent = async (component, destPath, beta = false) => {
   try {
-    const componentSrc = path.join(getSourcePath(beta), component.toLowerCase());
+    const componentSrc = path.join(
+      getSourcePath(beta),
+      component.toLowerCase(),
+    );
     const componentDest = path.join(destPath, component.toLowerCase());
 
     if (!fs.existsSync(componentSrc)) {
@@ -106,7 +106,11 @@ const copyComponent = async (component, destPath, beta = false) => {
   }
 };
 
-const installComponentWithDependencies = async (component, destPath, beta = false) => {
+const installComponentWithDependencies = async (
+  component,
+  destPath,
+  beta = false,
+) => {
   // Get dependencies for the component
   const dependencies = CONFIG.dependencies[component] || [];
   const componentsToInstall = new Set([component, ...dependencies]);
@@ -140,7 +144,11 @@ const installComponentWithDependencies = async (component, destPath, beta = fals
   console.log(`\nFor documentation visit: ${CONFIG.docs}`);
 };
 
-const installMultipleComponents = async (components, destPath, beta = false) => {
+const installMultipleComponents = async (
+  components,
+  destPath,
+  beta = false,
+) => {
   const allComponentsToInstall = new Set();
 
   // Collect all components and their dependencies
@@ -387,8 +395,10 @@ const main = async () => {
 
   // Parse components (single or multiple)
   const componentInput = argv.add;
-  const components = parseMultipleComponents(componentInput).map((component) =>
-    normalizeComponent(component, getAvailableComponents(argv.beta)) || component,
+  const components = parseMultipleComponents(componentInput).map(
+    (component) =>
+      normalizeComponent(component, getAvailableComponents(argv.beta)) ||
+      component,
   );
 
   // Validate all components
