@@ -35,6 +35,7 @@ const CONFIG = {
     "UsePaginatedData",
     "UseUploader",
     "DataGridBeta",
+    "Combobox"
   ],
   // Define component dependencies
   dependencies: {
