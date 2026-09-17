@@ -1,0 +1,278 @@
+/*
+ * Dialog styles (alert, confirm and prompt).
+ *
+ * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
+ * (set them on :root to share one theme) and fall back to the same palette
+ * otherwise. Rules live in the `components` layer, so utility classes passed
+ * through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .dl-root {
+    --dl-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
+    --dl-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
+    --dl-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
+    --dl-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
+    --dl-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
+    --dl-input-bg: var(--dg-input-bg, light-dark(#ffffff, #121216));
+    --dl-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
+    --dl-accent-fg: var(--dg-accent-fg, light-dark(#ffffff, #0b1220));
+    --dl-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
+    --dl-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
+    --dl-danger-fg: light-dark(#ffffff, #1c0606);
+    --dl-success: light-dark(#16a34a, #4ade80);
+    --dl-warning: light-dark(#d97706, #fbbf24);
+    --dl-info: var(--dg-accent, light-dark(#2563eb, #60a5fa));
+    --dl-shadow: 0 24px 64px -16px light-dark(rgb(0 0 0 / 0.3), rgb(0 0 0 / 0.8));
+    --dl-backdrop: light-dark(rgb(9 9 11 / 0.45), rgb(0 0 0 / 0.65));
+    --dl-radius: var(--dg-radius, 12px);
+    --dl-font-size: var(--dg-font-size, 13px);
+    --dl-width: 420px;
+    --dl-intent: transparent;
+    --dl-duration: 200ms;
+
+    color-scheme: inherit;
+    box-sizing: border-box;
+    width: min(var(--dl-width), 100vw - 32px);
+    max-width: none;
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--dl-border);
+    border-radius: var(--dl-radius);
+    background: var(--dl-bg);
+    color: var(--dl-fg);
+    box-shadow: var(--dl-shadow);
+    font-size: var(--dl-font-size);
+    line-height: 1.5;
+    opacity: 0;
+    scale: 0.96;
+    transition:
+      opacity var(--dl-duration) ease,
+      scale var(--dl-duration) ease,
+      overlay var(--dl-duration) allow-discrete,
+      display var(--dl-duration) allow-discrete;
+  }
+  .dl-root[open] {
+    opacity: 1;
+    scale: 1;
+  }
+  @starting-style {
+    .dl-root[open] {
+      opacity: 0;
+      scale: 0.96;
+    }
+  }
+
+  .dl-root::backdrop {
+    background: var(--dl-backdrop, rgb(9 9 11 / 0.45));
+    opacity: 0;
+    transition:
+      opacity var(--dl-duration) ease,
+      overlay var(--dl-duration) allow-discrete,
+      display var(--dl-duration) allow-discrete;
+  }
+  .dl-root[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    .dl-root[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  :where(.dark, [data-theme="dark"]) .dl-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .dl-root {
+    color-scheme: light;
+  }
+
+  :where(.dl-root) *,
+  :where(.dl-root) *::before,
+  :where(.dl-root) *::after {
+    box-sizing: border-box;
+  }
+
+  :root:has(.dl-root[open]) {
+    overflow: hidden;
+  }
+
+  .dl-root[data-size="md"] {
+    --dl-width: 540px;
+  }
+  .dl-root[data-intent="info"] {
+    --dl-intent: var(--dl-info);
+  }
+  .dl-root[data-intent="success"] {
+    --dl-intent: var(--dl-success);
+  }
+  .dl-root[data-intent="warning"] {
+    --dl-intent: var(--dl-warning);
+  }
+  .dl-root[data-intent="danger"] {
+    --dl-intent: var(--dl-danger);
+  }
+
+  /* ------------------------------------------------------------ content */
+
+  .dl-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 20px 16px;
+  }
+  .dl-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--dl-intent), transparent 86%);
+    color: var(--dl-intent);
+  }
+  .dl-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .dl-title {
+    margin: 0;
+    font-size: 1.15em;
+    font-weight: 600;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+  .dl-description {
+    color: var(--dl-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .dl-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .dl-label {
+    font-weight: 500;
+  }
+  .dl-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--dl-border);
+    border-radius: 8px;
+    background: var(--dl-input-bg);
+    color: inherit;
+    font: inherit;
+  }
+  .dl-input:focus-visible {
+    outline: 2px solid var(--dl-focus);
+    outline-offset: -1px;
+  }
+  .dl-input[aria-invalid="true"] {
+    border-color: var(--dl-danger);
+    outline-color: var(--dl-danger);
+  }
+  .dl-error {
+    margin: 0;
+    color: var(--dl-danger);
+    font-size: 0.92em;
+  }
+
+  /* ------------------------------------------------------------ actions */
+
+  .dl-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--dl-border);
+    background: var(--dg-header-bg, light-dark(#fafafa, #111114));
+  }
+  .dl-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 80px;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid var(--dl-border);
+    border-radius: 8px;
+    background: var(--dl-bg);
+    color: inherit;
+    font: inherit;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .dl-button:hover:not([aria-disabled="true"]) {
+    background: var(--dl-hover);
+  }
+  .dl-button[data-variant="primary"] {
+    border-color: var(--dl-accent);
+    background: var(--dl-accent);
+    color: var(--dl-accent-fg);
+  }
+  .dl-button[data-variant="danger"] {
+    border-color: var(--dl-danger);
+    background: var(--dl-danger);
+    color: var(--dl-danger-fg);
+  }
+  .dl-button[data-variant="primary"]:hover:not([aria-disabled="true"]) {
+    background: color-mix(in oklab, var(--dl-accent), var(--dl-fg) 12%);
+  }
+  .dl-button[data-variant="danger"]:hover:not([aria-disabled="true"]) {
+    background: color-mix(in oklab, var(--dl-danger), var(--dl-fg) 12%);
+  }
+  .dl-button:focus-visible {
+    outline: 2px solid var(--dl-focus);
+    outline-offset: 2px;
+  }
+  .dl-button[aria-disabled="true"] {
+    opacity: 0.65;
+    cursor: progress;
+  }
+
+  .dl-spinner {
+    animation: dl-spin 0.7s linear infinite;
+  }
+  @keyframes dl-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .dl-actions {
+      flex-direction: column-reverse;
+    }
+    .dl-button {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dl-root,
+    .dl-root::backdrop {
+      transition-duration: 0s;
+    }
+    .dl-spinner {
+      animation-duration: 2s;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .dl-root {
+      border: 1px solid CanvasText;
+    }
+  }
+}

@@ -41,6 +41,10 @@ const CONFIG = {
     "DatePicker",
     "Toaster",
     "FileUploader",
+    "Dialog",
+    "Input",
+    "Modal",
+    "Textarea",
   ],
   // Define component dependencies
   dependencies: {
