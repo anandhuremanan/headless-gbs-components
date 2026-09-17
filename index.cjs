@@ -45,6 +45,11 @@ const CONFIG = {
     "Input",
     "Modal",
     "Textarea",
+    "Button",
+    "Breadcrumb",
+    "Checkbox",
+    "Tabs",
+    "Spinner",
   ],
   // Define component dependencies
   dependencies: {
