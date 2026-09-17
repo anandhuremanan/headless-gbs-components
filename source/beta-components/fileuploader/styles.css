@@ -1,0 +1,395 @@
+/*
+ * FileUploader styles.
+ *
+ * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
+ * (set them on :root to share one theme) and fall back to the same palette
+ * otherwise. Rules live in the `components` layer, so utility classes passed
+ * through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .fu-root {
+    --fu-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
+    --fu-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
+    --fu-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
+    --fu-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
+    --fu-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
+    --fu-input-bg: var(--dg-input-bg, light-dark(#ffffff, #121216));
+    --fu-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
+    --fu-accent-fg: var(--dg-accent-fg, light-dark(#ffffff, #0b1220));
+    --fu-accent-soft: var(--dg-accent-soft, light-dark(#eff6ff, #172554));
+    --fu-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
+    --fu-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
+    --fu-success: light-dark(#16a34a, #4ade80);
+    --fu-radius: var(--dg-radius, 8px);
+    --fu-font-size: var(--dg-font-size, 13px);
+    --fu-dropzone-py: 20px;
+    --fu-thumb-size: 40px;
+
+    color-scheme: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    font-size: var(--fu-font-size);
+    line-height: 1.4;
+    color: var(--fu-fg);
+  }
+
+  :where(.dark, [data-theme="dark"]) .fu-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .fu-root {
+    color-scheme: light;
+  }
+
+  :where(.fu-root) *,
+  :where(.fu-root) *::before,
+  :where(.fu-root) *::after {
+    box-sizing: border-box;
+  }
+
+  .fu-root[data-size="sm"] {
+    --fu-font-size: 12px;
+    --fu-dropzone-py: 12px;
+    --fu-thumb-size: 32px;
+  }
+  .fu-root[data-size="lg"] {
+    --fu-font-size: 14px;
+    --fu-dropzone-py: 32px;
+    --fu-thumb-size: 48px;
+  }
+
+  .fu-label {
+    font-weight: 500;
+  }
+  .fu-label[data-required]::after {
+    content: " *";
+    color: var(--fu-danger);
+  }
+  .fu-description {
+    color: var(--fu-muted);
+    font-size: 0.92em;
+  }
+  .fu-error {
+    color: var(--fu-danger);
+    font-size: 0.92em;
+  }
+
+  /* ------------------------------------------------------------ dropzone */
+
+  .fu-dropzone {
+    position: relative;
+    border: 1.5px dashed color-mix(in oklab, var(--fu-border), var(--fu-fg) 20%);
+    border-radius: var(--fu-radius);
+    background: var(--fu-input-bg);
+    transition:
+      border-color 120ms ease,
+      background-color 120ms ease;
+  }
+  .fu-dropzone:hover:not(:has(.fu-trigger:disabled)) {
+    border-color: color-mix(in oklab, var(--fu-border), var(--fu-fg) 40%);
+  }
+  .fu-dropzone[data-dragging] {
+    border-color: var(--fu-accent);
+    background: var(--fu-accent-soft);
+  }
+  .fu-root[data-invalid] .fu-dropzone {
+    border-color: var(--fu-danger);
+  }
+
+  .fu-trigger {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: var(--fu-dropzone-py) 16px;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+  }
+  .fu-trigger:focus-visible {
+    outline: 2px solid var(--fu-focus);
+    outline-offset: 2px;
+  }
+  .fu-trigger:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .fu-dropzone-icon {
+    color: var(--fu-muted);
+  }
+  .fu-dropzone[data-dragging] .fu-dropzone-icon {
+    color: var(--fu-accent);
+  }
+  .fu-browse {
+    color: var(--fu-accent);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .fu-hint {
+    color: var(--fu-muted);
+    font-size: 0.92em;
+  }
+
+  /* ---------------------------------------------------------- rejections */
+
+  .fu-rejections {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .fu-rejection {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 4px 4px 10px;
+    border-radius: 6px;
+    background: color-mix(in oklab, var(--fu-danger), transparent 90%);
+    color: var(--fu-danger);
+  }
+  .fu-rejection > span {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* --------------------------------------------------------------- files */
+
+  .fu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .fu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 8px 8px 10px;
+    border: 1px solid var(--fu-border);
+    border-radius: var(--fu-radius);
+    background: var(--fu-bg);
+  }
+  .fu-item[data-status="error"] {
+    border-color: color-mix(in oklab, var(--fu-danger), var(--fu-border) 55%);
+  }
+
+  .fu-thumb {
+    --fu-kind: var(--fu-muted);
+
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--fu-thumb-size);
+    height: var(--fu-thumb-size);
+    overflow: hidden;
+    border-radius: 6px;
+    background: color-mix(in oklab, var(--fu-kind), transparent 88%);
+    color: var(--fu-kind);
+  }
+  .fu-thumb img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .fu-thumb[data-kind="image"] {
+    --fu-kind: light-dark(#2563eb, #60a5fa);
+  }
+  .fu-thumb[data-kind="video"] {
+    --fu-kind: light-dark(#9333ea, #c084fc);
+  }
+  .fu-thumb[data-kind="audio"] {
+    --fu-kind: light-dark(#d97706, #fbbf24);
+  }
+  .fu-thumb[data-kind="pdf"] {
+    --fu-kind: light-dark(#dc2626, #f87171);
+  }
+  .fu-thumb[data-kind="spreadsheet"] {
+    --fu-kind: light-dark(#16a34a, #4ade80);
+  }
+  .fu-thumb[data-kind="document"] {
+    --fu-kind: light-dark(#0891b2, #22d3ee);
+  }
+
+  .fu-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+  .fu-name,
+  .fu-meta,
+  .fu-item-error {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fu-name {
+    font-weight: 500;
+  }
+  .fu-meta {
+    color: var(--fu-muted);
+    font-size: 0.92em;
+    font-variant-numeric: tabular-nums;
+  }
+  .fu-item[data-status="success"] .fu-meta {
+    color: var(--fu-success);
+  }
+  .fu-item[data-status="error"] .fu-meta,
+  .fu-item-error {
+    color: var(--fu-danger);
+    font-size: 0.92em;
+  }
+
+  .fu-progress {
+    height: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--fu-hover);
+  }
+  /* Scaling instead of width: moving the bar never triggers layout. */
+  .fu-progress-bar {
+    display: block;
+    height: 100%;
+    background: var(--fu-accent);
+    transform-origin: left;
+    transition: transform 150ms linear;
+  }
+  .fu-progress-bar:dir(rtl) {
+    transform-origin: right;
+  }
+  .fu-item[data-status="paused"] .fu-progress-bar {
+    background: var(--fu-muted);
+  }
+  .fu-item[data-status="error"] .fu-progress-bar {
+    background: var(--fu-danger);
+  }
+
+  .fu-actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 2px;
+    color: var(--fu-muted);
+  }
+  .fu-icon-button {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+  .fu-icon-button:hover:not(:disabled) {
+    background: var(--fu-hover);
+    color: var(--fu-fg);
+  }
+  .fu-icon-button:focus-visible {
+    outline: 2px solid var(--fu-focus);
+    outline-offset: 1px;
+  }
+  .fu-icon-button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  /* -------------------------------------------------------------- footer */
+
+  .fu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .fu-footer .fu-progress {
+    flex: 1 1 auto;
+    margin: 0;
+  }
+  .fu-footer-text {
+    color: var(--fu-muted);
+    font-size: 0.92em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .fu-button {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--fu-border);
+    border-radius: 6px;
+    background: var(--fu-bg);
+    color: inherit;
+    font: inherit;
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .fu-button:hover:not(:disabled) {
+    background: var(--fu-hover);
+  }
+  .fu-button[data-variant="primary"] {
+    border-color: var(--fu-accent);
+    background: var(--fu-accent);
+    color: var(--fu-accent-fg);
+  }
+  .fu-button[data-variant="primary"]:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--fu-accent), var(--fu-fg) 12%);
+  }
+  .fu-button:focus-visible {
+    outline: 2px solid var(--fu-focus);
+    outline-offset: 1px;
+  }
+  .fu-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .fu-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fu-dropzone,
+    .fu-progress-bar {
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .fu-progress-bar {
+      background: Highlight;
+    }
+    .fu-dropzone[data-dragging] {
+      border-color: Highlight;
+    }
+  }
+}

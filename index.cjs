@@ -35,10 +35,16 @@ const CONFIG = {
     "UsePaginatedData",
     "UseUploader",
   ],
-  betaComponents: ["DataGrid", "Combobox", "DatePicker"],
+  betaComponents: [
+    "DataGrid",
+    "Combobox",
+    "DatePicker",
+    "Toaster",
+    "FileUploader",
+  ],
   // Define component dependencies
   dependencies: {
-    FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker", "toaster"],
+    FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
   },
   docs: "https://gramprokit.vercel.app/",
 };
