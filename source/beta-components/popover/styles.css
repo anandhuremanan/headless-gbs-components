@@ -1,0 +1,146 @@
+/*
+ * Popover styles.
+ *
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
+ * through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .pv-root {
+    --pv-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --pv-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --pv-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --pv-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --pv-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --pv-shadow: var(--gbs-shadow, var(--dg-shadow, 0 10px 30px -8px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6))));
+    --pv-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --pv-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
+    --pv-px: 12px;
+    --pv-width: 280px;
+    --pv-duration: 140ms;
+
+    position: fixed;
+    inset: auto;
+    z-index: 60;
+    width: max-content;
+    max-width: min(var(--pv-width), calc(100vw - 16px));
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--pv-border);
+    border-radius: var(--pv-radius);
+    background: var(--pv-bg);
+    color: var(--pv-fg);
+    box-shadow: var(--pv-shadow);
+    color-scheme: inherit;
+    font-size: var(--pv-font-size);
+    line-height: 1.5;
+  }
+
+  :where(.dark, [data-theme="dark"]) .pv-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .pv-root {
+    color-scheme: light;
+  }
+
+  :where(.pv-root) *,
+  :where(.pv-root) *::before,
+  :where(.pv-root) *::after {
+    box-sizing: border-box;
+  }
+
+  /* The panel is focused when it opens, which should not draw a ring unless
+     the person is actually navigating by keyboard. */
+  .pv-root:focus {
+    outline: none;
+  }
+  .pv-root:focus-visible {
+    outline: 2px solid var(--pv-focus);
+    outline-offset: 2px;
+  }
+
+  .pv-root:popover-open {
+    animation: pv-in var(--pv-duration) ease;
+  }
+
+  /* Grows from the edge it is anchored to, so it reads as coming from the
+     trigger rather than appearing from nowhere. */
+  @keyframes pv-in {
+    from {
+      opacity: 0;
+      translate: 0 -2px;
+    }
+  }
+  .pv-root[data-side="top"]:popover-open {
+    animation-name: pv-in-top;
+  }
+  @keyframes pv-in-top {
+    from {
+      opacity: 0;
+      translate: 0 2px;
+    }
+  }
+  .pv-root[data-side="left"]:popover-open {
+    animation-name: pv-in-left;
+  }
+  @keyframes pv-in-left {
+    from {
+      opacity: 0;
+      translate: 2px 0;
+    }
+  }
+  .pv-root[data-side="right"]:popover-open {
+    animation-name: pv-in-right;
+  }
+  @keyframes pv-in-right {
+    from {
+      opacity: 0;
+      translate: -2px 0;
+    }
+  }
+
+  /* -------------------------------------------------------------- content */
+
+  .pv-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: var(--pv-px);
+  }
+
+  .pv-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .pv-title {
+    margin: 0;
+    font-size: 1.02em;
+    font-weight: 600;
+  }
+  .pv-description {
+    margin: 0;
+    color: var(--pv-muted);
+  }
+
+  .pv-body:empty {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pv-root:popover-open {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .pv-root {
+      border: 1px solid CanvasText;
+    }
+  }
+}

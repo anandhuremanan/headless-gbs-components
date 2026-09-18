@@ -3,4 +3,4 @@
  * `version.json` next to it and compares the two, so a project is never left
  * with components built against a newer `shared/` than the one on disk.
  */
-export const version = "1.0.0";
+export const version = "1.1.0";

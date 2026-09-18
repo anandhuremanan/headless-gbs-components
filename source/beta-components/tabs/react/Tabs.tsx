@@ -15,12 +15,20 @@ import {
 import { useControllableState } from "../../shared/react/useControllableState";
 import { cx } from "../../shared/core/cx";
 import { nextTab, tabDomId } from "../core/navigation";
-import type { TabsActivation, TabsOrientation, TabsSize, TabsVariant } from "../core/types";
+import type {
+  TabsActivation,
+  TabsOrientation,
+  TabsSize,
+  TabsVariant,
+} from "../core/types";
 import { TabsContext, useTabsContext } from "./context";
 
 /* ------------------------------------------------------------------- Tabs */
 
-export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, "defaultValue" | "onChange"> {
+export interface TabsProps extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  "defaultValue" | "onChange"
+> {
   /** Selected tab (controlled). */
   value?: string;
   /** Selected tab at first. Without either, the first enabled tab is selected. */
@@ -102,16 +110,18 @@ export function TabList(props: TabListProps) {
   const getTabs = useCallback(() => {
     const list = listRef.current;
     if (!list) return [];
-    return Array.from(list.querySelectorAll<HTMLElement>('[role="tab"]')).filter(
-      (tab) => tab.closest('[role="tablist"]') === list,
-    );
+    return Array.from(
+      list.querySelectorAll<HTMLElement>('[role="tab"]'),
+    ).filter((tab) => tab.closest('[role="tablist"]') === list);
   }, []);
 
   // Without a matching value, select the first enabled tab so the list stays reachable by Tab.
   useLayoutEffect(() => {
     const tabs = getTabs();
     if (tabs.some((tab) => tab.dataset.value === context.value)) return;
-    const first = tabs.find((tab) => tab.getAttribute("aria-disabled") !== "true");
+    const first = tabs.find(
+      (tab) => tab.getAttribute("aria-disabled") !== "true",
+    );
     if (first?.dataset.value !== undefined) context.select(first.dataset.value);
   }, [context, getTabs]);
 
@@ -121,13 +131,21 @@ export function TabList(props: TabListProps) {
     if (!list) return;
     const horizontal = context.orientation === "horizontal";
     const place = () => {
-      const active = getTabs().find((tab) => tab.getAttribute("aria-selected") === "true");
+      const active = getTabs().find(
+        (tab) => tab.getAttribute("aria-selected") === "true",
+      );
       if (!active) {
         list.style.removeProperty("--tb-indicator-size");
         return;
       }
-      list.style.setProperty("--tb-indicator-start", `${horizontal ? active.offsetLeft : active.offsetTop}px`);
-      list.style.setProperty("--tb-indicator-size", `${horizontal ? active.offsetWidth : active.offsetHeight}px`);
+      list.style.setProperty(
+        "--tb-indicator-start",
+        `${horizontal ? active.offsetLeft : active.offsetTop}px`,
+      );
+      list.style.setProperty(
+        "--tb-indicator-size",
+        `${horizontal ? active.offsetWidth : active.offsetHeight}px`,
+      );
     };
     place();
     const observer = new ResizeObserver(place);
@@ -143,15 +161,24 @@ export function TabList(props: TabListProps) {
     const current = tabs.indexOf(document.activeElement as HTMLElement);
     if (current === -1) return;
 
-    if (context.activation === "manual" && (event.key === "Enter" || event.key === " ")) {
+    if (
+      context.activation === "manual" &&
+      (event.key === "Enter" || event.key === " ")
+    ) {
       event.preventDefault();
       const value = tabs[current].dataset.value;
-      if (value !== undefined && tabs[current].getAttribute("aria-disabled") !== "true") context.select(value);
+      if (
+        value !== undefined &&
+        tabs[current].getAttribute("aria-disabled") !== "true"
+      )
+        context.select(value);
       return;
     }
 
     const next = nextTab(
-      tabs.map((tab) => ({ disabled: tab.getAttribute("aria-disabled") === "true" })),
+      tabs.map((tab) => ({
+        disabled: tab.getAttribute("aria-disabled") === "true",
+      })),
       current,
       event.key,
       {
@@ -163,7 +190,10 @@ export function TabList(props: TabListProps) {
     event.preventDefault();
     const target = tabs[next];
     target.focus();
-    if (context.activation === "automatic" && target.dataset.value !== undefined) {
+    if (
+      context.activation === "automatic" &&
+      target.dataset.value !== undefined
+    ) {
       context.select(target.dataset.value);
     }
   };
@@ -185,7 +215,10 @@ export function TabList(props: TabListProps) {
 
 /* -------------------------------------------------------------------- Tab */
 
-export interface TabProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "value" | "type"> {
+export interface TabProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "value" | "type"
+> {
   /** Identifies the tab and its panel. */
   value: string;
   icon?: ReactNode;
@@ -194,7 +227,16 @@ export interface TabProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 
 }
 
 export function Tab(props: TabProps) {
-  const { value, icon, badge, disabled = false, className, children, onClick, ...rest } = props;
+  const {
+    value,
+    icon,
+    badge,
+    disabled = false,
+    className,
+    children,
+    onClick,
+    ...rest
+  } = props;
   const context = useTabsContext();
   const selected = context.value === value;
 
@@ -222,7 +264,9 @@ export function Tab(props: TabProps) {
         </span>
       )}
       <span className="tb-label">{children}</span>
-      {badge !== undefined && badge !== null && <span className="tb-badge">{badge}</span>}
+      {badge !== undefined && badge !== null && (
+        <span className="tb-badge">{badge}</span>
+      )}
     </button>
   );
 }
@@ -252,7 +296,11 @@ export function TabPanel(props: TabPanelProps) {
       hidden={!selected}
       className={cx("tb-panel", className)}
     >
-      {keep ? <Activity mode={selected ? "visible" : "hidden"}>{children}</Activity> : selected ? children : null}
+      {keep ? (
+        <Activity mode={selected ? "visible" : "hidden"}>{children}</Activity>
+      ) : selected ? (
+        children
+      ) : null}
     </div>
   );
 }

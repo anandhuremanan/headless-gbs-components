@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, type ReactNode, type ToggleEvent } from "react";
 import { cx } from "../core/cx";
+import { placePopover, type Align, type Side } from "../core/position";
 
 /** Space kept between the popover and the edge of the viewport. */
 const EDGE = 8;
@@ -15,12 +16,20 @@ export interface AnchoredPopoverProps {
   id?: string;
   className?: string;
   /**
-   * Gives the popover `role="dialog"` and this accessible name. Leave it out
-   * for content that already carries its own role, such as a listbox.
+   * Gives the popover `role="dialog"` and this accessible name. Leave it and
+   * `labelledBy` out for content that carries its own role, such as a listbox.
    */
   label?: string;
+  /** Names the popover from an element inside it, such as its heading. */
+  labelledBy?: string;
+  /** Points at a description inside the popover. */
+  describedBy?: string;
+  /** `menu` for a list of commands, `tooltip` for a label; otherwise a dialog. */
+  role?: "dialog" | "menu" | "tooltip";
+  /** The side of the anchor to open on, before flipping. Default `bottom`. */
+  side?: Side;
   /** Which edge of the anchor to align to, in reading order. Default `start`. */
-  align?: "start" | "end";
+  align?: Align;
   /** Distance between the anchor and the popover. Default 4. */
   gap?: number;
   /** Make the popover at least as wide as its anchor. */
@@ -33,12 +42,25 @@ export interface AnchoredPopoverProps {
   fitHeight?: boolean;
   /** Floor for `fitHeight`, so a cramped viewport still shows something. Default 140. */
   minHeight?: number;
-  /** Selector for the element focused on open, or `false` to leave focus alone. */
-  autoFocus?: string | false;
+  /**
+   * Where focus goes when it opens: a selector, `true` for the first
+   * `[data-autofocus]` and otherwise the popover itself, or `false` to leave
+   * focus where it is. A popover focused this way needs `tabIndex={-1}`.
+   */
+  autoFocus?: string | boolean;
   /** Reposition when the popover resizes (`self`) or the anchor does too (`both`). */
   observeResize?: "self" | "both" | false;
   /** Put focus back on the anchor when the popover closes. */
   returnFocus?: boolean;
+  /**
+   * `auto` (the default) gets the browser's light dismiss and Escape, and is
+   * right for anything opened deliberately. `manual` opts out of both, for
+   * content that appears beside something else and must not close it: opening
+   * an `auto` popover closes every other one, so a tooltip or a submenu over an
+   * open menu would take the menu down with it. Manual popovers handle their
+   * own dismissal.
+   */
+  mode?: "auto" | "manual";
 }
 
 /**
@@ -58,6 +80,10 @@ export function AnchoredPopover({
   id,
   className,
   label,
+  labelledBy,
+  describedBy,
+  role,
+  side = "bottom",
   align = "start",
   gap = 4,
   matchAnchorWidth = false,
@@ -66,6 +92,7 @@ export function AnchoredPopover({
   autoFocus = "[data-autofocus]",
   observeResize = false,
   returnFocus = false,
+  mode = "auto",
 }: AnchoredPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -77,28 +104,38 @@ export function AnchoredPopover({
       const rect = anchor.getBoundingClientRect();
       if (matchAnchorWidth) el.style.minWidth = `${rect.width}px`;
 
-      const { offsetWidth: width, offsetHeight: height } = el;
-      const rtl = getComputedStyle(anchor).direction === "rtl";
-      const alignEnd = (align === "end") !== rtl;
-      const preferred = alignEnd ? rect.right - width : rect.left;
-      const left = Math.min(Math.max(EDGE, preferred), window.innerWidth - width - EDGE);
+      const placement = placePopover(
+        rect,
+        { width: el.offsetWidth, height: el.offsetHeight },
+        { width: window.innerWidth, height: window.innerHeight },
+        {
+          side,
+          align,
+          gap,
+          edge: EDGE,
+          rtl: getComputedStyle(anchor).direction === "rtl",
+          fitHeight,
+          minHeight,
+        },
+      );
 
-      const below = window.innerHeight - rect.bottom - gap - EDGE;
-      const above = rect.top - gap - EDGE;
-      // Scrolling content takes the roomier side; a fixed-size panel only moves
-      // above when the whole of it fits there, rather than running off the top.
-      const flip = height > below && (fitHeight ? above > below : height <= above);
-
-      el.style.left = `${Math.max(EDGE, left)}px`;
-      el.style.top = `${Math.max(EDGE, flip ? rect.top - gap - height : rect.bottom + gap)}px`;
-      if (fitHeight) el.style.maxHeight = `${Math.max(minHeight, flip ? above : below)}px`;
+      el.style.left = `${placement.left}px`;
+      el.style.top = `${placement.top}px`;
+      if (placement.maxHeight !== undefined) el.style.maxHeight = `${placement.maxHeight}px`;
+      // Lets a stylesheet point an arrow, or slide the panel in from the right
+      // direction, without measuring anything itself.
+      el.dataset.side = placement.side;
     };
 
     el.showPopover();
     position();
     // A popover is display:none until it is shown, so focus only lands after
     // showPopover().
-    if (autoFocus) el.querySelector<HTMLElement>(autoFocus)?.focus({ preventScroll: true });
+    if (autoFocus) {
+      const selector = typeof autoFocus === "string" ? autoFocus : "[data-autofocus]";
+      const target = el.querySelector<HTMLElement>(selector) ?? (autoFocus === true ? el : null);
+      target?.focus({ preventScroll: true });
+    }
 
     const observer = observeResize ? new ResizeObserver(position) : null;
     observer?.observe(el);
@@ -119,6 +156,7 @@ export function AnchoredPopover({
     };
   }, [
     anchor,
+    side,
     align,
     gap,
     matchAnchorWidth,
@@ -133,9 +171,13 @@ export function AnchoredPopover({
     <div
       ref={ref}
       id={id}
-      popover="auto"
-      role={label ? "dialog" : undefined}
+      popover={mode}
+      // Focusable only from script, so `autoFocus` can land on the panel itself.
+      tabIndex={-1}
+      role={role ?? (label || labelledBy ? "dialog" : undefined)}
       aria-label={label}
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
       className={cx(className)}
       onToggle={(event: ToggleEvent<HTMLDivElement>) => {
         if (event.newState === "closed") onClose();

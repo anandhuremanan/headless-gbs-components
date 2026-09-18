@@ -47,7 +47,6 @@ function configLiteral(source, key) {
     else if (source[i] === closer) {
       depth -= 1;
       if (depth === 0) {
-        // eslint-disable-next-line no-new-func
         return new Function(`return ${source.slice(open, i + 1)}`)();
       }
     }

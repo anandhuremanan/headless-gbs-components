@@ -13,6 +13,13 @@
     --tb-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
     --tb-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
     --tb-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    /*
+     * Unselected tabs are darker than ordinary muted text. A tab is a control,
+     * not a hint, and the strip usually sits on the page's own background
+     * rather than on a white card — where the shared muted grey only just
+     * clears 4.5:1, and misses it on anything tinted.
+     */
+    --tb-tab-fg: var(--gbs-tab-fg, light-dark(#5b5b64, #a1a1aa));
     --tb-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
     --tb-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
     --tb-track: var(--gbs-subtle, light-dark(#f4f4f5, #18181b));
@@ -91,7 +98,7 @@
     border: 0;
     border-radius: calc(var(--tb-radius) - 2px);
     background: transparent;
-    color: var(--tb-muted);
+    color: var(--tb-tab-fg);
     font: inherit;
     font-weight: 500;
     white-space: nowrap;

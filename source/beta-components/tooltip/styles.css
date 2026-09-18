@@ -1,0 +1,72 @@
+/*
+ * Tooltip styles.
+ *
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
+ * through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .tt-root {
+    /* Inverted against the page, the way a tooltip is expected to read. */
+    --tt-bg: var(--gbs-tooltip-bg, light-dark(#18181b, #f4f4f5));
+    --tt-fg: var(--gbs-tooltip-fg, light-dark(#fafafa, #18181b));
+    --tt-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --tt-font-size: calc(var(--gbs-font-size, var(--dg-font-size, 13px)) - 1px);
+    --tt-max-width: 240px;
+    --tt-duration: 120ms;
+
+    position: fixed;
+    inset: auto;
+    z-index: 70;
+    width: max-content;
+    max-width: min(var(--tt-max-width), calc(100vw - 16px));
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--tt-radius);
+    background: var(--tt-bg);
+    color: var(--tt-fg);
+    color-scheme: inherit;
+    font-size: var(--tt-font-size);
+    line-height: 1.4;
+    /* It follows the pointer's business, never takes it. */
+    pointer-events: none;
+  }
+
+  :where(.dark, [data-theme="dark"]) .tt-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .tt-root {
+    color-scheme: light;
+  }
+
+  .tt-root:popover-open {
+    animation: tt-in var(--tt-duration) ease;
+  }
+  @keyframes tt-in {
+    from {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+
+  .tt-content {
+    padding: 5px 8px;
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tt-root:popover-open {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .tt-root {
+      border: 1px solid CanvasText;
+    }
+  }
+}

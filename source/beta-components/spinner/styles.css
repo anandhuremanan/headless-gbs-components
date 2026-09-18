@@ -15,11 +15,18 @@
     --sp-color: currentColor;
     --sp-track: color-mix(in oklab, currentColor 18%, transparent);
     --sp-duration: 0.8s;
-    --sp-overlay-bg: color-mix(in oklab, var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)) 72%, transparent));
+    --sp-overlay-bg: color-mix(in oklab, var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e))) 72%, transparent);
     --sp-overlay-color: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
     --sp-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
 
     color-scheme: inherit;
+  }
+
+  :where(.dark, [data-theme="dark"]) .sp-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .sp-root {
+    color-scheme: light;
   }
 
   :where(.sp-root, .sp-container) *,

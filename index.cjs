@@ -51,6 +51,11 @@ const CONFIG = {
     "Checkbox",
     "Tabs",
     "Spinner",
+    "Menu",
+    "Tooltip",
+    "Popover",
+    "Card",
+    "Skeleton",
   ],
   // Beta folder names that are not simply the lowercased component name.
   betaFolders: {
