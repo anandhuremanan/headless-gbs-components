@@ -2,8 +2,8 @@
  * Checkbox and CheckboxGroup styles.
  *
  * The box is the native <input> with `appearance: none`, so it keeps native
- * behavior. Tokens read the DataGrid's --dg-* variables when they are set on an
- * ancestor. Rules live in the `components` layer, so utility classes passed
+ * behavior. Tokens read the shared --gbs-* variables when they are set on an
+ * ancestor (set them on :root to theme every component at once). Rules live in the `components` layer, so utility classes passed
  * through `className` / `classNames` override them.
  */
 @layer theme, base, components, utilities;
@@ -11,15 +11,15 @@
 @layer components {
   .ck-root,
   .ck-group {
-    --ck-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --ck-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
-    --ck-border: light-dark(#a1a1aa, #52525b);
-    --ck-input-bg: var(--dg-input-bg, light-dark(#ffffff, #121216));
-    --ck-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --ck-accent-fg: var(--dg-accent-fg, light-dark(#ffffff, #0b1220));
-    --ck-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --ck-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
-    --ck-font-size: var(--dg-font-size, 13px);
+    --ck-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --ck-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --ck-border: var(--gbs-border-control, light-dark(#a1a1aa, #52525b));
+    --ck-input-bg: var(--gbs-input-bg, var(--dg-input-bg, light-dark(#ffffff, #121216)));
+    --ck-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --ck-accent-fg: var(--gbs-accent-fg, var(--dg-accent-fg, light-dark(#ffffff, #0b1220)));
+    --ck-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --ck-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --ck-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
     --ck-size: 16px;
     --ck-radius: 4px;
 

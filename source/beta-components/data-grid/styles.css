@@ -11,30 +11,30 @@
 
 @layer components {
   .dg-root {
-    --dg-font-size: 13px;
-    --dg-bg: light-dark(#ffffff, #0b0b0e);
-    --dg-fg: light-dark(#18181b, #f4f4f5);
-    --dg-muted: light-dark(#71717a, #a1a1aa);
-    --dg-border: light-dark(#e4e4e7, #27272a);
-    --dg-border-subtle: light-dark(#f0f0f2, #1c1c20);
-    --dg-header-bg: light-dark(#fafafa, #111114);
-    --dg-header-fg: light-dark(#3f3f46, #d4d4d8);
-    --dg-row-alt: light-dark(#fcfcfd, #0e0e12);
-    --dg-row-hover: light-dark(#f4f4f5, #18181c);
-    --dg-row-selected: light-dark(#eef4ff, #14213d);
-    --dg-row-selected-hover: light-dark(#e2ecff, #1a2a4d);
-    --dg-hover: light-dark(#f4f4f5, #1f1f23);
-    --dg-input-bg: light-dark(#ffffff, #121216);
-    --dg-accent: light-dark(#2563eb, #60a5fa);
-    --dg-accent-fg: light-dark(#ffffff, #0b1220);
-    --dg-accent-soft: light-dark(#eff6ff, #172554);
-    --dg-accent-strong: light-dark(#1d4ed8, #bfdbfe);
-    --dg-focus: light-dark(#2563eb, #60a5fa);
-    --dg-danger: light-dark(#dc2626, #f87171);
-    --dg-pin-shadow: light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.5));
-    --dg-shadow: 0 10px 30px -8px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6));
-    --dg-radius: 8px;
-    --dg-cell-px: 12px;
+    --dg-font-size: var(--gbs-font-size, 13px);
+    --dg-bg: var(--gbs-bg, light-dark(#ffffff, #0b0b0e));
+    --dg-fg: var(--gbs-fg, light-dark(#18181b, #f4f4f5));
+    --dg-muted: var(--gbs-muted, light-dark(#71717a, #a1a1aa));
+    --dg-border: var(--gbs-border, light-dark(#e4e4e7, #27272a));
+    --dg-border-subtle: var(--gbs-border-subtle, light-dark(#f0f0f2, #1c1c20));
+    --dg-header-bg: var(--gbs-header-bg, light-dark(#fafafa, #111114));
+    --dg-header-fg: var(--gbs-header-fg, light-dark(#3f3f46, #d4d4d8));
+    --dg-row-alt: var(--gbs-row-alt, light-dark(#fcfcfd, #0e0e12));
+    --dg-row-hover: var(--gbs-row-hover, light-dark(#f4f4f5, #18181c));
+    --dg-row-selected: var(--gbs-row-selected, light-dark(#eef4ff, #14213d));
+    --dg-row-selected-hover: var(--gbs-row-selected-hover, light-dark(#e2ecff, #1a2a4d));
+    --dg-hover: var(--gbs-hover, light-dark(#f4f4f5, #1f1f23));
+    --dg-input-bg: var(--gbs-input-bg, light-dark(#ffffff, #121216));
+    --dg-accent: var(--gbs-accent, light-dark(#2563eb, #60a5fa));
+    --dg-accent-fg: var(--gbs-accent-fg, light-dark(#ffffff, #0b1220));
+    --dg-accent-soft: var(--gbs-accent-soft, light-dark(#eff6ff, #172554));
+    --dg-accent-strong: var(--gbs-accent-strong, light-dark(#1d4ed8, #bfdbfe));
+    --dg-focus: var(--gbs-focus, light-dark(#2563eb, #60a5fa));
+    --dg-danger: var(--gbs-danger, light-dark(#dc2626, #f87171));
+    --dg-pin-shadow: var(--gbs-pin-shadow, light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.5)));
+    --dg-shadow: var(--gbs-shadow, 0 10px 30px -8px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6)));
+    --dg-radius: var(--gbs-radius, 8px);
+    --dg-cell-px: var(--gbs-cell-px, 12px);
 
     color-scheme: inherit;
     position: relative;

@@ -1,25 +1,12 @@
-import type { SVGProps } from "react";
+import { AlertCircleIcon, XIcon as SharedX, Svg, type IconProps } from "../../shared/react/icons";
 import type { FileKind } from "../core/types";
 
-type IconProps = SVGProps<SVGSVGElement>;
-
-function Svg(props: IconProps) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      {...props}
-    />
-  );
-}
+/*
+ * The row controls are 14px, so several fit beside a file name without
+ * dominating it.
+ */
+export const XIcon = (p: IconProps) => <SharedX width={14} height={14} {...p} />;
+export const AlertIcon = (p: IconProps) => <AlertCircleIcon width={14} height={14} {...p} />;
 
 export const UploadIcon = (p: IconProps) => (
   <Svg width={28} height={28} strokeWidth={1.75} {...p}>
@@ -27,7 +14,6 @@ export const UploadIcon = (p: IconProps) => (
     <path d="M20 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3" />
   </Svg>
 );
-export const XIcon = (p: IconProps) => <Svg width={14} height={14} {...p}><path d="M18 6 6 18M6 6l12 12" /></Svg>;
 export const PauseIcon = (p: IconProps) => <Svg width={14} height={14} {...p}><path d="M8 5v14M16 5v14" /></Svg>;
 export const PlayIcon = (p: IconProps) => <Svg width={14} height={14} {...p}><path d="M7 4.5v15L19 12Z" /></Svg>;
 export const RetryIcon = (p: IconProps) => (
@@ -40,12 +26,6 @@ export const RetryIcon = (p: IconProps) => (
 export const DownloadIcon = (p: IconProps) => (
   <Svg width={14} height={14} {...p}>
     <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14" />
-  </Svg>
-);
-export const AlertIcon = (p: IconProps) => (
-  <Svg width={14} height={14} {...p}>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M12 7.5v5.5M12 16.5h.01" />
   </Svg>
 );
 

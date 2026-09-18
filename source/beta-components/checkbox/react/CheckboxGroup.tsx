@@ -1,6 +1,8 @@
 "use client";
 
-import { useId, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useId, useMemo, type CSSProperties, type ReactNode } from "react";
+import { useControllableState } from "../../shared/react/useControllableState";
+import { describeField } from "../../shared/core/field";
 import { groupState, toggleAll, toggleValue } from "../core/group";
 import type { CheckboxLocaleText, CheckboxOption, CheckboxSize } from "../core/types";
 import { Checkbox } from "./Checkbox";
@@ -63,12 +65,11 @@ export function CheckboxGroup(props: CheckboxGroupProps) {
   const reactId = useId();
   const id = idProp ?? reactId;
   const text = useMemo(() => ({ ...defaultCheckboxText, ...localeText }), [localeText]);
-  const [internal, setInternal] = useState<string[]>(defaultValue ?? []);
-  const values = value ?? internal;
+  const [values, setValues] = useControllableState<string[]>(value, defaultValue ?? []);
 
   const context = useMemo<CheckboxGroupContextValue>(() => {
     const commit = (next: string[]) => {
-      if (value === undefined) setInternal(next);
+      setValues(next);
       onValueChange?.(next);
     };
     return {
@@ -79,11 +80,10 @@ export function CheckboxGroup(props: CheckboxGroupProps) {
       invalid: Boolean(error),
       size,
     };
-  }, [values, value, onValueChange, name, disabled, error, size]);
+  }, [values, setValues, onValueChange, name, disabled, error, size]);
 
   const showSelectAll = Boolean(selectAll) && options !== undefined && options.length > 0;
-  const describedBy =
-    cx(description ? `${id}-description` : "", error ? `${id}-error` : "") || undefined;
+  const describedBy = describeField(id, { description, error });
 
   return (
     <fieldset
@@ -117,7 +117,7 @@ export function CheckboxGroup(props: CheckboxGroupProps) {
           checked={groupState(values, options)}
           onCheckedChange={() => {
             const next = toggleAll(values, options);
-            if (value === undefined) setInternal(next);
+            setValues(next);
             onValueChange?.(next);
           }}
         />

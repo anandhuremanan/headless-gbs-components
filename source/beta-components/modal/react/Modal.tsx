@@ -14,6 +14,7 @@ import {
   type Ref,
   type RefObject,
 } from "react";
+import { useControllableState } from "../../shared/react/useControllableState";
 import { canDismiss, confirmClose, isOutside } from "../core/dismiss";
 import type {
   CloseReason,
@@ -107,8 +108,7 @@ export function Modal(props: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const pressStartedOutside = useRef(false);
 
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const open = openProp ?? internalOpen;
+  const [open, setOpenState] = useControllableState(openProp, defaultOpen);
 
   // Keep the content mounted through the exit transition. Adjusting state while
   // rendering avoids an extra render with the content already gone.
@@ -127,10 +127,10 @@ export function Modal(props: ModalProps) {
 
   const setOpen = useCallback(
     (next: boolean, reason?: CloseReason) => {
-      if (openProp === undefined) setInternalOpen(next);
+      setOpenState(next);
       onOpenChange?.(next, reason);
     },
-    [openProp, onOpenChange],
+    [setOpenState, onOpenChange],
   );
 
   const requestClose = useCallback(
@@ -229,7 +229,11 @@ export function Modal(props: ModalProps) {
               )}
             </header>
           )}
-          <div className={cx("md-body", classNames?.body)}>{render(children)}</div>
+          {/* Focusable: the body scrolls, and a scroll area the keyboard can't
+              reach leaves its content unreadable without a mouse. */}
+          <div className={cx("md-body", classNames?.body)} tabIndex={0}>
+            {render(children)}
+          </div>
           {footer && <footer className={cx("md-footer", classNames?.footer)}>{render(footer)}</footer>}
         </>
       )}

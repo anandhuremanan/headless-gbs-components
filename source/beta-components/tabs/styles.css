@@ -1,26 +1,26 @@
 /*
  * Tabs styles.
  *
- * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
- * (set them on :root to share one theme) and fall back to the same palette
- * otherwise. Rules live in the `components` layer, so utility classes passed
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
  * through `className` override them.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
   .tb-root {
-    --tb-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
-    --tb-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --tb-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
-    --tb-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
-    --tb-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
-    --tb-track: light-dark(#f4f4f5, #18181b);
-    --tb-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --tb-accent-soft: var(--dg-accent-soft, light-dark(#eff6ff, #172554));
-    --tb-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --tb-radius: var(--dg-radius, 8px);
-    --tb-font-size: var(--dg-font-size, 13px);
+    --tb-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --tb-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --tb-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --tb-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --tb-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --tb-track: var(--gbs-subtle, light-dark(#f4f4f5, #18181b));
+    --tb-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --tb-accent-soft: var(--gbs-accent-soft, var(--dg-accent-soft, light-dark(#eff6ff, #172554)));
+    --tb-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --tb-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --tb-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
     --tb-height: 36px;
     --tb-px: 12px;
     --tb-duration: 200ms;
@@ -125,7 +125,7 @@
     padding: 1px 6px;
     border-radius: 999px;
     background: var(--tb-hover);
-    color: var(--tb-muted);
+    color: var(--tb-fg);
     font-size: 0.85em;
     font-variant-numeric: tabular-nums;
     line-height: 1.4;

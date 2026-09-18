@@ -13,6 +13,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { describeField } from "../../shared/core/field";
 import { formatBytes, readFileId } from "../core/format";
 import { summarize } from "../core/store";
 import { createHttpTransport, type HttpTransportOptions } from "../core/transport";
@@ -333,12 +334,7 @@ export function FileUploader(props: FileUploaderProps) {
     : [];
   const hasRows = items.length > 0 || (existingFiles?.length ?? 0) > 0;
   const showFooter = items.length > 0 && (canUpload || multiple);
-  const describedBy =
-    cx(
-      hints ? `${id}-hint` : "",
-      description ? `${id}-description` : "",
-      error ? `${id}-error` : "",
-    ) || undefined;
+  const describedBy = describeField(id, { hint: hints, description, error });
 
   const rowProps = { preview, removable, disabled, locale, text, classNames };
 

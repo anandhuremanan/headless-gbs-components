@@ -1,4 +1,4 @@
 export type TextareaSlot = "root" | "label" | "textarea" | "description" | "error" | "count";
 
-export const cx = (...names: (string | false | null | undefined)[]) =>
-  names.filter(Boolean).join(" ");
+// Shared with every other component, so class handling cannot drift.
+export { cx } from "../../shared/core/cx";

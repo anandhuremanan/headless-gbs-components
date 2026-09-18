@@ -1,27 +1,27 @@
 /*
  * Input and OtpInput styles.
  *
- * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
- * (set them on :root to share one theme) and fall back to the same palette
- * otherwise. Rules live in the `components` layer, so utility classes passed
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
  * through `className` / `classNames` override them.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
   .in-root {
-    --in-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
-    --in-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --in-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
-    --in-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
-    --in-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
-    --in-input-bg: var(--dg-input-bg, light-dark(#ffffff, #121216));
-    --in-readonly-bg: light-dark(#fafafa, #0e0e12);
-    --in-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --in-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --in-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
-    --in-radius: var(--dg-radius, 8px);
-    --in-font-size: var(--dg-font-size, 13px);
+    --in-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --in-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --in-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --in-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --in-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --in-input-bg: var(--gbs-input-bg, var(--dg-input-bg, light-dark(#ffffff, #121216)));
+    --in-readonly-bg: var(--gbs-readonly-bg, light-dark(#fafafa, #0e0e12));
+    --in-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --in-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --in-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --in-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --in-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
     --in-height: 36px;
     --in-px: 10px;
     --in-cell: 42px;

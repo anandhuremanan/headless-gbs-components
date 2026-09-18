@@ -6,13 +6,14 @@ import {
   useImperativeHandle,
   useLayoutEffect,
   useRef,
-  useState,
   type ChangeEvent,
   type ChangeEventHandler,
   type InputHTMLAttributes,
   type ReactNode,
   type Ref,
 } from "react";
+import { useControllableState } from "../../shared/react/useControllableState";
+import { describeField } from "../../shared/core/field";
 import type { CheckboxSize, CheckedState } from "../core/types";
 import { CheckboxGroupContext } from "./context";
 import { cx, type CheckboxSlot } from "./props";
@@ -71,9 +72,10 @@ export function Checkbox(props: CheckboxProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
 
-  const [internal, setInternal] = useState<CheckedState>(defaultChecked);
+  const [own, setOwn] = useControllableState<CheckedState>(checkedProp, defaultChecked);
   const inGroup = group !== null && value !== undefined;
-  const state: CheckedState = inGroup ? group.values.includes(value) : (checkedProp ?? internal);
+  // Inside a group the group owns the state, whoever owns it outside one.
+  const state: CheckedState = inGroup ? group.values.includes(value) : own;
 
   // "Indeterminate" exists only as a DOM property, not an attribute.
   useLayoutEffect(() => {
@@ -83,14 +85,13 @@ export function Checkbox(props: CheckboxProps) {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const next = event.target.checked;
     if (inGroup) group.toggle(value, next);
-    else if (checkedProp === undefined) setInternal(next);
+    else setOwn(next);
     onChange?.(event);
     onCheckedChange?.(next);
   };
 
   const invalid = Boolean(error) || (group?.invalid ?? false);
-  const describedBy =
-    cx(describedByProp, description ? `${id}-description` : "", error ? `${id}-error` : "") || undefined;
+  const describedBy = describeField(id, { extra: describedByProp, description, error });
 
   return (
     <div

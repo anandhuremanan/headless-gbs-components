@@ -2,5 +2,5 @@ export type CheckboxSlot = "root" | "control" | "input" | "label" | "description
 
 export type CheckboxGroupSlot = "root" | "legend" | "description" | "items" | "error";
 
-export const cx = (...names: (string | false | null | undefined)[]) =>
-  names.filter(Boolean).join(" ");
+// Shared with every other component, so class handling cannot drift.
+export { cx } from "../../shared/core/cx";

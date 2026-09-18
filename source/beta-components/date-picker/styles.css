@@ -1,30 +1,30 @@
 /*
  * DatePicker styles (DatePicker and DateRangePicker).
  *
- * Tokens default to the DataGrid's --dg-* variables when that stylesheet is
- * present, so every component shares one theme, and fall back to the same
- * palette when used on their own. Rules live in the `components` layer, so
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so
  * utility classes passed through `className` / `classNames` override them.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
   .dp-root {
-    --dp-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
-    --dp-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --dp-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
-    --dp-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
-    --dp-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
-    --dp-input-bg: var(--dg-input-bg, light-dark(#ffffff, #121216));
-    --dp-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --dp-accent-fg: var(--dg-accent-fg, light-dark(#ffffff, #0b1220));
-    --dp-accent-soft: var(--dg-accent-soft, light-dark(#eff6ff, #172554));
-    --dp-accent-strong: var(--dg-accent-strong, light-dark(#1d4ed8, #bfdbfe));
-    --dp-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --dp-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
-    --dp-shadow: var(--dg-shadow, 0 10px 30px -8px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6)));
-    --dp-radius: var(--dg-radius, 8px);
-    --dp-font-size: var(--dg-font-size, 13px);
+    --dp-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --dp-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --dp-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --dp-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --dp-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --dp-input-bg: var(--gbs-input-bg, var(--dg-input-bg, light-dark(#ffffff, #121216)));
+    --dp-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --dp-accent-fg: var(--gbs-accent-fg, var(--dg-accent-fg, light-dark(#ffffff, #0b1220)));
+    --dp-accent-soft: var(--gbs-accent-soft, var(--dg-accent-soft, light-dark(#eff6ff, #172554)));
+    --dp-accent-strong: var(--gbs-accent-strong, var(--dg-accent-strong, light-dark(#1d4ed8, #bfdbfe)));
+    --dp-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --dp-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --dp-shadow: var(--gbs-shadow, var(--dg-shadow, 0 10px 30px -8px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6))));
+    --dp-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --dp-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
     --dp-height: 36px;
     --dp-px: 10px;
     --dp-day-size: 34px;

@@ -53,5 +53,5 @@ export function useGridContext<T>(): GridContextValue<T> {
 /** Marks a cell without an in-flight async edit. */
 export const NO_PENDING: unique symbol = Symbol("dg.noPending");
 
-export const cx = (...names: (string | false | null | undefined)[]) =>
-  names.filter(Boolean).join(" ");
+// Shared with every other component, so class handling cannot drift.
+export { cx } from "../../shared/core/cx";

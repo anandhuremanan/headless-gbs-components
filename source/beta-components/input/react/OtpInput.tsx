@@ -13,6 +13,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { describeField } from "../../shared/core/field";
 import {
   activeCell,
   cellAt,
@@ -147,8 +148,7 @@ export function OtpInput(props: OtpInputProps) {
   const invalid = Boolean(error);
   const separators = separatorsAfter(groups, length);
   const active = focused ? activeCell(value.length, length, caret) : -1;
-  const describedBy =
-    cx(describedByProp, description ? `${id}-description` : "", error ? `${id}-error` : "") || undefined;
+  const describedBy = describeField(id, { extra: describedByProp, description, error });
 
   return (
     <div

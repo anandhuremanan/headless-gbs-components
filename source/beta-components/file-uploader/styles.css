@@ -1,29 +1,29 @@
 /*
  * FileUploader styles.
  *
- * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
- * (set them on :root to share one theme) and fall back to the same palette
- * otherwise. Rules live in the `components` layer, so utility classes passed
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
  * through `className` / `classNames` override them.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
   .fu-root {
-    --fu-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
-    --fu-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --fu-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
-    --fu-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
-    --fu-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
-    --fu-input-bg: var(--dg-input-bg, light-dark(#ffffff, #121216));
-    --fu-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --fu-accent-fg: var(--dg-accent-fg, light-dark(#ffffff, #0b1220));
-    --fu-accent-soft: var(--dg-accent-soft, light-dark(#eff6ff, #172554));
-    --fu-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --fu-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
-    --fu-success: light-dark(#16a34a, #4ade80);
-    --fu-radius: var(--dg-radius, 8px);
-    --fu-font-size: var(--dg-font-size, 13px);
+    --fu-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --fu-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --fu-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --fu-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --fu-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --fu-input-bg: var(--gbs-input-bg, var(--dg-input-bg, light-dark(#ffffff, #121216)));
+    --fu-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --fu-accent-fg: var(--gbs-accent-fg, var(--dg-accent-fg, light-dark(#ffffff, #0b1220)));
+    --fu-accent-soft: var(--gbs-accent-soft, var(--dg-accent-soft, light-dark(#eff6ff, #172554)));
+    --fu-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --fu-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --fu-success: var(--gbs-success, light-dark(#15803d, #4ade80));
+    --fu-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --fu-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
     --fu-dropzone-py: 20px;
     --fu-thumb-size: 40px;
 

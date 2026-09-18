@@ -7,17 +7,16 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
   type ButtonHTMLAttributes,
   type HTMLAttributes,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { useControllableState } from "../../shared/react/useControllableState";
+import { cx } from "../../shared/core/cx";
 import { nextTab, tabDomId } from "../core/navigation";
 import type { TabsActivation, TabsOrientation, TabsSize, TabsVariant } from "../core/types";
 import { TabsContext, useTabsContext } from "./context";
-
-const cx = (...names: (string | false | null | undefined)[]) => names.filter(Boolean).join(" ");
 
 /* ------------------------------------------------------------------- Tabs */
 
@@ -60,15 +59,14 @@ export function Tabs(props: TabsProps) {
   } = props;
 
   const id = useId();
-  const [internal, setInternal] = useState(defaultValue);
-  const value = valueProp ?? internal;
+  const [value, setValue] = useControllableState(valueProp, defaultValue);
 
   const select = useCallback(
     (next: string) => {
-      if (valueProp === undefined) setInternal(next);
+      setValue(next);
       if (next !== value) onValueChange?.(next);
     },
-    [valueProp, value, onValueChange],
+    [setValue, value, onValueChange],
   );
 
   const context = useMemo(

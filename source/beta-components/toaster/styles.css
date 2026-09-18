@@ -1,30 +1,30 @@
 /*
  * Toaster styles.
  *
- * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
- * (toasts render in a portal on <body>, so set them on :root to share a theme)
- * and fall back to the same palette otherwise. Rules live in the `components`
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (toasts render in a portal on <body>, so set them on :root) and fall back to
+ * the same default palette otherwise. Rules live in the `components`
  * layer, so utility classes passed through `className` / `classNames` win.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
   .ts-region {
-    --ts-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
-    --ts-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --ts-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
-    --ts-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
-    --ts-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
-    --ts-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --ts-accent-fg: var(--dg-accent-fg, light-dark(#ffffff, #0b1220));
-    --ts-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --ts-shadow: var(--dg-shadow, 0 10px 30px -8px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6)));
-    --ts-radius: var(--dg-radius, 8px);
-    --ts-font-size: var(--dg-font-size, 13px);
-    --ts-success: light-dark(#16a34a, #4ade80);
-    --ts-error: var(--dg-danger, light-dark(#dc2626, #f87171));
-    --ts-warning: light-dark(#d97706, #fbbf24);
-    --ts-info: var(--dg-accent, light-dark(#2563eb, #60a5fa));
+    --ts-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --ts-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --ts-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --ts-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --ts-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --ts-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --ts-accent-fg: var(--gbs-accent-fg, var(--dg-accent-fg, light-dark(#ffffff, #0b1220)));
+    --ts-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --ts-shadow: var(--gbs-shadow, var(--dg-shadow, 0 10px 30px -8px light-dark(rgb(0 0 0 / 0.18), rgb(0 0 0 / 0.6))));
+    --ts-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --ts-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
+    --ts-success: var(--gbs-success, light-dark(#15803d, #4ade80));
+    --ts-error: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --ts-warning: var(--gbs-warning, light-dark(#d97706, #fbbf24));
+    --ts-info: var(--gbs-info, var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa))));
     --ts-width: 356px;
     --ts-offset: 16px;
     --ts-gap: 8px;

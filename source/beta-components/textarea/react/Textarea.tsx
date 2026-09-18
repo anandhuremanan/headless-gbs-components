@@ -8,13 +8,14 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
-  useState,
   type ChangeEvent,
   type CSSProperties,
   type ReactNode,
   type Ref,
   type TextareaHTMLAttributes,
 } from "react";
+import { useControllableState } from "../../shared/react/useControllableState";
+import { describeField } from "../../shared/core/field";
 import { countCharacters } from "../core/count";
 import { fitHeight } from "../core/size";
 import type { FieldSize, TextareaLocaleText, TextareaResize } from "../core/types";
@@ -94,12 +95,11 @@ export function Textarea(props: TextareaProps) {
   useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement, []);
 
   // Mirrors the text even when uncontrolled, for the counter and auto-resize.
-  const [internal, setInternal] = useState(defaultValue ?? "");
-  const current = valueProp ?? internal;
+  const [current, setCurrent] = useControllableState(valueProp, defaultValue ?? "");
   const floor = Math.max(1, minRows ?? rows ?? 3);
 
   const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    if (valueProp === undefined) setInternal(event.target.value);
+    setCurrent(event.target.value);
     onChange?.(event);
     onValueChange?.(event.target.value);
   };
@@ -140,8 +140,7 @@ export function Textarea(props: TextareaProps) {
 
   const invalid = Boolean(error);
   const count = countCharacters(current);
-  const describedBy =
-    cx(describedByProp, description ? `${id}-description` : "", error ? `${id}-error` : "") || undefined;
+  const describedBy = describeField(id, { extra: describedByProp, description, error });
   const rowVariables = {
     "--ta-min-rows": floor,
     "--ta-max-rows": maxRows ?? "none",

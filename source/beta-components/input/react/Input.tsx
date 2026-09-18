@@ -11,6 +11,8 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
+import { useControllableState } from "../../shared/react/useControllableState";
+import { describeField } from "../../shared/core/field";
 import { countCharacters } from "../core/count";
 import type { FieldSize, InputLocaleText } from "../core/types";
 import { setNativeValue } from "./dom";
@@ -87,12 +89,11 @@ export function Input(props: InputProps) {
   useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
 
   // Mirrors the text even when uncontrolled, for the counter and the clear button.
-  const [internal, setInternal] = useState(defaultValue ?? "");
-  const current = valueProp ?? internal;
+  const [current, setCurrent] = useControllableState(valueProp, defaultValue ?? "");
   const [revealed, setRevealed] = useState(false);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (valueProp === undefined) setInternal(event.target.value);
+    setCurrent(event.target.value);
     onChange?.(event);
     onValueChange?.(event.target.value);
   };
@@ -108,8 +109,7 @@ export function Input(props: InputProps) {
   const invalid = Boolean(error);
   const isPassword = type === "password";
   const count = countCharacters(current);
-  const describedBy =
-    cx(describedByProp, description ? `${id}-description` : "", error ? `${id}-error` : "") || undefined;
+  const describedBy = describeField(id, { extra: describedByProp, description, error });
 
   return (
     <div

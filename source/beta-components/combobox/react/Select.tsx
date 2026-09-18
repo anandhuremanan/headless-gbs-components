@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useImperativeHandle, useMemo, useRef, type Ref } from "react";
+import { describeField } from "../../shared/core/field";
 import type { ComboboxOption, OptionValue } from "../core/types";
 import { defaultComboboxText } from "./locale";
 import { ChevronIcon, XIcon } from "./icons";
@@ -101,7 +102,8 @@ export function Select<V extends OptionValue = string>(props: SelectProps<V>) {
         aria-haspopup="listbox"
         aria-controls={combobox.open ? combobox.listboxId : undefined}
         aria-labelledby={label ? `${id}-label` : undefined}
-        aria-describedby={cx(description ? `${id}-description` : "", error ? `${id}-error` : "") || undefined}
+        aria-label={label ? undefined : props["aria-label"]}
+        aria-describedby={describeField(id, { description, error })}
         aria-required={required || undefined}
         aria-invalid={error ? true : undefined}
         aria-disabled={disabled || undefined}

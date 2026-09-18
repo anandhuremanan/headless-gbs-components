@@ -1,27 +1,27 @@
 /*
  * Button styles.
  *
- * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
- * (set them on :root to share one theme) and fall back to the same palette
- * otherwise. Rules live in the `components` layer, so utility classes passed
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
  * through `className` / `classNames` override them.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
   .bt-root {
-    --bt-bg: var(--dg-bg, light-dark(#ffffff, #0b0b0e));
-    --bt-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --bt-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
-    --bt-hover: var(--dg-hover, light-dark(#f4f4f5, #1f1f23));
-    --bt-subtle: light-dark(#f4f4f5, #1c1c20);
-    --bt-accent: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --bt-accent-fg: var(--dg-accent-fg, light-dark(#ffffff, #0b1220));
-    --bt-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
-    --bt-danger-fg: light-dark(#ffffff, #1c0606);
-    --bt-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --bt-radius: var(--dg-radius, 8px);
-    --bt-font-size: var(--dg-font-size, 13px);
+    --bt-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --bt-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --bt-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --bt-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --bt-subtle: var(--gbs-subtle, light-dark(#f4f4f5, #1c1c20));
+    --bt-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --bt-accent-fg: var(--gbs-accent-fg, var(--dg-accent-fg, light-dark(#ffffff, #0b1220)));
+    --bt-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --bt-danger-fg: var(--gbs-danger-fg, light-dark(#ffffff, #1c0606));
+    --bt-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --bt-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --bt-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
     --bt-height: 36px;
     --bt-px: 14px;
     --bt-gap: 8px;

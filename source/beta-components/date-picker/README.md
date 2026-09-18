@@ -17,9 +17,9 @@ import { DatePicker, DateRangePicker } from "@/components/date-picker";
 import "@/components/date-picker/styles.css";
 ```
 
-The stylesheet reuses the DataGrid's `--dg-*` variables when that stylesheet is
-loaded, so every component shares a theme, and falls back to the same palette
-when used on its own.
+The stylesheet reads the shared `--gbs-*` variables when you set them on
+`:root`, so every component in the library shares one theme, and falls back to
+the same default palette otherwise.
 
 ## Basic usage
 

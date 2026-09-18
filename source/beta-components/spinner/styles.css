@@ -2,8 +2,8 @@
  * Spinner styles.
  *
  * The indicator draws in `currentColor`, so it takes the color of its
- * surroundings. Tokens read the DataGrid's --dg-* variables when they are set on
- * an ancestor. Rules live in the `components` layer, so utility classes passed
+ * surroundings. Tokens read the shared --gbs-* variables when they are set on an
+ * ancestor. Rules live in the `components` layer, so utility classes passed
  * through `className` / `classNames` override them.
  */
 @layer theme, base, components, utilities;
@@ -15,9 +15,9 @@
     --sp-color: currentColor;
     --sp-track: color-mix(in oklab, currentColor 18%, transparent);
     --sp-duration: 0.8s;
-    --sp-overlay-bg: color-mix(in oklab, var(--dg-bg, light-dark(#ffffff, #0b0b0e)) 72%, transparent);
-    --sp-overlay-color: var(--dg-accent, light-dark(#2563eb, #60a5fa));
-    --sp-font-size: var(--dg-font-size, 13px);
+    --sp-overlay-bg: color-mix(in oklab, var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)) 72%, transparent));
+    --sp-overlay-color: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --sp-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
 
     color-scheme: inherit;
   }

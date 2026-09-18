@@ -1,24 +1,24 @@
 /*
  * Textarea styles.
  *
- * Tokens read the DataGrid's --dg-* variables when they are set on an ancestor
- * (set them on :root to share one theme) and fall back to the same palette
- * otherwise. Rules live in the `components` layer, so utility classes passed
+ * Tokens read the shared --gbs-* variables when they are set on an ancestor
+ * (set them on :root to theme every component at once) and fall back to the
+ * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
  * through `className` / `classNames` override them.
  */
 @layer theme, base, components, utilities;
 
 @layer components {
   .ta-root {
-    --ta-fg: var(--dg-fg, light-dark(#18181b, #f4f4f5));
-    --ta-muted: var(--dg-muted, light-dark(#71717a, #a1a1aa));
-    --ta-border: var(--dg-border, light-dark(#e4e4e7, #27272a));
-    --ta-input-bg: var(--dg-input-bg, light-dark(#ffffff, #121216));
-    --ta-readonly-bg: light-dark(#fafafa, #0e0e12);
-    --ta-focus: var(--dg-focus, light-dark(#2563eb, #60a5fa));
-    --ta-danger: var(--dg-danger, light-dark(#dc2626, #f87171));
-    --ta-radius: var(--dg-radius, 8px);
-    --ta-font-size: var(--dg-font-size, 13px);
+    --ta-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --ta-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --ta-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --ta-input-bg: var(--gbs-input-bg, var(--dg-input-bg, light-dark(#ffffff, #121216)));
+    --ta-readonly-bg: var(--gbs-readonly-bg, light-dark(#fafafa, #0e0e12));
+    --ta-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --ta-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --ta-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --ta-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
     --ta-px: 10px;
     --ta-py: 8px;
 

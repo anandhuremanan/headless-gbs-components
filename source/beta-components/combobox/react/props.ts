@@ -80,7 +80,9 @@ export interface ComboboxSharedProps<V extends OptionValue = string> {
   style?: CSSProperties;
   localeText?: Partial<ComboboxLocaleText>;
   onOpenChange?(open: boolean): void;
+  /** Names the control when there is no visible `label`. */
+  "aria-label"?: string;
 }
 
-export const cx = (...names: (string | false | null | undefined)[]) =>
-  names.filter(Boolean).join(" ");
+// Shared with every other component, so class handling cannot drift.
+export { cx } from "../../shared/core/cx";

@@ -9,6 +9,7 @@ import {
   type KeyboardEvent,
   type Ref,
 } from "react";
+import { describeField } from "../../shared/core/field";
 import { toDate, toISODate } from "../core/calendar";
 import { inputPlaceholder } from "../core/format";
 import type { DateInput, DateRange } from "../core/types";
@@ -149,8 +150,7 @@ export function DateRangePicker(props: DateRangePickerProps) {
     }
   };
 
-  const describedBy =
-    cx(description ? `${id}-description` : "", message ? `${id}-error` : "") || undefined;
+  const describedBy = describeField(id, { description, error: message });
 
   const field = (name: RangeField, fieldRef?: Ref<HTMLInputElement>) => (
     <input

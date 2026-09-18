@@ -1,26 +1,8 @@
-import type { SVGProps } from "react";
+import { XIcon as SharedX, Svg, type IconProps } from "../../shared/react/icons";
 
-type IconProps = SVGProps<SVGSVGElement>;
+/** 14px, to sit inside the field without crowding the text. */
+export const XIcon = (p: IconProps) => <SharedX width={14} height={14} {...p} />;
 
-function Svg(props: IconProps) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      {...props}
-    />
-  );
-}
-
-export const XIcon = (p: IconProps) => <Svg width={14} height={14} {...p}><path d="M18 6 6 18M6 6l12 12" /></Svg>;
 export const EyeIcon = (p: IconProps) => (
   <Svg {...p}>
     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />

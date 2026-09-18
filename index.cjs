@@ -2,6 +2,7 @@
 
 const fs = require("fs-extra");
 const path = require("path");
+const crypto = require("crypto");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const readline = require("readline");
@@ -51,6 +52,12 @@ const CONFIG = {
     "Tabs",
     "Spinner",
   ],
+  // Beta folder names that are not simply the lowercased component name.
+  betaFolders: {
+    DataGrid: "data-grid",
+    DatePicker: "date-picker",
+    FileUploader: "file-uploader",
+  },
   // Define component dependencies
   dependencies: {
     FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
@@ -62,6 +69,24 @@ const SOURCE_PATH = path.join(__dirname, "source", "components");
 const BETA_SOURCE_PATH = path.join(__dirname, "source", "beta-components");
 const DEFAULT_DEST_PATH = path.join(process.cwd(), "component-lib");
 
+/**
+ * Every beta component imports its shared helpers from `../../shared`, so this
+ * folder is installed alongside whatever the user picked. It is not a component
+ * and never appears in the component list.
+ */
+const SHARED_DIR = "shared";
+const MANIFEST_FILE = ".install-manifest.json";
+
+/**
+ * Tests belong to this repo, not to the projects we install into: they import
+ * vitest, which the project has no reason to have, and the shared folder's
+ * boundary tests would run against whatever else is in the user's
+ * component-lib.
+ */
+const TESTS_DIR = "__tests__";
+const isTestPath = (filePath) =>
+  filePath.split(/[\\/]/).includes(TESTS_DIR);
+
 const normalizeComponent = (component, availableComponents) =>
   availableComponents.find(
     (available) => available.toLowerCase() === component.toLowerCase(),
@@ -71,6 +96,10 @@ const getAvailableComponents = (beta = false) =>
   beta ? CONFIG.betaComponents : CONFIG.components;
 
 const getSourcePath = (beta = false) => (beta ? BETA_SOURCE_PATH : SOURCE_PATH);
+
+/** The folder a component lives in, which is not always its lowercased name. */
+const folderFor = (component, beta = false) =>
+  (beta && CONFIG.betaFolders[component]) || component.toLowerCase();
 
 const copyCommonFiles = async (destPath) => {
   const commonFiles = [
@@ -88,18 +117,171 @@ const copyCommonFiles = async (destPath) => {
   }
 };
 
-const checkComponentExists = (component, destPath) => {
-  const componentPath = path.join(destPath, component.toLowerCase());
+/* ------------------------------------------------------------ shared folder */
+
+const sha256 = (filePath) =>
+  crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+
+/** Every file under a directory, relative to it, with "/" separators. */
+const listFiles = (dir, prefix = "") =>
+  fs
+    .readdirSync(path.join(dir, prefix), { withFileTypes: true })
+    .flatMap((entry) => {
+      const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.name === MANIFEST_FILE || entry.name === TESTS_DIR) return [];
+      return entry.isDirectory() ? listFiles(dir, relative) : [relative];
+    });
+
+/** -1, 0 or 1, comparing dotted numeric versions such as "1.2.0". */
+const compareVersions = (a, b) => {
+  const left = String(a).split(".").map(Number);
+  const right = String(b).split(".").map(Number);
+  for (let i = 0; i < Math.max(left.length, right.length); i += 1) {
+    const diff = (left[i] || 0) - (right[i] || 0);
+    if (diff !== 0) return diff > 0 ? 1 : -1;
+  }
+  return 0;
+};
+
+const readJson = (filePath, fallback = null) => {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return fallback;
+  }
+};
+
+/** Files the manifest says we wrote, whose contents have since changed. */
+const locallyEdited = (dest, manifest) =>
+  !manifest
+    ? []
+    : Object.keys(manifest.files).filter((file) => {
+        const target = path.join(dest, file);
+        return fs.existsSync(target) && manifest.files[file] !== sha256(target);
+      });
+
+/**
+ * Installs or updates `shared/`.
+ *
+ * Because components are copied into a project one at a time, a project can end
+ * up with components built against different versions of this folder. The rules
+ * are that `shared/` only ever moves forward, and that a file the user has
+ * edited since we wrote it is never replaced without `--force`.
+ */
+const installShared = async (destPath, { force = false } = {}) => {
+  const src = path.join(BETA_SOURCE_PATH, SHARED_DIR);
+  const dest = path.join(destPath, SHARED_DIR);
+
+  if (!fs.existsSync(src)) {
+    throw new Error(
+      `The shared folder is missing from ${BETA_SOURCE_PATH}. Beta components cannot be installed without it.`,
+    );
+  }
+
+  const srcVersion =
+    (readJson(path.join(src, "version.json"), {}) || {}).version || "0.0.0";
+  const manifest = readJson(path.join(dest, MANIFEST_FILE));
+  const installedVersion = manifest ? manifest.version : null;
+  const edited = locallyEdited(dest, manifest);
+
+  if (installedVersion && !force) {
+    const order = compareVersions(installedVersion, srcVersion);
+
+    if (order > 0) {
+      console.error(
+        `\n✗ This project has shared v${installedVersion}, newer than the v${srcVersion} in this installer.`,
+      );
+      console.error(
+        "  Installing it would downgrade the folder and break the components already here.",
+      );
+      console.error("  Update the CLI, or re-run with --force to overwrite it anyway.");
+      process.exit(1);
+    }
+
+    if (order === 0) {
+      console.log(
+        edited.length > 0
+          ? `✓ shared v${installedVersion} is already installed (keeping your ${edited.length} edited file(s))`
+          : `✓ shared v${installedVersion} is already installed`,
+      );
+      return;
+    }
+  }
+
+  if (edited.length > 0 && !force) {
+    console.error(
+      `\n✗ These files in component-lib/${SHARED_DIR} have local changes:`,
+    );
+    edited.forEach((file) => console.error(`  - ${file}`));
+    console.error(
+      "\n  Updating shared/ would replace them. Re-run with --force to do that, or move",
+    );
+    console.error(
+      "  your changes into your own module first: components are yours to edit,",
+    );
+    console.error("  shared/ is replaced on every update.");
+    process.exit(1);
+  }
+
+  const files = listFiles(src);
+  for (const file of files) {
+    await fs.copy(path.join(src, file), path.join(dest, file), { overwrite: true });
+  }
+
+  // Remove what an older version left behind, but only files we installed and
+  // the user has not since changed.
+  if (manifest) {
+    const removed = Object.keys(manifest.files).filter((file) => !files.includes(file));
+    for (const file of removed) {
+      const target = path.join(dest, file);
+      if (fs.existsSync(target) && (force || manifest.files[file] === sha256(target))) {
+        await fs.remove(target);
+      }
+    }
+  }
+
+  fs.writeJsonSync(
+    path.join(dest, MANIFEST_FILE),
+    {
+      version: srcVersion,
+      installedAt: new Date().toISOString(),
+      files: Object.fromEntries(
+        files.map((file) => [file, sha256(path.join(src, file))]),
+      ),
+    },
+    { spaces: 2 },
+  );
+
+  console.log(
+    installedVersion
+      ? `✓ shared updated ${installedVersion} → ${srcVersion}`
+      : `✓ shared v${srcVersion} installed`,
+  );
+};
+
+/** The files a component needs beside it, which differ between the two sets. */
+const copySupportFiles = async (destPath, beta, options) => {
+  if (beta) {
+    await installShared(destPath, options);
+    return;
+  }
+  // The legacy components' common files. Beta components use none of them.
+  if (!fs.existsSync(path.join(destPath, "utils.ts"))) {
+    await copyCommonFiles(destPath);
+  }
+};
+
+/* -------------------------------------------------------------- components */
+
+const checkComponentExists = (component, destPath, beta = false) => {
+  const componentPath = path.join(destPath, folderFor(component, beta));
   return fs.existsSync(componentPath);
 };
 
 const copyComponent = async (component, destPath, beta = false) => {
   try {
-    const componentSrc = path.join(
-      getSourcePath(beta),
-      component.toLowerCase(),
-    );
-    const componentDest = path.join(destPath, component.toLowerCase());
+    const componentSrc = path.join(getSourcePath(beta), folderFor(component, beta));
+    const componentDest = path.join(destPath, folderFor(component, beta));
 
     if (!fs.existsSync(componentSrc)) {
       throw new Error(
@@ -107,7 +289,10 @@ const copyComponent = async (component, destPath, beta = false) => {
       );
     }
 
-    await fs.copy(componentSrc, componentDest, { overwrite: true });
+    await fs.copy(componentSrc, componentDest, {
+      overwrite: true,
+      filter: (source) => !isTestPath(path.relative(componentSrc, source)),
+    });
     console.log(
       `✓ Component ${component} installed successfully ${
         component === "Grid"
@@ -134,7 +319,7 @@ const installComponentWithDependencies = async (
   const pendingInstalls = beta
     ? Array.from(componentsToInstall)
     : Array.from(componentsToInstall).filter(
-        (comp) => !checkComponentExists(comp, destPath),
+        (comp) => !checkComponentExists(comp, destPath, beta),
       );
 
   if (pendingInstalls.length === 0) {
@@ -177,7 +362,7 @@ const installMultipleComponents = async (
   const pendingInstalls = beta
     ? Array.from(allComponentsToInstall)
     : Array.from(allComponentsToInstall).filter(
-        (comp) => !checkComponentExists(comp, destPath),
+        (comp) => !checkComponentExists(comp, destPath, beta),
       );
 
   if (pendingInstalls.length === 0) {
@@ -254,11 +439,11 @@ const interactiveComponentSelector = async (beta = false) => {
 
     const handleKeyPress = (key) => {
       switch (key) {
-        case "\u001b[A": // Up arrow
+        case "[A": // Up arrow
           currentIndex = Math.max(0, currentIndex - 1);
           renderMenu();
           break;
-        case "\u001b[B": // Down arrow
+        case "[B": // Down arrow
           currentIndex = Math.min(
             getAvailableComponents(beta).length - 1,
             currentIndex + 1,
@@ -315,6 +500,11 @@ const validateComponents = (components, beta = false) => {
     (comp) => !availableComponents.includes(comp),
   );
   if (invalidComponents.length > 0) {
+    if (invalidComponents.some((comp) => comp.toLowerCase() === SHARED_DIR)) {
+      console.error(
+        "`shared` is not a component: it is installed automatically with any beta component.",
+      );
+    }
     console.error(`Invalid components: ${invalidComponents.join(", ")}`);
     console.log(`\nAvailable ${beta ? "beta " : ""}components:`);
     availableComponents.forEach((comp) => console.log(`- ${comp}`));
@@ -353,6 +543,11 @@ const main = async () => {
       type: "boolean",
       default: false,
     })
+    .option("force", {
+      describe: "Replace files in shared/ that you have edited locally",
+      type: "boolean",
+      default: false,
+    })
     .example("$0 -a Button", "Install a single component")
     .example("$0 -a Button,Card,Modal", "Install multiple components")
     .example("$0 -a DataGrid -beta", "Install the redesigned beta DataGrid")
@@ -370,7 +565,11 @@ const main = async () => {
         : "";
       console.log(`- ${comp}${deps}`);
     });
-    if (!argv.beta) {
+    if (argv.beta) {
+      console.log(
+        `\nEvery beta component also installs component-lib/${SHARED_DIR}, which they all import.`,
+      );
+    } else {
       console.log("\nRedesigned beta components (install with -beta):");
       CONFIG.betaComponents.forEach((comp) => console.log(`- ${comp}`));
     }
@@ -391,10 +590,7 @@ const main = async () => {
     const destPath = DEFAULT_DEST_PATH;
     await fs.ensureDir(destPath);
 
-    // Copy common files if they don't exist
-    if (!fs.existsSync(path.join(destPath, "utils.ts"))) {
-      await copyCommonFiles(destPath);
-    }
+    await copySupportFiles(destPath, argv.beta, { force: argv.force });
 
     // Install selected components
     await installMultipleComponents(selectedComponents, destPath, argv.beta);
@@ -425,10 +621,7 @@ const main = async () => {
   const destPath = DEFAULT_DEST_PATH;
   await fs.ensureDir(destPath);
 
-  // Copy common files if they don't exist
-  if (!fs.existsSync(path.join(destPath, "utils.ts"))) {
-    await copyCommonFiles(destPath);
-  }
+  await copySupportFiles(destPath, argv.beta, { force: argv.force });
 
   // Install components
   if (components.length === 1) {

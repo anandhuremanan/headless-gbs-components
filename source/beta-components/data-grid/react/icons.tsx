@@ -1,28 +1,13 @@
-import type { SVGProps } from "react";
+import { Svg, type IconProps } from "../../shared/react/icons";
 
-type IconProps = SVGProps<SVGSVGElement>;
+export {
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SearchIcon,
+  XIcon,
+} from "../../shared/react/icons";
 
-function Svg(props: IconProps) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      focusable="false"
-      {...props}
-    />
-  );
-}
-
-export const SearchIcon = (p: IconProps) => (
-  <Svg {...p}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Svg>
-);
 export const ArrowUpIcon = (p: IconProps) => (
   <Svg {...p}><path d="M12 19V5M5 12l7-7 7 7" /></Svg>
 );
@@ -32,20 +17,11 @@ export const ArrowDownIcon = (p: IconProps) => (
 export const MoreIcon = (p: IconProps) => (
   <Svg {...p}><path d="M12 5h.01M12 12h.01M12 19h.01" strokeWidth="3" /></Svg>
 );
-export const ChevronLeftIcon = (p: IconProps) => (
-  <Svg {...p}><path d="m15 18-6-6 6-6" /></Svg>
-);
-export const ChevronRightIcon = (p: IconProps) => (
-  <Svg {...p}><path d="m9 18 6-6-6-6" /></Svg>
-);
 export const ChevronsLeftIcon = (p: IconProps) => (
   <Svg {...p}><path d="m11 17-5-5 5-5M18 17l-5-5 5-5" /></Svg>
 );
 export const ChevronsRightIcon = (p: IconProps) => (
   <Svg {...p}><path d="m13 17 5-5-5-5M6 17l5-5-5-5" /></Svg>
-);
-export const XIcon = (p: IconProps) => (
-  <Svg {...p}><path d="M18 6 6 18M6 6l12 12" /></Svg>
 );
 export const ColumnsIcon = (p: IconProps) => (
   <Svg {...p}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16M15 4v16" /></Svg>
@@ -66,7 +42,4 @@ export const EyeOffIcon = (p: IconProps) => (
 );
 export const MoveIcon = (p: IconProps) => (
   <Svg {...p}><path d="M5 12h14M9 8l-4 4 4 4M15 8l4 4-4 4" /></Svg>
-);
-export const CheckIcon = (p: IconProps) => (
-  <Svg {...p}><path d="M20 6 9 17l-5-5" /></Svg>
 );
