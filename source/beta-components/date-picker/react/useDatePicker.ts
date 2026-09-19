@@ -5,6 +5,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type KeyboardEvent,
   type RefObject,
 } from "react";
@@ -25,6 +26,7 @@ import {
   toISODate,
   yearPage,
 } from "../core/calendar";
+import { getServerToday, getToday, subscribeToToday } from "../core/today";
 import {
   DEFAULT_DATE_FORMAT,
   formatDate,
@@ -107,7 +109,15 @@ export function useDatePicker(params: UseDatePickerParams) {
     onOpenChange,
   } = params;
 
-  const today = useMemo(() => startOfDay(new Date()), []);
+  /**
+   * Null on the server and through hydration, a real day everywhere else, and
+   * it changes by itself at midnight. `core/today.ts` explains why all three
+   * matter. Where a concrete day is needed to decide which month to show,
+   * `startOfDay(new Date())` stands in: that only ever runs in the browser, in
+   * response to something the user did, so it cannot reach the markup.
+   */
+  const today = useSyncExternalStore(subscribeToToday, getToday, getServerToday);
+  const todayOrNow = useCallback(() => today ?? startOfDay(new Date()), [today]);
   const limits = useMemo(
     () => ({ min, max, isDateDisabled }),
     [min, max, isDateDisabled],
@@ -122,7 +132,7 @@ export function useDatePicker(params: UseDatePickerParams) {
   const [view, setView] = useState<CalendarView>("days");
   const [internal, setInternal] = useState<DateRange>(defaultValue);
   const [focusedDate, setFocusedDate] = useState(() =>
-    clampDate(defaultValue.start ?? today, min, max),
+    clampDate(defaultValue.start ?? todayOrNow(), min, max),
   );
   const [viewDate, setViewDate] = useState(() => startOfMonth(focusedDate));
   const [gridFocus, setGridFocus] = useState(false);
@@ -190,7 +200,7 @@ export function useDatePicker(params: UseDatePickerParams) {
       setAnchor(next ? controlRef.current : null);
       setGridFocus(next && focusTarget === "grid");
       if (next) {
-        const base = clampDate(selection.start ?? today, min, max);
+        const base = clampDate(selection.start ?? todayOrNow(), min, max);
         setView("days");
         setFocusedDate(base);
         setViewDate(startOfMonth(base));
@@ -200,7 +210,7 @@ export function useDatePicker(params: UseDatePickerParams) {
       }
       onOpenChange?.(next);
     },
-    [open, controlRef, selection.start, today, min, max, onOpenChange],
+    [open, controlRef, selection.start, todayOrNow, min, max, onOpenChange],
   );
 
   const closeAndFocusTrigger = useCallback(() => {
@@ -274,11 +284,11 @@ export function useDatePicker(params: UseDatePickerParams) {
   );
 
   const goToToday = useCallback(() => {
-    const target = clampDate(today, min, max);
+    const target = clampDate(todayOrNow(), min, max);
     setFocusedDate(target);
     setViewDate(startOfMonth(target));
     setGridFocus(true);
-  }, [today, min, max]);
+  }, [todayOrNow, min, max]);
 
   const goToMonth = useCallback(
     (delta: number) => setViewDate((current) => addMonths(current, delta)),

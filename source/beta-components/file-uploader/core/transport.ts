@@ -127,9 +127,18 @@ export function createHttpTransport(options: HttpTransportOptions): Transport {
       xhr.upload.onprogress = (event) =>
         request.onProgress(Math.min(event.loaded, request.chunk.size));
       xhr.onload = () => {
-        const parsed = options.parseResponse
-          ? options.parseResponse(xhr.responseText, xhr)
-          : parseBody(xhr.responseText);
+        // A parseResponse that throws would otherwise leave this promise
+        // pending forever, and the file would sit at "uploading" with no error
+        // and no way back.
+        let parsed: unknown;
+        try {
+          parsed = options.parseResponse
+            ? options.parseResponse(xhr.responseText, xhr)
+            : parseBody(xhr.responseText);
+        } catch (error) {
+          reject(error);
+          return;
+        }
         if (xhr.status >= 200 && xhr.status < 300) resolve(parsed);
         else reject(new UploadHttpError(xhr.status, parsed));
       };

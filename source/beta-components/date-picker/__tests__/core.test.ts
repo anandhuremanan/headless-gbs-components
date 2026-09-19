@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   addDays,
   addMonths,
@@ -17,6 +17,7 @@ import {
   toISODate,
   yearPage,
 } from "../core/calendar";
+import { getServerToday, getToday, subscribeToToday } from "../core/today";
 import {
   fieldOrder,
   inputPlaceholder,
@@ -216,5 +217,57 @@ describe("typed input", () => {
     expect(parseDate("31/2/2026", "en-GB", reference)).toBeNull();
     expect(parseDate("2026-02-31", "en-GB", reference)).toBeNull();
     expect(parseDate("45/45/2026", "en-GB", reference)).toBeNull();
+  });
+});
+
+
+describe("today", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("marks no day at all when the calendar is built without one", () => {
+    // What a server render and the hydrating render pass, so the markup carries
+    // no date the browser might disagree with.
+    const month = buildMonth(2026, 8, { today: null });
+    const marked = month.weeks.flatMap((week) => week.days).filter((day) => day.today);
+    expect(marked).toHaveLength(0);
+  });
+
+  it("serves the same day object until the day changes", () => {
+    expect(getToday()).toBe(getToday());
+    expect(getServerToday()).toBeNull();
+  });
+
+  it("rolls over at the next local midnight and tells its subscribers", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 30));
+
+    const seen: string[] = [];
+    const unsubscribe = subscribeToToday(() => seen.push(toISODate(getToday())));
+    expect(toISODate(getToday())).toBe("2026-09-18");
+
+    vi.advanceTimersByTime(29 * 60 * 1000);
+    expect(seen).toEqual([]);
+
+    vi.advanceTimersByTime(60 * 1000);
+    expect(seen).toEqual(["2026-09-19"]);
+    expect(toISODate(getToday())).toBe("2026-09-19");
+
+    unsubscribe();
+  });
+
+  it("catches up after a machine sleeps through midnight", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 18, 23, 59));
+
+    const seen: string[] = [];
+    const unsubscribe = subscribeToToday(() => seen.push(toISODate(getToday())));
+    // The clock jumps two days while the timer never gets to run.
+    vi.setSystemTime(new Date(2026, 8, 20, 9, 0));
+    vi.advanceTimersByTime(60 * 1000);
+
+    expect(seen).toEqual(["2026-09-20"]);
+    unsubscribe();
   });
 });

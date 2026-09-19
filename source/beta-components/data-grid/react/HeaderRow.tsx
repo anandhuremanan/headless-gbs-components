@@ -130,16 +130,42 @@ function HeaderCell<T>({ item, active, tabbable, sort, sortOrder, filtered }: He
       width = Math.round(Math.min(column.maxWidth, Math.max(column.minWidth, next)));
       engine.previewColumnWidth(column.id, width);
     };
-    const onEnd = () => {
+
+    /**
+     * Ends the drag. `keep` false is the Escape path: the preview is only CSS
+     * variables on the viewport, so writing the original width back is the whole
+     * undo, and nothing ever reaches the grid's state.
+     */
+    const finish = (keep: boolean) => {
       handle.removeEventListener("pointermove", onMove);
-      handle.removeEventListener("pointerup", onEnd);
-      handle.removeEventListener("pointercancel", onEnd);
+      handle.removeEventListener("pointerup", onPointerEnd);
+      handle.removeEventListener("pointercancel", onPointerEnd);
+      document.removeEventListener("keydown", onEscape, true);
       root?.removeAttribute("data-resizing");
-      if (width !== item.width) engine.api.setColumnWidth(column.id, width);
+      if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+      if (keep) {
+        if (width !== item.width) engine.api.setColumnWidth(column.id, width);
+      } else {
+        engine.previewColumnWidth(column.id, item.width);
+      }
     };
+
+    const onPointerEnd = () => finish(true);
+
+    // Capture, and on the document: the pointer is captured by the handle, so
+    // the keyboard is still wherever it was. Escape is swallowed so abandoning a
+    // resize inside a dialog does not also close the dialog.
+    const onEscape = (key: globalThis.KeyboardEvent) => {
+      if (key.key !== "Escape") return;
+      key.preventDefault();
+      key.stopPropagation();
+      finish(false);
+    };
+
     handle.addEventListener("pointermove", onMove);
-    handle.addEventListener("pointerup", onEnd);
-    handle.addEventListener("pointercancel", onEnd);
+    handle.addEventListener("pointerup", onPointerEnd);
+    handle.addEventListener("pointercancel", onPointerEnd);
+    document.addEventListener("keydown", onEscape, true);
   };
 
   const onDragStart = (event: DragEvent<HTMLDivElement>) => {

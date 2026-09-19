@@ -37,4 +37,5 @@ export {
   weekdayNames,
 } from "./format";
 export type { DateField, WeekdayName } from "./format";
+export { getServerToday, getToday, subscribeToToday } from "./today";
 export type * from "./types";

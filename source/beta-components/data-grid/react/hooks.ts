@@ -1,39 +1,42 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import type { ReadableStore } from "../core/store";
 import type { RowId } from "../core/types";
 import { useGridContext } from "./context";
 
-/** Snapshot getter that returns the previous selection while it is still equal. */
-function createSelectionGetter<S, R>(
-  store: ReadableStore<S>,
-  selector: (snapshot: S) => R,
-  isEqual: (a: R, b: R) => boolean,
-): () => R {
-  let cache: { snapshot: S; value: R } | null = null;
-  return () => {
-    const snapshot = store.getSnapshot();
-    if (cache && Object.is(cache.snapshot, snapshot)) return cache.value;
-    const value = selector(snapshot);
-    cache = { snapshot, value: cache && isEqual(cache.value, value) ? cache.value : value };
-    return cache.value;
-  };
-}
-
 /**
  * Subscribes to a slice of an external store. The component re-renders only
  * when the selected value changes according to `isEqual`.
+ *
+ * The cache lives in a ref rather than in the getter's closure, because callers
+ * pass the selector inline: a closure-held cache would start empty on every
+ * render, so `isEqual` would never see the previous value and a selector that
+ * builds an object would hand back a fresh identity each time, re-rendering
+ * every memoized child below it. The selector is part of the cache key, so a
+ * selector that closed over something new is always recomputed.
  */
 export function useStoreSelector<S, R>(
   store: ReadableStore<S>,
   selector: (snapshot: S) => R,
   isEqual: (a: R, b: R) => boolean = Object.is,
 ): R {
-  const getSelection = useMemo(
-    () => createSelectionGetter(store, selector, isEqual),
-    [store, selector, isEqual],
-  );
+  const cache = useRef<{ snapshot: S; selector: (snapshot: S) => R; value: R } | null>(null);
+
+  const getSelection = useCallback(() => {
+    const snapshot = store.getSnapshot();
+    const previous = cache.current;
+    if (previous && Object.is(previous.snapshot, snapshot) && previous.selector === selector) {
+      return previous.value;
+    }
+    const value = selector(snapshot);
+    // Keep the previous identity while the two are equal, so `visibleRangeEqual`
+    // and friends hold across renders and not just within one.
+    const kept = previous && isEqual(previous.value, value) ? previous.value : value;
+    cache.current = { snapshot, selector, value: kept };
+    return kept;
+  }, [store, selector, isEqual]);
+
   return useSyncExternalStore(store.subscribe, getSelection, getSelection);
 }
 

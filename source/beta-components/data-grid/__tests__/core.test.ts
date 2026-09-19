@@ -162,6 +162,21 @@ describe("sorting", () => {
     expect(sorted([{ columnId: "name", desc: false }])).toEqual([1, 2, 3, 4, 6, 5]);
   });
 
+  it("orders strings by the locale it is given", () => {
+    // Swedish puts ä after z; German sorts it with a. Same rows, same column,
+    // different order — so the locale has to reach the collator.
+    const names: GridRow<{ name: string }>[] = [
+      { id: "angel", index: 0, original: { name: "ängel" } },
+      { id: "zebra", index: 1, original: { name: "zebra" } },
+    ];
+    const nameColumn = resolveColumns<{ name: string }>([{ field: "name" }]);
+    const order = (locale: string) =>
+      sortRows(names, nameColumn, [{ columnId: "name", desc: false }], locale).map((row) => row.id);
+
+    expect(order("sv")).toEqual(["zebra", "angel"]);
+    expect(order("de")).toEqual(["angel", "zebra"]);
+  });
+
   it("applies sorts in priority order", () => {
     expect(
       sorted([

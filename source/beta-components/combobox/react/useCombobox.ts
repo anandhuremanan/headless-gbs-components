@@ -109,19 +109,24 @@ export function useCombobox<V extends OptionValue>(params: UseComboboxParams<V>)
   const items = useMemo(() => buildListItems(entries), [entries]);
   const optionsByValue = useMemo(() => new Map(options.map((o) => [o.value, o])), [options]);
 
+  // `values.includes` in the hot paths below is O(values) per option, which is
+  // O(options x values) across a render — noticeable in a MultiSelect holding
+  // hundreds of selections over a long list.
+  const selectedSet = useMemo(() => new Set(values), [values]);
+
   const resolveOption = useCallback(
     (v: V): ComboboxOption<V> =>
       optionsByValue.get(v) ?? known.get(v) ?? ({ value: v, label: String(v) } as ComboboxOption<V>),
     [optionsByValue, known],
   );
   const selectedOptions = useMemo(() => values.map(resolveOption), [values, resolveOption]);
-  const isSelected = useCallback((v: V) => values.includes(v), [values]);
+  const isSelected = useCallback((v: V) => selectedSet.has(v), [selectedSet]);
 
   // Highlight the selected option when opening, otherwise the first one.
   const fallbackIndex = useMemo(() => {
-    const selected = entries.findIndex((e) => !e.option.disabled && values.includes(e.option.value));
+    const selected = entries.findIndex((e) => !e.option.disabled && selectedSet.has(e.option.value));
     return selected === -1 ? firstEnabledIndex(entries) : selected;
-  }, [entries, values]);
+  }, [entries, selectedSet]);
 
   const activeIndex =
     requestedIndex >= 0 && requestedIndex < entries.length && !entries[requestedIndex].option.disabled
@@ -186,7 +191,7 @@ export function useCombobox<V extends OptionValue>(params: UseComboboxParams<V>)
 
   const selectAllVisible = useCallback(() => {
     const added = entries
-      .filter((entry) => !entry.option.disabled && !values.includes(entry.option.value))
+      .filter((entry) => !entry.option.disabled && !selectedSet.has(entry.option.value))
       .map((entry) => entry.option);
     const room = max === undefined ? added.length : Math.max(0, max - values.length);
     const next = [...values, ...added.slice(0, room).map((option) => option.value)];
@@ -196,7 +201,7 @@ export function useCombobox<V extends OptionValue>(params: UseComboboxParams<V>)
       return map;
     });
     commit(next);
-  }, [entries, values, max, commit]);
+  }, [entries, values, selectedSet, max, commit]);
 
   const trimmed = search.trim();
   const createLabel =
@@ -211,14 +216,19 @@ export function useCombobox<V extends OptionValue>(params: UseComboboxParams<V>)
     if (!multiple) closeAndFocus();
   }, [createLabel, onCreate, multiple, closeAndFocus]);
 
-  // Search requests: debounced in server mode, immediate when opening.
+  // Search requests: debounced in server mode, immediate when opening. Only
+  // whether there is a handler belongs in the dependency list, not the handler
+  // itself: an inline `onSearchChange` is a new function on every render of the
+  // parent, and depending on it would restart the debounce each time, holding
+  // the request back for as long as the parent kept rendering.
+  const wantsSearch = onSearchChange !== undefined;
   const emitSearch = useEffectEvent((term: string) => onSearchChange?.(term));
   useEffect(() => {
-    if (!onSearchChange || !open) return;
+    if (!wantsSearch || !open) return;
     const delay = mode === "server" && search ? searchDebounce : 0;
     const timer = setTimeout(() => emitSearch(search), delay);
     return () => clearTimeout(timer);
-  }, [open, search, mode, searchDebounce, onSearchChange]);
+  }, [open, search, mode, searchDebounce, wantsSearch]);
 
   const runTypeahead = useCallback(
     (key: string) => {

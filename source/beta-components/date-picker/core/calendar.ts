@@ -136,8 +136,11 @@ export interface BuildMonthOptions extends DateLimits {
   weekStartsOn?: number;
   /** Always six week rows, so the popover height never jumps. Default true. */
   fixedWeeks?: boolean;
-  /** Injected so a test (or a server render) can pin "today". */
-  today?: Date;
+  /**
+   * Injected so a test can pin "today". `null` marks no day at all, which is
+   * what a server render and the hydrating render pass (see core/today.ts).
+   */
+  today?: Date | null;
 }
 
 export function buildMonth(
@@ -161,7 +164,7 @@ export function buildMonth(
         day: cursor.getDate(),
         key: toISODate(cursor),
         outside: cursor.getMonth() !== month || cursor.getFullYear() !== year,
-        today: compareDay(cursor, today) === 0,
+        today: today !== null && compareDay(cursor, today) === 0,
         weekend: weekday === 0 || weekday === 6,
         disabled: isDayDisabled(cursor, options),
       });

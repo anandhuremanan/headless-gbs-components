@@ -1,7 +1,23 @@
 import type { GridRow, ResolvedColumn, SortItem } from "./types";
 import { toTime } from "./values";
 
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+/**
+ * One collator per locale. `undefined` means the runtime's own locale, which is
+ * what the grid used everywhere before it took a `locale` prop; passing the
+ * prop through keeps the order of the rows and the formatting of their values
+ * speaking the same language.
+ */
+const collators = new Map<string, Intl.Collator>();
+
+function collatorFor(locale?: string): Intl.Collator {
+  const key = locale ?? "";
+  let found = collators.get(key);
+  if (!found) {
+    found = new Intl.Collator(locale, { numeric: true, sensitivity: "base" });
+    collators.set(key, found);
+  }
+  return found;
+}
 
 type SortKey = number | null;
 
@@ -9,7 +25,11 @@ type SortKey = number | null;
  * Converts a column's values into numbers once, so the sort itself only does
  * numeric comparisons. Strings become their collation rank.
  */
-function buildKeys<T>(rows: GridRow<T>[], column: ResolvedColumn<T>): SortKey[] {
+function buildKeys<T>(
+  rows: GridRow<T>[],
+  column: ResolvedColumn<T>,
+  locale?: string,
+): SortKey[] {
   const values = rows.map((row) => column.getValue(row.original));
 
   switch (column.type) {
@@ -31,6 +51,7 @@ function buildKeys<T>(rows: GridRow<T>[], column: ResolvedColumn<T>): SortKey[] 
           ? null
           : String(labels?.get(v as string | number) ?? v),
       );
+      const collator = collatorFor(locale);
       const unique = Array.from(new Set(strings.filter((s) => s !== null)));
       unique.sort(collator.compare);
       const rank = new Map<string, number>();
@@ -49,6 +70,7 @@ export function sortRows<T>(
   rows: GridRow<T>[],
   columns: readonly ResolvedColumn<T>[],
   sorting: readonly SortItem[],
+  locale?: string,
 ): GridRow<T>[] {
   const byId = new Map(columns.map((c) => [c.id, c]));
   const active = sorting
@@ -68,7 +90,7 @@ export function sortRows<T>(
       return (i: number, j: number) =>
         direction * sortFn(values[i], values[j], rows[i].original, rows[j].original);
     }
-    const keys = buildKeys(rows, column);
+    const keys = buildKeys(rows, column, locale);
     return (i: number, j: number) => {
       const a = keys[i];
       const b = keys[j];

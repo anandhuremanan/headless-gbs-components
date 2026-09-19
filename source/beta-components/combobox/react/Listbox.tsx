@@ -147,14 +147,24 @@ export function Listbox<V extends OptionValue>({
     }
   }, [activeIndex, itemIndexByOption, metrics, listRef]);
 
+  // The next page is asked for at most once per list length. `loading` is not
+  // enough on its own: it belongs to the caller and only turns on a render or
+  // more later, while scroll events fire many times a second, so a single flick
+  // at the end of the list would otherwise send a burst of identical requests.
+  const requestedAt = useRef(-1);
+  const loadMore = () => {
+    if (!hasMore || loading || !onLoadMore || requestedAt.current === items.length) return;
+    requestedAt.current = items.length;
+    onLoadMore();
+  };
+
   // If the list is already scrolled to the end when new options arrive, no
-  // scroll event follows, so ask for the next page once per list length.
-  const autoLoadedAt = useRef(-1);
+  // scroll event follows, so ask from here instead.
   useLayoutEffect(() => {
     const el = listRef.current;
-    if (!el || !hasMore || loading || !onLoadMore || autoLoadedAt.current === items.length) return;
+    if (!el || !hasMore || loading || !onLoadMore || requestedAt.current === items.length) return;
     if (el.scrollHeight - el.scrollTop - el.clientHeight < 80) {
-      autoLoadedAt.current = items.length;
+      requestedAt.current = items.length;
       onLoadMore();
     }
   }, [hasMore, loading, onLoadMore, items.length, listRef]);
@@ -162,9 +172,7 @@ export function Listbox<V extends OptionValue>({
   const onScroll = (event: UIEvent<HTMLDivElement>) => {
     const el = event.currentTarget;
     setScrollTop(el.scrollTop);
-    if (hasMore && !loading && onLoadMore && el.scrollTop + el.clientHeight >= metrics.total - 80) {
-      onLoadMore();
-    }
+    if (el.scrollTop + el.clientHeight >= metrics.total - 80) loadMore();
   };
 
   const range = isVirtual

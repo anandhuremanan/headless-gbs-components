@@ -140,8 +140,8 @@ export function DataGrid<T>(props: DataGridProps<T>) {
     [server, coreRows, columns, query.filters, query.globalFilter, formatters],
   );
   const sortedRows = useMemo(
-    () => (server ? filteredRows : sortRows(filteredRows, columns, query.sorting)),
-    [server, filteredRows, columns, query.sorting],
+    () => (server ? filteredRows : sortRows(filteredRows, columns, query.sorting, locale)),
+    [server, filteredRows, columns, query.sorting, locale],
   );
   const page = useMemo(
     () => paginate(sortedRows, query.pagination, { enabled: enablePagination, server, rowCount }),
