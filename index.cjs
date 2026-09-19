@@ -58,7 +58,12 @@ const CONFIG = {
     "Skeleton",
     "NumberInput",
     "RadioGroup",
-    "Switch"
+    "Switch",
+    "Accordion",
+    "Alert",
+    "Avatar",
+    "Badge",
+    "Progress",
   ],
   // Beta folder names that are not simply the lowercased component name.
   betaFolders: {
@@ -66,7 +71,7 @@ const CONFIG = {
     DatePicker: "date-picker",
     FileUploader: "file-uploader",
     NumberInput: "number-input",
-    RadioGroup: "radio-group"
+    RadioGroup: "radio-group",
   },
   // Define component dependencies
   dependencies: {
@@ -94,8 +99,7 @@ const MANIFEST_FILE = ".install-manifest.json";
  * component-lib.
  */
 const TESTS_DIR = "__tests__";
-const isTestPath = (filePath) =>
-  filePath.split(/[\\/]/).includes(TESTS_DIR);
+const isTestPath = (filePath) => filePath.split(/[\\/]/).includes(TESTS_DIR);
 
 const normalizeComponent = (component, availableComponents) =>
   availableComponents.find(
@@ -204,7 +208,9 @@ const installShared = async (destPath, { force = false } = {}) => {
       console.error(
         "  Installing it would downgrade the folder and break the components already here.",
       );
-      console.error("  Update the CLI, or re-run with --force to overwrite it anyway.");
+      console.error(
+        "  Update the CLI, or re-run with --force to overwrite it anyway.",
+      );
       process.exit(1);
     }
 
@@ -235,16 +241,23 @@ const installShared = async (destPath, { force = false } = {}) => {
 
   const files = listFiles(src);
   for (const file of files) {
-    await fs.copy(path.join(src, file), path.join(dest, file), { overwrite: true });
+    await fs.copy(path.join(src, file), path.join(dest, file), {
+      overwrite: true,
+    });
   }
 
   // Remove what an older version left behind, but only files we installed and
   // the user has not since changed.
   if (manifest) {
-    const removed = Object.keys(manifest.files).filter((file) => !files.includes(file));
+    const removed = Object.keys(manifest.files).filter(
+      (file) => !files.includes(file),
+    );
     for (const file of removed) {
       const target = path.join(dest, file);
-      if (fs.existsSync(target) && (force || manifest.files[file] === sha256(target))) {
+      if (
+        fs.existsSync(target) &&
+        (force || manifest.files[file] === sha256(target))
+      ) {
         await fs.remove(target);
       }
     }
@@ -290,7 +303,10 @@ const checkComponentExists = (component, destPath, beta = false) => {
 
 const copyComponent = async (component, destPath, beta = false) => {
   try {
-    const componentSrc = path.join(getSourcePath(beta), folderFor(component, beta));
+    const componentSrc = path.join(
+      getSourcePath(beta),
+      folderFor(component, beta),
+    );
     const componentDest = path.join(destPath, folderFor(component, beta));
 
     if (!fs.existsSync(componentSrc)) {

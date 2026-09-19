@@ -1,0 +1,208 @@
+/*
+ * Accordion styles.
+ *
+ * Each section is a native <details>, so the marker has to be taken off (two
+ * ways: `list-item` display in Firefox, the WebKit pseudo-element elsewhere)
+ * before a chevron of our own goes on. Tokens read the shared --gbs-*
+ * variables when they are set on an ancestor (set them on :root to theme every
+ * component at once). Rules live in the `components` layer, so utility classes
+ * passed through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .ac-root {
+    --ac-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --ac-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --ac-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
+    --ac-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --ac-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --ac-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --ac-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --ac-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
+    --ac-px: 14px;
+    --ac-py: 12px;
+    --ac-duration: 180ms;
+
+    color-scheme: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    font-size: var(--ac-font-size);
+    line-height: 1.5;
+    color: var(--ac-fg);
+  }
+
+  :where(.dark, [data-theme="dark"]) .ac-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .ac-root {
+    color-scheme: light;
+  }
+
+  :where(.ac-root) *,
+  :where(.ac-root) *::before,
+  :where(.ac-root) *::after {
+    box-sizing: border-box;
+  }
+
+  .ac-root[data-size="sm"] {
+    --ac-px: 10px;
+    --ac-py: 8px;
+    --ac-font-size: 12px;
+  }
+  .ac-root[data-size="lg"] {
+    --ac-px: 18px;
+    --ac-py: 16px;
+    --ac-font-size: 14px;
+  }
+
+  /* ---------------------------------------------------------------- item */
+
+  .ac-item {
+    min-width: 0;
+    border: 1px solid var(--ac-border);
+    border-radius: var(--ac-radius);
+    background: var(--ac-bg);
+  }
+
+  /* Contained: one block with dividers instead of separate cards. */
+  .ac-root[data-variant="contained"] {
+    gap: 0;
+    border: 1px solid var(--ac-border);
+    border-radius: var(--ac-radius);
+    overflow: hidden;
+  }
+  .ac-root[data-variant="contained"] .ac-item {
+    border: 0;
+    border-block-end: 1px solid var(--ac-border);
+    border-radius: 0;
+  }
+  .ac-root[data-variant="contained"] .ac-item:last-child {
+    border-block-end: 0;
+  }
+
+  /* Plain: rules only, for a sidebar or a FAQ. */
+  .ac-root[data-variant="plain"] {
+    gap: 0;
+  }
+  .ac-root[data-variant="plain"] .ac-item {
+    border: 0;
+    border-block-end: 1px solid var(--ac-border);
+    border-radius: 0;
+    background: none;
+  }
+  .ac-root[data-variant="plain"] .ac-header {
+    padding-inline: 0;
+  }
+  .ac-root[data-variant="plain"] .ac-body {
+    padding-inline: 0;
+  }
+
+  /* -------------------------------------------------------------- header */
+
+  .ac-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: var(--ac-py) var(--ac-px);
+    border-radius: inherit;
+    cursor: pointer;
+    user-select: none;
+    /* Firefox draws the triangle through `display: list-item`. */
+    list-style: none;
+  }
+  .ac-header::-webkit-details-marker {
+    display: none;
+  }
+  .ac-header:hover {
+    background: var(--ac-hover);
+  }
+  .ac-header:focus-visible {
+    outline: 2px solid var(--ac-focus);
+    outline-offset: -2px;
+  }
+  .ac-item[data-disabled] .ac-header {
+    cursor: not-allowed;
+  }
+  .ac-item[data-disabled] .ac-title {
+    color: var(--ac-muted);
+  }
+
+  .ac-heading {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+  .ac-title {
+    font-weight: 600;
+  }
+  .ac-description {
+    color: var(--ac-muted);
+    font-weight: 400;
+  }
+  .ac-meta {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    color: var(--ac-muted);
+  }
+
+  .ac-icon {
+    display: inline-flex;
+    flex: none;
+    color: var(--ac-muted);
+    transition: rotate var(--ac-duration) ease;
+  }
+  .ac-icon > svg {
+    width: 16px;
+    height: 16px;
+  }
+  .ac-item[open] > .ac-header .ac-icon {
+    rotate: 180deg;
+  }
+
+  /* ------------------------------------------------------------- content */
+
+  .ac-body {
+    padding: 0 var(--ac-px) var(--ac-py);
+  }
+
+  /*
+   * Opening animates where the browser can do it: `interpolate-size` lets a
+   * height of `auto` be interpolated, and `::details-content` is the box to
+   * animate. Browsers without either simply show and hide, which is the
+   * behaviour everything else falls back to anyway.
+   */
+  @supports (interpolate-size: allow-keywords) {
+    .ac-root {
+      interpolate-size: allow-keywords;
+    }
+    .ac-item::details-content {
+      height: 0;
+      overflow: hidden;
+      transition:
+        height var(--ac-duration) ease,
+        content-visibility var(--ac-duration) allow-discrete;
+    }
+    .ac-item[open]::details-content {
+      height: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ac-root {
+      --ac-duration: 0s;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .ac-item {
+      border: 1px solid CanvasText;
+    }
+  }
+}
