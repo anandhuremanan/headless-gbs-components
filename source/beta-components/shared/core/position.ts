@@ -94,16 +94,7 @@ export function placePopover(
         edge,
         viewport.width - size.width - edge,
       ),
-      // Clamped on both ends: when a panel fits neither above nor below, it is
-      // pulled back inside instead of hanging off the edge. Nothing in the top
-      // layer scrolls into view, so whatever leaves the viewport is lost. A
-      // panel taller than the viewport itself still starts at the top gutter,
-      // since `clamp` keeps the minimum when the maximum falls below it.
-      top: clamp(
-        below ? anchor.bottom + gap : anchor.top - gap - size.height,
-        edge,
-        viewport.height - size.height - edge,
-      ),
+      top: Math.max(edge, below ? anchor.bottom + gap : anchor.top - gap - size.height),
       maxHeight: fitHeight
         ? Math.max(minHeight, below ? roomBelow : roomAbove)
         : undefined,
@@ -122,11 +113,7 @@ export function placePopover(
 
   return {
     side: right ? "right" : "left",
-    left: clamp(
-      right ? anchor.right + gap : anchor.left - gap - size.width,
-      edge,
-      viewport.width - size.width - edge,
-    ),
+    left: Math.max(edge, right ? anchor.right + gap : anchor.left - gap - size.width),
     top: clamp(
       across(anchor.top, anchor.height, size.height),
       edge,

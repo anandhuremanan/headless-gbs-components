@@ -137,30 +137,17 @@ export function AnchoredPopover({
       target?.focus({ preventScroll: true });
     }
 
-    // Scrolling fires far faster than the screen refreshes, and each pass
-    // measures the anchor and writes styles back, so repositioning is coalesced
-    // into one frame rather than thrashing layout on every event.
-    let frame = 0;
-    const schedule = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        position();
-      });
-    };
-
-    const observer = observeResize ? new ResizeObserver(schedule) : null;
+    const observer = observeResize ? new ResizeObserver(position) : null;
     observer?.observe(el);
     if (observeResize === "both") observer?.observe(anchor);
-    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("resize", position);
     // Capture: a scroll in any ancestor moves the anchor, not just the page.
-    window.addEventListener("scroll", schedule, { capture: true, passive: true });
+    window.addEventListener("scroll", position, true);
 
     return () => {
-      if (frame) cancelAnimationFrame(frame);
       observer?.disconnect();
-      window.removeEventListener("resize", schedule);
-      window.removeEventListener("scroll", schedule, true);
+      window.removeEventListener("resize", position);
+      window.removeEventListener("scroll", position, true);
       const hadFocus = el.contains(document.activeElement);
       if (el.matches(":popover-open")) el.hidePopover();
       if (returnFocus && (hadFocus || document.activeElement === document.body) && anchor.isConnected) {

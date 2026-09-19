@@ -1,0 +1,270 @@
+/*
+ * Radio and RadioGroup styles.
+ *
+ * The button is the native <input type="radio"> with `appearance: none`, so it
+ * keeps native behavior: arrow keys roam the group, one tab stop, and the whole
+ * group validates as one required field. Tokens read the shared --gbs-*
+ * variables when they are set on an ancestor (set them on :root to theme every
+ * component at once). Rules live in the `components` layer, so utility classes
+ * passed through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .rd-root,
+  .rd-group {
+    --rd-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --rd-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --rd-border: var(--gbs-border-control, light-dark(#a1a1aa, #52525b));
+    --rd-card-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --rd-input-bg: var(--gbs-input-bg, var(--dg-input-bg, light-dark(#ffffff, #121216)));
+    --rd-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --rd-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --rd-accent-soft: var(--gbs-accent-soft, var(--dg-accent-soft, light-dark(#eff6ff, #172554)));
+    --rd-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --rd-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --rd-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --rd-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
+    --rd-size: 16px;
+
+    color-scheme: inherit;
+    font-size: var(--rd-font-size);
+    line-height: 1.4;
+    color: var(--rd-fg);
+  }
+
+  :where(.dark, [data-theme="dark"]) :is(.rd-root, .rd-group) {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) :is(.rd-root, .rd-group) {
+    color-scheme: light;
+  }
+
+  :where(.rd-root, .rd-group) *,
+  :where(.rd-root, .rd-group) *::before,
+  :where(.rd-root, .rd-group) *::after {
+    box-sizing: border-box;
+  }
+
+  /* ---------------------------------------------------------------- radio */
+
+  .rd-root {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+  }
+  .rd-root[data-size="sm"] {
+    --rd-size: 14px;
+    --rd-font-size: 12px;
+  }
+  .rd-root[data-size="lg"] {
+    --rd-size: 20px;
+    --rd-font-size: 14px;
+  }
+
+  .rd-control {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    /* Line the button up with the first line of the label. */
+    height: calc(var(--rd-font-size) * 1.4);
+  }
+
+  .rd-input {
+    width: var(--rd-size);
+    height: var(--rd-size);
+    margin: 0;
+    border: 1px solid var(--rd-border);
+    border-radius: 50%;
+    appearance: none;
+    background: var(--rd-input-bg);
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      background-color 120ms ease;
+  }
+  .rd-input:hover:not(:disabled) {
+    border-color: var(--rd-accent);
+  }
+  .rd-input:checked {
+    border-color: var(--rd-accent);
+    border-width: 2px;
+  }
+  .rd-input:focus-visible {
+    outline: 2px solid var(--rd-focus);
+    outline-offset: 2px;
+  }
+
+  /* The dot is a separate element rather than a border trick, so its size can
+     follow the control's and it can animate in. */
+  .rd-dot {
+    position: absolute;
+    width: calc(var(--rd-size) / 2);
+    height: calc(var(--rd-size) / 2);
+    border-radius: 50%;
+    background: var(--rd-accent);
+    scale: 0;
+    transition: scale 120ms ease;
+    pointer-events: none;
+  }
+  .rd-input:checked ~ .rd-dot {
+    scale: 1;
+  }
+
+  .rd-root[data-invalid] .rd-input {
+    border-color: var(--rd-danger);
+  }
+  /* Only the button dims. Fading the whole choice takes its label below the
+     contrast floor, and someone still has to be able to read the option they
+     cannot pick. */
+  .rd-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .rd-root[data-disabled] .rd-dot {
+    opacity: 0.5;
+  }
+
+  .rd-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .rd-label {
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .rd-root[data-disabled] .rd-label {
+    color: var(--rd-muted);
+    cursor: not-allowed;
+  }
+  .rd-description {
+    color: var(--rd-muted);
+    text-wrap: pretty;
+  }
+  .rd-error {
+    color: var(--rd-danger);
+    text-wrap: pretty;
+  }
+
+  /* ----------------------------------------------------------------- card */
+
+  .rd-root[data-variant="card"] {
+    position: relative;
+    align-items: flex-start;
+    padding: 12px;
+    border: 1px solid var(--rd-card-border);
+    border-radius: var(--rd-radius);
+    background: var(--rd-input-bg);
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      background-color 120ms ease;
+  }
+  .rd-root[data-variant="card"]:hover:not([data-disabled]) {
+    background: var(--rd-hover);
+  }
+  .rd-root[data-variant="card"][data-checked] {
+    border-color: var(--rd-accent);
+    background: var(--rd-accent-soft);
+  }
+  /* Muted grey clears 4.5:1 on white but only reaches 4.44:1 on the tinted
+     background of a selected card, so it moves a step towards the text colour
+     there rather than the description quietly failing contrast. */
+  .rd-root[data-variant="card"][data-checked] .rd-description {
+    color: color-mix(in oklab, var(--rd-muted) 72%, var(--rd-fg));
+  }
+  /* The whole tile is the target: the input covers it, so a press anywhere
+     lands on the radio itself rather than on a label that forwards it. */
+  .rd-root[data-variant="card"] .rd-input::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--rd-radius);
+  }
+  .rd-root[data-variant="card"]:has(.rd-input:focus-visible) {
+    outline: 2px solid var(--rd-focus);
+    outline-offset: 2px;
+  }
+  .rd-root[data-variant="card"] .rd-input:focus-visible {
+    outline: none;
+  }
+
+  /* ---------------------------------------------------------------- group */
+
+  .rd-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .rd-legend {
+    padding: 0;
+    font-weight: 500;
+  }
+  .rd-legend[data-required]::after {
+    content: " *";
+    color: var(--rd-danger);
+  }
+
+  .rd-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .rd-group[data-orientation="horizontal"] .rd-items {
+    flex-flow: row wrap;
+    gap: 16px;
+  }
+  .rd-group[data-variant="card"][data-orientation="horizontal"] .rd-items {
+    gap: 8px;
+  }
+  .rd-group[data-variant="card"][data-orientation="horizontal"] .rd-root {
+    flex: 1 1 180px;
+  }
+
+  .rd-clear {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--rd-accent);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .rd-clear:focus-visible {
+    outline: 2px solid var(--rd-focus);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rd-input,
+    .rd-dot,
+    .rd-root[data-variant="card"] {
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .rd-input {
+      border: 1px solid CanvasText;
+    }
+    .rd-dot {
+      background: Highlight;
+    }
+    .rd-root[data-variant="card"][data-checked] {
+      border-color: Highlight;
+    }
+  }
+}

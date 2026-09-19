@@ -1,0 +1,231 @@
+/*
+ * NumberInput styles.
+ *
+ * The field is a text input, so it looks and sizes exactly like the Input
+ * component; the spinner is two buttons the stylesheet owns rather than the
+ * browser's, which cannot be styled. Tokens read the shared --gbs-* variables
+ * when they are set on an ancestor (set them on :root to theme every component
+ * at once). Rules live in the `components` layer, so utility classes passed
+ * through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .nm-root {
+    --nm-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --nm-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --nm-border: var(--gbs-border, var(--dg-border, light-dark(#e4e4e7, #27272a)));
+    --nm-input-bg: var(--gbs-input-bg, var(--dg-input-bg, light-dark(#ffffff, #121216)));
+    --nm-readonly-bg: var(--gbs-readonly-bg, light-dark(#fafafa, #0e0e12));
+    --nm-hover: var(--gbs-hover, var(--dg-hover, light-dark(#f4f4f5, #1f1f23)));
+    --nm-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --nm-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --nm-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --nm-radius: var(--gbs-radius, var(--dg-radius, 8px));
+    --nm-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
+    --nm-height: 36px;
+    --nm-px: 10px;
+
+    color-scheme: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    font-size: var(--nm-font-size);
+    line-height: 1.4;
+    color: var(--nm-fg);
+  }
+
+  :where(.dark, [data-theme="dark"]) .nm-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .nm-root {
+    color-scheme: light;
+  }
+
+  :where(.nm-root) *,
+  :where(.nm-root) *::before,
+  :where(.nm-root) *::after {
+    box-sizing: border-box;
+  }
+
+  .nm-root[data-size="sm"] {
+    --nm-height: 30px;
+    --nm-px: 8px;
+    --nm-font-size: 12px;
+  }
+  .nm-root[data-size="lg"] {
+    --nm-height: 44px;
+    --nm-px: 12px;
+    --nm-font-size: 14px;
+  }
+
+  .nm-label {
+    font-weight: 500;
+  }
+  .nm-label[data-required]::after {
+    content: " *";
+    color: var(--nm-danger);
+  }
+
+  /* -------------------------------------------------------------- control */
+
+  .nm-control {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    min-width: 0;
+    height: var(--nm-height);
+    padding-inline-start: var(--nm-px);
+    border: 1px solid var(--nm-border);
+    border-radius: var(--nm-radius);
+    background: var(--nm-input-bg);
+    transition:
+      border-color 120ms ease,
+      box-shadow 120ms ease;
+  }
+  .nm-control:hover:not([data-disabled]) {
+    border-color: color-mix(in oklab, var(--nm-border) 60%, var(--nm-fg));
+  }
+  .nm-control:has(.nm-input:focus-visible) {
+    border-color: var(--nm-focus);
+    box-shadow: 0 0 0 1px var(--nm-focus);
+  }
+  .nm-control[data-invalid] {
+    border-color: var(--nm-danger);
+  }
+  .nm-control[data-invalid]:has(.nm-input:focus-visible) {
+    box-shadow: 0 0 0 1px var(--nm-danger);
+  }
+  .nm-control[data-disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .nm-control[data-readonly] {
+    background: var(--nm-readonly-bg);
+  }
+
+  .nm-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0;
+    padding-inline-end: var(--nm-px);
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    /* Figures of the same width, so a column of amounts lines up and the
+       number does not jitter as it is typed. */
+    font-variant-numeric: tabular-nums;
+    outline: none;
+  }
+  .nm-input::placeholder {
+    color: var(--nm-muted);
+  }
+  .nm-input:disabled {
+    cursor: not-allowed;
+  }
+
+  .nm-adornment {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    color: var(--nm-muted);
+    white-space: nowrap;
+  }
+  .nm-adornment[data-side="trailing"] {
+    padding-inline-end: 2px;
+  }
+
+  .nm-icon-button {
+    display: inline-flex;
+    flex: none;
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: none;
+    color: var(--nm-muted);
+    cursor: pointer;
+  }
+  .nm-icon-button:hover {
+    background: var(--nm-hover);
+    color: var(--nm-fg);
+  }
+
+  /* -------------------------------------------------------------- stepper */
+
+  .nm-stepper {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: 22px;
+    border-inline-start: 1px solid var(--nm-border);
+  }
+
+  .nm-step {
+    display: flex;
+    flex: 1 1 50%;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--nm-muted);
+    cursor: pointer;
+    /* The buttons repeat while held, so the browser must not read the hold as
+       a scroll gesture or a text selection. */
+    touch-action: none;
+    user-select: none;
+  }
+  .nm-step:first-child {
+    border-start-end-radius: calc(var(--nm-radius) - 1px);
+    border-block-end: 1px solid var(--nm-border);
+  }
+  .nm-step:last-child {
+    border-end-end-radius: calc(var(--nm-radius) - 1px);
+  }
+  .nm-step:hover:not(:disabled) {
+    background: var(--nm-hover);
+    color: var(--nm-fg);
+  }
+  .nm-step:active:not(:disabled) {
+    background: color-mix(in oklab, var(--nm-hover) 70%, var(--nm-accent));
+  }
+  .nm-step:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ----------------------------------------------------------------- text */
+
+  .nm-description {
+    color: var(--nm-muted);
+    text-wrap: pretty;
+  }
+  .nm-error {
+    color: var(--nm-danger);
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nm-control {
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .nm-control {
+      border: 1px solid CanvasText;
+    }
+    .nm-stepper,
+    .nm-step:first-child {
+      border-color: CanvasText;
+    }
+  }
+}

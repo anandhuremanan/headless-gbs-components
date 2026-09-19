@@ -1,0 +1,229 @@
+/*
+ * Switch styles.
+ *
+ * The control is the native <input type="checkbox" role="switch"> with
+ * `appearance: none`, drawn as a track and a thumb, so it keeps native
+ * behavior and posts with forms. Tokens read the shared --gbs-* variables when
+ * they are set on an ancestor (set them on :root to theme every component at
+ * once). Rules live in the `components` layer, so utility classes passed
+ * through `className` / `classNames` override them.
+ */
+@layer theme, base, components, utilities;
+
+@layer components {
+  .sw-root {
+    --sw-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
+    --sw-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));
+    --sw-track: var(--gbs-subtle, light-dark(#d4d4d8, #3f3f46));
+    --sw-thumb: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #f4f4f5)));
+    --sw-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+    --sw-focus: var(--gbs-focus, var(--dg-focus, light-dark(#2563eb, #60a5fa)));
+    --sw-danger: var(--gbs-danger, var(--dg-danger, light-dark(#dc2626, #f87171)));
+    --sw-font-size: var(--gbs-font-size, var(--dg-font-size, 13px));
+    --sw-height: 20px;
+    --sw-width: 36px;
+    --sw-gap: 3px;
+    --sw-duration: 160ms;
+
+    color-scheme: inherit;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+    font-size: var(--sw-font-size);
+    line-height: 1.4;
+    color: var(--sw-fg);
+  }
+
+  :where(.dark, [data-theme="dark"]) .sw-root {
+    color-scheme: dark;
+  }
+  :where(.light, [data-theme="light"]) .sw-root {
+    color-scheme: light;
+  }
+
+  :where(.sw-root) *,
+  :where(.sw-root) *::before,
+  :where(.sw-root) *::after {
+    box-sizing: border-box;
+  }
+
+  .sw-root[data-size="sm"] {
+    --sw-height: 16px;
+    --sw-width: 28px;
+    --sw-gap: 2px;
+    --sw-font-size: 12px;
+  }
+  .sw-root[data-size="lg"] {
+    --sw-height: 24px;
+    --sw-width: 44px;
+    --sw-font-size: 14px;
+  }
+
+  /* The label first, the track pushed to the far edge: a settings row. */
+  .sw-root[data-label-position="start"] {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+  }
+
+  /* -------------------------------------------------------------- control */
+
+  .sw-control {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    /* Line the track up with the first line of the label. */
+    align-items: center;
+    height: calc(var(--sw-font-size) * 1.4);
+  }
+
+  .sw-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    appearance: none;
+    background: none;
+    cursor: pointer;
+  }
+  .sw-input:disabled {
+    cursor: not-allowed;
+  }
+  .sw-root[data-readonly] .sw-input {
+    cursor: default;
+  }
+
+  .sw-track {
+    display: inline-flex;
+    align-items: center;
+    width: var(--sw-width);
+    height: var(--sw-height);
+    padding: var(--sw-gap);
+    border-radius: 999px;
+    background: var(--sw-track);
+    transition: background-color var(--sw-duration) ease;
+  }
+
+  .sw-thumb {
+    width: calc(var(--sw-height) - var(--sw-gap) * 2);
+    height: calc(var(--sw-height) - var(--sw-gap) * 2);
+    border-radius: 50%;
+    background: var(--sw-thumb);
+    box-shadow: 0 1px 2px light-dark(rgb(0 0 0 / 0.25), rgb(0 0 0 / 0.5));
+    /* `translate` rather than `margin-inline-start`, so it animates on the
+       compositor and mirrors itself in right-to-left layouts. */
+    translate: 0;
+    transition: translate var(--sw-duration) ease;
+  }
+
+  .sw-input:checked + .sw-track {
+    background: var(--sw-accent);
+  }
+  .sw-input:checked + .sw-track .sw-thumb {
+    translate: calc(var(--sw-width) - var(--sw-height)) 0;
+  }
+  .sw-control:dir(rtl) .sw-input:checked + .sw-track .sw-thumb {
+    translate: calc((var(--sw-width) - var(--sw-height)) * -1) 0;
+  }
+
+  .sw-input:focus-visible + .sw-track {
+    outline: 2px solid var(--sw-focus);
+    outline-offset: 2px;
+  }
+  .sw-input:hover:not(:disabled) + .sw-track {
+    background: color-mix(in oklab, var(--sw-track) 88%, var(--sw-fg));
+  }
+  .sw-input:checked:hover:not(:disabled) + .sw-track {
+    background: color-mix(in oklab, var(--sw-accent) 88%, black);
+  }
+
+  .sw-root[data-invalid] .sw-track {
+    outline: 1px solid var(--sw-danger);
+    outline-offset: 1px;
+  }
+  /* Only the track dims; the label keeps its contrast, as the Checkbox's does. */
+  .sw-input:disabled + .sw-track {
+    opacity: 0.5;
+  }
+
+  /* The thumb keeps turning while the change is being saved. */
+  .sw-root[data-saving] .sw-thumb {
+    border: 2px solid transparent;
+    border-top-color: var(--sw-accent);
+    animation: sw-spin 700ms linear infinite;
+  }
+  .sw-root[data-saving] .sw-input {
+    cursor: progress;
+  }
+
+  @keyframes sw-spin {
+    to {
+      rotate: 1turn;
+    }
+  }
+
+  /* ----------------------------------------------------------------- text */
+
+  .sw-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .sw-label {
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .sw-root[data-disabled] .sw-label {
+    color: var(--sw-muted);
+    cursor: not-allowed;
+  }
+  .sw-label[data-required]::after {
+    content: " *";
+    color: var(--sw-danger);
+  }
+  .sw-description {
+    color: var(--sw-muted);
+    text-wrap: pretty;
+  }
+  .sw-error {
+    color: var(--sw-danger);
+    text-wrap: pretty;
+  }
+
+  .sw-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sw-root {
+      --sw-duration: 0s;
+    }
+    .sw-root[data-saving] .sw-thumb {
+      animation-duration: 2s;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .sw-track {
+      border: 1px solid CanvasText;
+    }
+    .sw-input:checked + .sw-track {
+      background: Highlight;
+    }
+    .sw-thumb {
+      background: CanvasText;
+    }
+  }
+}

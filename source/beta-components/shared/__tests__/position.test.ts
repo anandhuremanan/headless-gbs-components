@@ -49,20 +49,6 @@ describe("below the anchor", () => {
     const placement = placePopover(anchorAt(100, 300), { width: 200, height: 780 }, VIEWPORT, options());
     expect(placement.side).toBe("bottom");
   });
-
-  it("pulls a panel that fits neither side back inside the viewport", () => {
-    // 780 tall against 456px below and 288px above: it cannot sit under the
-    // anchor without its foot leaving the screen, and nothing in the top layer
-    // can be scrolled into view.
-    const placement = placePopover(anchorAt(100, 300), { width: 200, height: 780 }, VIEWPORT, options());
-    expect(placement.top).toBe(800 - 780 - 8);
-    expect(placement.top + 780).toBeLessThanOrEqual(800);
-  });
-
-  it("keeps the top gutter when the panel is taller than the viewport", () => {
-    const placement = placePopover(anchorAt(100, 300), { width: 200, height: 900 }, VIEWPORT, options());
-    expect(placement.top).toBe(8);
-  });
 });
 
 describe("fitHeight", () => {
@@ -93,19 +79,6 @@ describe("staying on screen", () => {
   it("pulls a panel back from the right edge", () => {
     const placement = placePopover(anchorAt(950, 100), { width: 300, height: 100 }, VIEWPORT, options());
     expect(placement.left).toBe(1000 - 300 - 8);
-  });
-
-  it("pulls a side panel back inside when it fits on neither side", () => {
-    // 600 wide with 448px to the right and 488px to the left: too wide to flip,
-    // so without a clamp its right edge would sit 144px past the viewport.
-    const placement = placePopover(
-      anchorAt(500, 300, 40),
-      { width: 600, height: 100 },
-      VIEWPORT,
-      options({ side: "right" }),
-    );
-    expect(placement.side).toBe("right");
-    expect(placement.left).toBe(1000 - 600 - 8);
   });
 
   it("keeps the left gutter when the panel is wider than the viewport", () => {

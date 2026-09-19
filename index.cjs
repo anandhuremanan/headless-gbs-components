@@ -56,12 +56,17 @@ const CONFIG = {
     "Popover",
     "Card",
     "Skeleton",
+    "NumberInput",
+    "RadioGroup",
+    "Switch"
   ],
   // Beta folder names that are not simply the lowercased component name.
   betaFolders: {
     DataGrid: "data-grid",
     DatePicker: "date-picker",
     FileUploader: "file-uploader",
+    NumberInput: "number-input",
+    RadioGroup: "radio-group"
   },
   // Define component dependencies
   dependencies: {
