@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd demo-showroom && pnpm install --frozen-lockfile",
+  "build": { "env": { "COREPACK_ENABLE_DOWNLOAD_PROMPT": "0" } },
+  "installCommand": "corepack enable && cd demo-showroom && pnpm install --frozen-lockfile",
   "buildCommand": "cd demo-showroom && pnpm build",
   "outputDirectory": "demo-showroom/dist",
   "headers": [
