@@ -933,7 +933,8 @@ gridRef.current?.toggleSort("salary");
 | `getRows`         | `(scope?: ExportScope) => T[]`                     | Rows for a scope (default `"filtered"`).                              |
 | `exportCsv`       | `(options?: ExportOptions<T>) => Promise<void>`    | Download a CSV file.                                                  |
 | `exportExcel`     | `(options?: ExportOptions<T>) => Promise<void>`    | Download an `.xlsx` file.                                             |
-| `exportPdf`       | `(options?: PdfExportOptions<T>) => Promise<void>` | Open the print dialog with a formatted table ("Save as PDF").         |
+| `exportPdf`       | `(options?: PdfExportOptions<T>) => Promise<void>` | Download a `.pdf` file.                                               |
+| `print`           | `(options?: PrintExportOptions<T>) => Promise<void>` | Open the browser's print dialog with a table laid out for paper.    |
 | `copyToClipboard` | `() => Promise<void>`                              | Copy selected rows as tab-separated text, or the focused cell's text. |
 
 ## Export
@@ -942,7 +943,8 @@ gridRef.current?.toggleSort("salary");
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CSV    | UTF-8 with a byte order mark so Excel opens it correctly. Uses display text (`format`). Text starting with `=`, `+`, `-` or `@` is prefixed with `'` so spreadsheets don't run it as a formula. |
 | Excel  | A real `.xlsx` file: numbers, booleans and dates keep their types, the header row is bold and frozen, with auto-filter and column widths. No library is needed.                                 |
-| PDF    | Opens the browser's print dialog with a table laid out for paper; choose "Save as PDF". Suitable for up to a few thousand rows.                                                                 |
+| PDF    | A real `.pdf` file, written by the grid: chosen paper size and orientation, a repeated header row, page numbers and your own header and footer. Uses the standard PDF fonts, so nothing is embedded and text must be Latin-1 (see below). No library is needed.  |
+| Print  | `api.print()` opens the browser's print dialog instead, for paper or for text the standard fonts cannot encode.                                                                                 |
 
 Exports include the visible columns in their current order, excluding columns with `exportable: false`. Export code is only downloaded the first time someone exports.
 
@@ -952,6 +954,7 @@ gridRef.current?.exportPdf({
   title: "Employee report",
   orientation: "portrait",
   paperSize: "A4",
+  footer: { left: "Confidential", right: "Page {page} of {pages}" },
 });
 gridRef.current?.exportCsv({ rows: allRowsFromServer });
 ```
@@ -964,6 +967,39 @@ gridRef.current?.exportCsv({ rows: allRowsFromServer });
 | `title`       | `string`                                              | the file name    | PDF only: heading and default PDF file name.                                                                                         |
 | `orientation` | `"portrait"` \| `"landscape"`                         | `"landscape"`    | PDF only.                                                                                                                            |
 | `paperSize`   | `"A3"` \| `"A4"` \| `"A5"` \| `"letter"` \| `"legal"` | `"A4"`           | PDF only.                                                                                                                            |
+| `margin`      | `number`                                              | `36`             | PDF only: page margin in points, 72 to the inch.                                                                                     |
+| `fontSize`    | `number`                                              | `9`              | PDF only: body text size in points. Row height and the bands follow from it.                                                         |
+| `header`      | `PdfBand \| null`                                     | `{ left: "{title}" }` | PDF only: repeated at the top of every page. `null` removes it.                                                                 |
+| `footer`      | `PdfBand \| null`                                     | date and page numbers | PDF only: repeated at the bottom of every page. `null` removes it.                                                              |
+| `theme`       | `Partial<PdfTheme>`                                   | zinc             | PDF only: `text`, `muted`, `border`, `headerBg`, `headerText` and `stripe` as `#rrggbb`. `stripe: null` turns off row striping.      |
+
+### PDF header and footer
+
+A band has a `left`, `center` and `right` slot. Each takes plain text, with these tokens
+substituted as the page is drawn:
+
+| Token      | Becomes                          |
+| ---------- | -------------------------------- |
+| `{title}`  | The `title` option.              |
+| `{page}`   | The current page number.         |
+| `{pages}`  | The total page count.            |
+| `{date}`   | Today, in the browser's locale.  |
+| `{time}`   | Now, in the browser's locale.    |
+
+```tsx
+gridRef.current?.exportPdf({
+  title: "Q3 headcount",
+  header: { left: "{title}", right: "Acme Inc." },
+  footer: { left: "Generated {date}", right: "Page {page} of {pages}" },
+  theme: { headerBg: "#e0f2fe", stripe: null },
+});
+```
+
+<Notice message="The PDF uses Helvetica, which every viewer provides, so no font is embedded and the file stays small. That encoding covers Latin-1 and common typographic characters; anything outside it, such as Malayalam or CJK, is written as '?'. Use api.print() for those." />
+
+Cells are a single line and are clipped with an ellipsis when they do not fit, so every
+row is the same height and a page break never lands inside one. Column proportions follow
+the grid's own widths, scaled to the page.
 
 ## Keyboard Navigation
 
@@ -1087,7 +1123,8 @@ Override any text with `localeText`. Dates and numbers use the `locale` prop.
 | `export`             | `"Export"`                                                                                                     |
 | `exportCsv`          | `"CSV"`                                                                                                        |
 | `exportExcel`        | `"Excel (.xlsx)"`                                                                                              |
-| `exportPdf`          | `"PDF (print)"`                                                                                                |
+| `exportPdf`          | `"PDF (.pdf)"`                                                                                                 |
+| `print`              | `"Print…"`                                                                                                     |
 | `density`            | `"Density"`                                                                                                    |
 | `densityCompact`     | `"Compact"`                                                                                                    |
 | `densityStandard`    | `"Standard"`                                                                                                   |
@@ -1173,7 +1210,7 @@ All types (`ColumnDef`, `GridState`, `GridQuery`, `GridApi`, `SortItem`, `Column
 | `pageSettings.pageNumber` / `pageSize`                                         | `initialState={{ pagination: { pageIndex: 0, pageSize: 10 } }}`                          |
 | `enableSearch`, `enableExcelExport`, `enablePdfExport`                         | `toolbar={{ search, export }}` (both on by default)                                      |
 | `excelName`, `pdfName`                                                         | `exportFileName`, or `fileName` in `exportExcel()` / `exportPdf()`                       |
-| `pdfOptions`                                                                   | `exportPdf({ orientation, paperSize })`                                                  |
+| `pdfOptions`                                                                   | `exportPdf({ orientation, paperSize, margin, fontSize, header, footer, theme })`          |
 | `selectAll`, `onSelectRow`                                                     | `enableRowSelection`, `onStateChange` / `getSelectedRows()`                              |
 | `isFetching`                                                                   | `loading`                                                                                |
 | `rowChange` (row click)                                                        | `onRowClick`                                                                             |

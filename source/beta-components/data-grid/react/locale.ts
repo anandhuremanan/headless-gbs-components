@@ -10,6 +10,7 @@ export interface LocaleText {
   exportCsv: string;
   exportExcel: string;
   exportPdf: string;
+  print: string;
   density: string;
   densityCompact: string;
   densityStandard: string;
@@ -64,7 +65,8 @@ export const defaultLocaleText: LocaleText = {
   export: "Export",
   exportCsv: "CSV",
   exportExcel: "Excel (.xlsx)",
-  exportPdf: "PDF (print)",
+  exportPdf: "PDF (.pdf)",
+  print: "Print…",
   density: "Density",
   densityCompact: "Compact",
   densityStandard: "Standard",

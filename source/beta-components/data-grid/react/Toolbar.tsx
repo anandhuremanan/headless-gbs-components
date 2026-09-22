@@ -127,6 +127,7 @@ export function Toolbar<T>({ options, globalFilter, filters, density, columns, c
                   [locale.exportCsv, () => api.exportCsv()],
                   [locale.exportExcel, () => api.exportExcel()],
                   [locale.exportPdf, () => api.exportPdf()],
+                  [locale.print, () => api.print()],
                 ] as const
               ).map(([label, action]) => (
                 <button

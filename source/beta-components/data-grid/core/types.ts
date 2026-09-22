@@ -225,10 +225,46 @@ export interface ExportOptions<T> {
   rows?: readonly T[];
 }
 
-export interface PdfExportOptions<T> extends ExportOptions<T> {
+export type PdfPaperSize = "A3" | "A4" | "A5" | "letter" | "legal";
+
+/**
+ * A repeating page band. Each slot takes plain text with `{title}`, `{page}`,
+ * `{pages}`, `{date}` and `{time}` substituted as the page is drawn.
+ */
+export interface PdfBand {
+  left?: string;
+  center?: string;
+  right?: string;
+}
+
+/** Colors for the generated PDF, as `#rgb` or `#rrggbb`. */
+export interface PdfTheme {
+  text: string;
+  /** Header and footer bands. */
+  muted: string;
+  border: string;
+  headerBg: string;
+  headerText: string;
+  /** Every other body row, or null for no striping. */
+  stripe: string | null;
+}
+
+export interface PrintExportOptions<T> extends ExportOptions<T> {
   title?: string;
   orientation?: "portrait" | "landscape";
-  paperSize?: "A3" | "A4" | "A5" | "letter" | "legal";
+  paperSize?: PdfPaperSize;
+}
+
+export interface PdfExportOptions<T> extends PrintExportOptions<T> {
+  /** Page margin in points. 72 points to the inch; defaults to 36. */
+  margin?: number;
+  /** Body text size in points; defaults to 9. */
+  fontSize?: number;
+  /** Top of every page. Defaults to the title on the left; null removes it. */
+  header?: PdfBand | null;
+  /** Bottom of every page. Defaults to date and page numbers; null removes it. */
+  footer?: PdfBand | null;
+  theme?: Partial<PdfTheme>;
 }
 
 export interface GridOptions<T> {

@@ -24,6 +24,7 @@ import type {
   GridRow,
   GridState,
   PdfExportOptions,
+  PrintExportOptions,
   PinSide,
   ResolvedColumn,
   RowId,
@@ -105,7 +106,10 @@ export interface GridApi<T> {
   getRows(scope?: ExportScope): T[];
   exportCsv(options?: ExportOptions<T>): Promise<void>;
   exportExcel(options?: ExportOptions<T>): Promise<void>;
+  /** Renders a PDF and downloads it. No print dialog, no browser pagination. */
   exportPdf(options?: PdfExportOptions<T>): Promise<void>;
+  /** Opens the browser's print dialog with the table laid out for paper. */
+  print(options?: PrintExportOptions<T>): Promise<void>;
   /** Copies selected rows as TSV, or the active cell when nothing is selected. */
   copyToClipboard(): Promise<void>;
 }
@@ -551,6 +555,24 @@ export function createGridEngine<T>(initialOptions: GridOptions<T>) {
       downloadBlob(createXlsxBlob(table), `${fileName(exportOptions)}.xlsx`);
     },
     async exportPdf(exportOptions = {}) {
+      const [{ createPdfBlob }, { downloadBlob }, table] = await Promise.all([
+        import("../export/pdf"),
+        import("../export/download"),
+        buildTable(exportOptions),
+      ]);
+      const blob = await createPdfBlob(table, {
+        title: exportOptions.title ?? fileName(exportOptions),
+        orientation: exportOptions.orientation ?? "landscape",
+        paperSize: exportOptions.paperSize ?? "A4",
+        margin: exportOptions.margin,
+        fontSize: exportOptions.fontSize,
+        header: exportOptions.header,
+        footer: exportOptions.footer,
+        theme: exportOptions.theme,
+      });
+      downloadBlob(blob, `${fileName(exportOptions)}.pdf`);
+    },
+    async print(exportOptions = {}) {
       const [{ printTable }, table] = await Promise.all([
         import("../export/pdf"),
         buildTable(exportOptions),

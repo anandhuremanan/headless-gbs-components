@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v2.0.0)
+# GBS Building Blocks 2.0 (v2.0.1)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -10,7 +10,7 @@ For detailed documentation on usage and props, Please visit: [Building Block Doc
 
 New 2.0.0 beta (current version) is available for testing and feedback, Please visit: [Building Block Documentation v2.0.0 beta](https://gramprokit.vercel.app)
 
-## What's New 🎉 (Ver 2.0.0)
+## What's New 🎉 (Ver 2.0.1)
 
 - Update Candidate for next major change 2.0.0
 
