@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd demo-showroom && pnpm install --frozen-lockfile",
+  "buildCommand": "cd demo-showroom && pnpm build",
+  "outputDirectory": "demo-showroom/dist",
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
+  ]
+}
