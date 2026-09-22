@@ -1,0 +1,185 @@
+---
+title: "Switch"
+description: "A setting that takes effect as it is flipped, on a native checkbox with role=switch, with optimistic saving that puts itself back when the save fails."
+group: "Inputs"
+order: 20
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Switch -beta
+```
+
+The block copies the `switch` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `color-mix()` and `:dir()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/switch/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/switch/styles.css";
+```
+
+A Switch is a setting that takes effect the moment it is flipped: notifications on, dark mode off, this integration connected. The control is the browser's own `<input type="checkbox">` carrying `role="switch"`, restyled as a track and a thumb. Forms post it, form libraries register it, and screen readers announce it as "on" or "off" rather than "checked".
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<SwitchWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { Switch } from "@/components/switch";
+
+export default function Settings() {
+  const [notify, setNotify] = useState(true);
+
+  return (
+    <Switch
+      label="Email notifications"
+      description="About once a month. Unsubscribe any time."
+      checked={notify}
+      onCheckedChange={setNotify}
+    />
+  );
+}
+```
+
+Controlled with `checked` + `onCheckedChange`, or uncontrolled with `defaultChecked`.
+
+## Switch or Checkbox?
+
+| Use a | When |
+| --- | --- |
+| **Switch** | Flipping it *is* the action. The setting applies immediately, and there is no Save button to press afterwards. |
+| **Checkbox** | The value is part of a form that is submitted later, or the question is "is this true?" rather than "turn this on". |
+
+Anything with a Save button below it wants checkboxes. A settings page where each row takes effect on its own wants switches.
+
+## Saving
+
+A switch that saves to a server has three states to get right, and `onCheckedChange` handles all of them if it returns a promise:
+
+```tsx
+<Switch
+  label="Two-factor authentication"
+  checked={enabled}
+  onCheckedChange={(next) => api.setTwoFactor(next)}
+/>
+```
+
+- **It moves at once.** Waiting for the server before moving makes the control feel broken, so the switch shows the new setting immediately.
+- **It says it is busy.** The thumb turns, `aria-busy` goes on, and further presses are ignored until the answer arrives, so a slow save cannot be double-submitted.
+- **A failure puts it back.** If the promise rejects, the switch returns to the value from before the press — not to the opposite of what is on screen, which is a different thing once anything else has changed the value in between.
+
+A request that is overtaken by a newer one is ignored when it finally answers, so a slow failure cannot drag a newer setting back with it.
+
+Use `loading` to show the same busy state from outside, for instance while a whole form saves.
+
+<Notice message="Handle the rejection where the promise comes from if you want to tell the user why it failed. The switch returns itself to where it was; it does not know what went wrong, and it will not show a message of its own." />
+
+## Props Table
+
+Accepts every `<input>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `checked` | `boolean` | — | On or off (controlled). |
+| `defaultChecked` | `boolean` | `false` | On or off at first (uncontrolled). |
+| `onCheckedChange` | `(checked: boolean) => void \| Promise<unknown>` | — | Fires with the new state. Return a promise for the saving behaviour above. |
+| `onChange` | `ChangeEventHandler` | — | The native change event, for form libraries. |
+| `value` | `string` | `"on"` | Posted with the form when the switch is on. |
+| `label` | `ReactNode` | — | The setting's name. |
+| `description` | `ReactNode` | — | A line under the label, wired up with `aria-describedby`. |
+| `error` | `ReactNode` | — | Announced with `role="alert"`, and marks the control invalid. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Track 28 / 36 / 44 px wide. |
+| `labelPosition` | `"end"` \| `"start"` | `"end"` | `start` puts the label first and the switch against the far edge — a settings row. |
+| `loading` | `boolean` | `false` | Show the busy state and ignore presses. |
+| `readOnly` | `boolean` | `false` | Visible and announced, but it does not move. |
+| `disabled` | `boolean` | `false` | Dimmed and out of the tab order. |
+| `classNames` | `Partial<Record<SwitchSlot, string>>` | — | `root` `control` `input` `track` `thumb` `label` `description` `error` |
+| `localeText` | `Partial<SwitchLocaleText>` | — | `saving` |
+| `ref` | `Ref<HTMLInputElement>` | — | The `<input>` element. |
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **Space** | Toggle. |
+| **→** | Turn on (**←** in right-to-left layouts). |
+| **←** | Turn off (**→** in right-to-left layouts). |
+
+The arrows set a side rather than toggling, which is the ARIA switch pattern: pressing → twice leaves it on.
+
+Accessibility: `role="switch"` with `aria-checked` from the native checked state, `aria-busy` while saving, `aria-readonly` when read-only, and `aria-describedby` wired to the description and the error. The fact that a save is running is announced once through a `role="status"` line; the switch's own state announces itself.
+
+<Notice message="A switch needs a label naming the setting, not the state. 'Email notifications' reads as 'Email notifications, switch, on'. A label reading 'On' would read as 'On, switch, on'." />
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+```tsx
+<Switch className="w-full" classNames={{ label: "font-semibold" }} label="…" />
+```
+
+#### CSS variables
+
+Override them on `.sw-root`, on `:root`, or through `style`. Each falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--sw-width`, `--sw-height`, `--sw-gap` | The track and the space around the thumb (set by `size`). |
+| `--sw-track` | The track when off. |
+| `--sw-accent` | The track when on. |
+| `--sw-thumb` | The thumb. |
+| `--sw-fg`, `--sw-muted` | Label, description. |
+| `--sw-focus` | Focus ring. |
+| `--sw-danger` | Error text and the invalid outline. |
+| `--sw-duration` | The thumb's travel (`160ms`). |
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.sw-root`) | `data-size`, `data-label-position`, `data-disabled`, `data-readonly`, `data-saving`, `data-invalid` |
+
+The thumb moves with `translate`, mirrored by `:dir(rtl)`, so right-to-left layouts need no extra work. Under `prefers-reduced-motion` the travel is instant and the saving spinner slows to one turn every two seconds.
+
+## Headless Use
+
+The saving behaviour is a small state machine in the framework-free `core`, and can be driven from any UI:
+
+| Export | Description |
+| --- | --- |
+| `idleToggle(checked)` | A settled state. |
+| `request(state, next)` | Shows `next` and remembers what to return to. |
+| `settle(state, requested, saved)` | Applies an outcome, ignoring one that has been overtaken. |
+| `adopt(state, checked)` | A controlled value arriving from outside wins. |
+
+## Next.js
+
+The component is a client component: `"use client"` is at the top of the file. It renders its state on the server, so a settings page paints with every switch already in the right position.
+
+`onCheckedChange` is a function, so it cannot be passed from a Server Component. Put the state in a small client component, or pass a server action to a client wrapper that calls it.
+
+#### Notes
+
+- A switch with no `label` needs an `aria-label`; a control announced only as "switch, on" says nothing about what it controls.
+- `readOnly` has no effect on a native checkbox, so the component undoes the change itself and announces `aria-readonly`. Use `disabled` when the setting is not merely fixed but unavailable.

@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "ES2020"
+    ],
+    "module": "none",
+    "outFile": "dist/code.js",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@figma"
+    ],
+    "skipLibCheck": true
+  },
+  "files": [
+    "src/tokens.ts",
+    "src/lib.ts",
+    "src/foundations.ts",
+    "src/actions.ts",
+    "src/forms.ts",
+    "src/controls.ts",
+    "src/overlays.ts",
+    "src/surfaces.ts",
+    "src/display.ts",
+    "src/main.ts"
+  ]
+}

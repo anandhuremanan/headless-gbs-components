@@ -1,0 +1,308 @@
+---
+title: "Input"
+description: "Input and OtpInput — a text field with label, hint, error and adornments, plus a one-time-code field phones can fill from an SMS."
+group: "Inputs"
+order: 3
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Input -beta
+```
+
+The block copies the `input` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `color-mix()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/input/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/input/styles.css";
+```
+
+`Input` is a text field with a label, hint and error message, and optional icons or text before and after the value. It can also have a clear button, a show-password button and a character counter. Every other prop — `name`, `type`, `required`, `pattern`, `autoComplete`, `onBlur` — goes straight to the `<input>`, so it works with native forms and form libraries unchanged.
+
+`OtpInput` collects one-time codes, such as the six digits from an SMS or an authenticator app. It looks like a row of boxes but is a single real input. Phones can fill it from the SMS automatically, pasting "Your code is 123-456" works, and screen readers announce one field instead of six.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Input
+
+<InputWrapperBeta />
+
+#### OtpInput
+
+<OtpInputWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Input, OtpInput } from "@/components/input";
+
+export default function SignIn() {
+  const [email, setEmail] = useState("");
+
+  return (
+    <form action="/sign-in" method="post">
+      <Input label="Email" name="email" type="email" value={email} onValueChange={setEmail} required clearable />
+      <Input label="Password" name="password" type="password" autoComplete="current-password" required />
+      <OtpInput label="Code from your authenticator" name="code" onComplete={(code) => console.log(code)} />
+      <button type="submit">Sign in</button>
+    </form>
+  );
+}
+```
+
+Both are controlled with `value` + `onValueChange` (which receives the string), or uncontrolled with `defaultValue`. The native `onChange` still fires with the event.
+
+## Props Table
+
+### Input
+
+Accepts every `<input>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — | Text (controlled). |
+| `defaultValue` | `string` | — | Starting text (uncontrolled). |
+| `onValueChange` | `(value: string) => void` | — | New text on every change. |
+| `label` | `ReactNode` | — | Label above the field, linked with `htmlFor`. |
+| `description` | `ReactNode` | — | Hint under the field. |
+| `error` | `ReactNode` | — | Error under the field; also sets `aria-invalid` and a red border. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Height and font size (30 / 36 / 44 px). |
+| `leading` | `ReactNode` | — | Before the text: an icon, or text such as `https://`. |
+| `trailing` | `ReactNode` | — | After the text: a unit such as `kg`, or an icon. |
+| `clearable` | `boolean` | `false` | A button that empties the field while it has text. |
+| `revealPassword` | `boolean` | `true` | For `type="password"`, a button that shows the text. |
+| `showCount` | `boolean` | `false` | Character counter; shows `count / maxLength` when `maxLength` is set. |
+| `className` | `string` | — | Class for the wrapper. |
+| `classNames` | `Partial<Record<InputSlot, string>>` | — | Slots: `root`, `label`, `control`, `input`, `description`, `error`, `count`. |
+| `style` | `CSSProperties` | — | Inline style for the wrapper. |
+| `localeText` | `Partial<InputLocaleText>` | English | See [Locale Text](#locale-text). |
+| `ref` | `Ref<HTMLInputElement>` | — | The `<input>` element. |
+
+### OtpInput
+
+Accepts `<input>` attributes such as `name`, `required`, `disabled`, `autoFocus` and `onBlur`, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `length` | `number` | `6` | Number of characters. |
+| `mode` | `"numeric"` \| `"alphanumeric"` \| `"alphabetic"` | `"numeric"` | Accepted characters. `numeric` shows the phone's number pad. |
+| `uppercase` | `boolean` | `false` | Turn letters into capitals as they are typed. |
+| `value` | `string` | — | Code (controlled). |
+| `defaultValue` | `string` | — | Starting code (uncontrolled). |
+| `onValueChange` | `(value: string) => void` | — | The code after every change, with invalid characters removed. |
+| `onComplete` | `(value: string) => void` | — | Every cell is filled. A good place to verify. |
+| `groups` | `number[]` | — | Group sizes with a separator between them, e.g. `[3, 3]` or `[4, 4]`. |
+| `mask` | `boolean` | `false` | Show dots instead of characters, e.g. for PINs. |
+| `autoComplete` | `string` | `"one-time-code"` | Lets phones offer the code from an SMS. |
+| `label`, `description`, `error` | `ReactNode` | — | As on `Input`. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Cell size (34 / 42 / 50 px). |
+| `className`, `classNames`, `style` | — | — | Slots: `root`, `label`, `cells`, `cell`, `separator`, `description`, `error`. |
+| `localeText` | `Partial<InputLocaleText>` | English | `otpLabel` names the field when there's no `label`. |
+| `ref` | `Ref<HTMLInputElement>` | — | The real `<input>`. |
+
+## Adornments
+
+```tsx
+<Input label="Search" leading={<SearchIcon />} clearable />
+<Input label="Website" leading="https://" />
+<Input label="Weight" type="number" trailing="kg" />
+```
+
+Clicking an adornment or the field's padding focuses the text, as with a native field. Adornments are rendered as given, so pass `aria-hidden` on decorative icons.
+
+## Passwords
+
+`type="password"` adds a show/hide button (`revealPassword={false}` removes it). The button is a toggle (`aria-pressed`) and names its action for screen readers. Set `autoComplete` so password managers know what to fill: `current-password` for sign-in, `new-password` for sign-up.
+
+## Character Count
+
+```tsx
+<Input label="Headline" maxLength={60} showCount />
+```
+
+The counter counts characters the way people see them, so an emoji or an accented letter counts as one. `maxLength` is still enforced by the browser. If a value set from code is longer, the counter turns red.
+
+## One-Time Codes
+
+```tsx
+<OtpInput
+  label="Verification code"
+  groups={[3, 3]}
+  value={code}
+  onValueChange={setCode}
+  onComplete={async (code) => {
+    const ok = await verify(code);
+    if (!ok) setError("That code isn't right.");
+  }}
+  error={error}
+/>
+```
+
+- **Autofill:** with `autoComplete="one-time-code"` (the default), iOS and Android offer the code from an incoming SMS. Password managers that store TOTP codes can fill it too.
+- **Paste:** pasting anything keeps the valid characters, so "Your code: 123-456" becomes `123456`.
+- **Editing:** once every cell is filled, the arrow keys move between cells and typing replaces the character in the highlighted cell. Backspace removes it.
+- **Forms:** the field has a `pattern` matching a full code, so `required` makes the browser block submitting a partial code. `name` posts the code.
+- **Letters:** use `mode="alphanumeric"` with `uppercase` for backup and recovery codes.
+
+## Forms and Form Libraries
+
+Both components pass their props to a real input and forward `ref` to it, so they register like native inputs:
+
+```tsx
+// react-hook-form
+<Input label="Email" {...register("email", { required: true })} error={errors.email?.message} />
+```
+
+```tsx
+// Server Action
+<form action={signUp}>
+  <Input label="Company" name="company" required />
+  <OtpInput label="Invite code" name="invite" length={8} mode="alphanumeric" uppercase required />
+</form>
+```
+
+The clear button empties the field by firing a real `input` event, so `onChange` and form libraries see the change.
+
+## Imperative API (ref)
+
+`ref` gives you the `<input>` element itself:
+
+```tsx
+const input = useRef<HTMLInputElement>(null);
+
+<Input ref={input} label="Name" />;
+
+input.current?.focus();
+input.current?.select();
+```
+
+`setNativeValue(input, value)` is exported to set a value from code the way typing does, so React and form libraries notice.
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| typing, paste | Enter text; in `OtpInput`, invalid characters are dropped. |
+| **Tab** | Move to the show-password button (the clear button is skipped, as in native search fields). |
+| **←** / **→**, **Home** / **End** | `OtpInput` with a full code: move between cells. |
+| **Backspace** | `OtpInput`: remove the character before the caret, or the highlighted one. |
+
+Accessibility: labels are real `<label>` elements. The description and error are linked through `aria-describedby`, and errors are announced with `role="alert"`. `OtpInput` is one labelled field: screen readers hear "Verification code, edit text", not six unlabeled boxes. The cells are decorative (`aria-hidden`).
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Input classNames={{ control: "rounded-full", input: "tracking-wide" }} />
+<OtpInput classNames={{ cell: "rounded-full" }} />
+```
+
+#### CSS variables
+
+Override them on `.in-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--in-height` | Field height (set by `size`). |
+| `--in-px` | Horizontal padding. |
+| `--in-cell` | OTP cell width (set by `size`). |
+| `--in-font-size` | Font size. |
+| `--in-bg`, `--in-fg` | Background and text color. |
+| `--in-input-bg` | Field and cell background. |
+| `--in-readonly-bg` | Background when `readOnly`. |
+| `--in-muted` | Placeholder, adornments, hints and the counter. |
+| `--in-border` | Borders. |
+| `--in-hover` | Hover background of icon buttons. |
+| `--in-focus` | Focus ring. |
+| `--in-danger` | Errors. |
+| `--in-radius` | Corner radius. |
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.in-root`) | `data-size`, `data-disabled`, `data-invalid` |
+| Control (`.in-control`) | `data-disabled`, `data-readonly`, `data-invalid` |
+| Adornment (`.in-adornment`) | `data-side` (`leading` / `trailing`) |
+| Counter (`.in-count`) | `data-over` |
+| OTP cells (`.in-otp`) | `data-focused`, `data-disabled`, `data-invalid` |
+| OTP cell (`.in-otp-cell`) | `data-active`, `data-filled` |
+
+## Locale Text
+
+```tsx
+<Input
+  localeText={{
+    clear: "Löschen",
+    showPassword: "Passwort anzeigen",
+    hidePassword: "Passwort verbergen",
+    characterCount: (count, max) => (max ? `${count} von ${max}` : count),
+  }}
+/>
+```
+
+| Key | Default |
+| --- | --- |
+| `clear` | `"Clear"` |
+| `showPassword` / `hidePassword` | `"Show password"` / `"Hide password"` |
+| `characterCount` | `(count, max) => "{count} / {max}"`, or just the count |
+| `otpLabel` | `"Verification code"` |
+
+## Headless Use
+
+The rules the components use are exported from the framework-free `@/components/input/core`:
+
+| Export | Description |
+| --- | --- |
+| `countCharacters(text)` | Characters as people count them (`Intl.Segmenter`). |
+| `sanitizeOtp(text, length, mode?, uppercase?)` | Keeps a code's valid characters, up to `length`. |
+| `otpPattern(mode, length)` / `otpInputMode(mode)` | The `pattern` and `inputMode` for a code field. |
+| `separatorsAfter(groups, length)` | Where group separators go. |
+| `activeCell(valueLength, length, caret)` / `cellAt(bounds, x)` | Which cell shows the caret, and which one was clicked. |
+
+Validate a code on the server with the same rule: `sanitizeOtp(body.code, 6) === body.code`.
+
+## Next.js
+
+Both are client components, with `"use client"` already at the top of their files. They render the same markup on the server and the client, so they don't cause hydration mismatches, and they work inside Server Action forms through `name`.
+
+## Migrating from the Previous Text Box
+
+| Previous | New |
+| --- | --- |
+| `Textbox` | `Input` |
+| `type`, `value`, `disabled`, `required`, `name`, `placeholder`, `id`, `min`, `step`, `className` | Same names (passed to the `<input>`; `className` styles the wrapper) |
+| `label` | Same name; now a real `<label>` linked to the field |
+| `onChange(event)` | Same, plus `onValueChange(value)` for the string |
+| OTP styles in `globalStyle.ts` (`inputStyles.otp`, `otpContainer`) | `<OtpInput>` |
+| Password toggle styles (`inputStyles.passwordToggle`) | Built in for `type="password"` (`revealPassword`) |
+| Tailwind class strings in `globalStyle.ts` | `styles.css` with `--in-*` variables, `classNames` slots and `data-*` attributes |
+| — | New: `description`, `error`, `size`, `leading`, `trailing`, `clearable`, `showCount`, `ref` to the element |
+
+#### Notes
+
+- `clearable` and `showCount` follow the value typed into the field. If a form library changes the value directly on the element without firing an input event (some `reset()` calls do), pass `value` to keep them in sync.
+- `OtpInput` codes are left to right, even in right-to-left layouts, which is how codes are read aloud and typed.

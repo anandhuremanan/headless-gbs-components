@@ -1,0 +1,433 @@
+---
+title: "Date Picker"
+description: "DatePicker and DateRangePicker — a text field people can type into, plus a calendar that works from the keyboard."
+group: "Inputs"
+order: 7
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a DatePicker -beta
+```
+
+The block copies the `date-picker` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `:has()` and the Popover API)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/date-picker/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/date-picker/styles.css";
+```
+
+`DatePicker` selects one date and `DateRangePicker` selects a start and an end. Both are a text field plus a calendar: people can type a date in their own date order or pick one, and the whole calendar works from the keyboard. They share one engine, one stylesheet and one set of keyboard rules. The calendar renders in the browser's top layer, so it is never clipped by a scrolling parent — including inside a DataGrid cell.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### DatePicker
+
+<DatePickerWrapperBeta />
+
+#### DateRangePicker
+
+<DateRangePickerWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import {
+  DatePicker,
+  DateRangePicker,
+  type DateRange,
+} from "@/components/date-picker";
+
+export default function Example() {
+  const [date, setDate] = useState<Date | null>(null);
+  const [range, setRange] = useState<DateRange>({ start: null, end: null });
+
+  return (
+    <>
+      <DatePicker label="Delivery date" value={date} onChange={setDate} />
+
+      <DateRangePicker
+        label="Reporting period"
+        value={range}
+        onChange={setRange}
+      />
+    </>
+  );
+}
+```
+
+Both components are controlled with `value` + `onChange`, or uncontrolled with `defaultValue`. The range picker also reports whether the range is finished:
+
+```tsx
+<DateRangePicker onChange={(range, complete) => complete && refetch(range)} />
+```
+
+<Notice message="Pass locale explicitly when you render on a server. Without it the component uses the runtime's locale, and a server whose locale differs from the browser's would format the field differently on the first paint." />
+
+## Values and Formatting
+
+`value`, `defaultValue`, `min` and `max` accept a `Date`, an ISO `yyyy-mm-dd` string or a timestamp. `onChange` always gives back `Date` objects.
+
+```ts
+type DateInput = Date | string | number;
+
+interface DateRange {
+  start: Date | null;
+  end: Date | null;
+}
+```
+
+Every date is a **local date at midnight**, so a day never shifts across time zones. ISO strings are read as local days, not UTC — the mistake behind "my date is one day off" bugs.
+
+The field's text comes from `format`, which takes `Intl` options or your own function:
+
+```tsx
+<DatePicker format={{ dateStyle: "medium" }} />
+<DatePicker format={(date) => date.toISOString().slice(0, 10)} />
+```
+
+Store values with `toISODate(date)` (from the same package) rather than `toISOString()`, which converts to UTC first.
+
+## Props Table
+
+### Shared
+
+| Prop              | Type                                                       | Default                                               | Description                                                                                               |
+| ----------------- | ---------------------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `min` / `max`     | `DateInput`                                                | —                                                     | Earliest and latest selectable day. Arrows and panels stop there.                                         |
+| `isDateDisabled`  | `(date: Date) => boolean`                                  | —                                                     | Called per rendered day; return `true` to block it (weekends, holidays).                                  |
+| `locale`          | `string`                                                   | runtime locale                                        | BCP-47 tag. Sets month names, the typing order and the first day of the week.                             |
+| `weekStartsOn`    | `0`–`6`                                                    | the locale's first day                                | `0` is Sunday.                                                                                            |
+| `format`          | `Intl.DateTimeFormatOptions` \| `(date, locale) => string` | `{ year: "numeric", month: "short", day: "numeric" }` | How the chosen date is written in the field.                                                              |
+| `numberOfMonths`  | `number`                                                   | `1` (range: `2`)                                      | Months shown side by side.                                                                                |
+| `showWeekNumbers` | `boolean`                                                  | `false`                                               | Adds a leading ISO week-number column.                                                                    |
+| `showToday`       | `boolean`                                                  | `true` (range: `false`)                               | The "Today" shortcut in the footer.                                                                       |
+| `allowInput`      | `boolean`                                                  | `true`                                                | Let people type. When `false` the field is read-only and opens on click.                                  |
+| `fixedWeeks`      | `boolean`                                                  | `true`                                                | Always six week rows, so the popover never changes height.                                                |
+| `label`           | `ReactNode`                                                | —                                                     | Field label above the control.                                                                            |
+| `placeholder`     | `string`                                                   | the locale's pattern                                  | Defaults to `dd/mm/yyyy`, `mm/dd/yyyy`, … to match `locale`.                                              |
+| `description`     | `ReactNode`                                                | —                                                     | Hint below the control.                                                                                   |
+| `error`           | `ReactNode`                                                | —                                                     | Error message below the control; also marks the control invalid.                                          |
+| `required`        | `boolean`                                                  | `false`                                               | Marks the label and the input.                                                                            |
+| `disabled`        | `boolean`                                                  | `false`                                               | Blocks opening, typing and clearing.                                                                      |
+| `readOnly`        | `boolean`                                                  | `false`                                               | Shows the value but blocks changes.                                                                       |
+| `clearable`       | `boolean`                                                  | `true`                                                | Show the clear button when something is selected.                                                         |
+| `size`            | `"sm"` \| `"md"` \| `"lg"`                                 | `"md"`                                                | Control height and font size (30 / 36 / 44 px).                                                           |
+| `name`            | `string`                                                   | —                                                     | Posts `yyyy-mm-dd` in a hidden input. See [Forms](#forms).                                                |
+| `id`              | `string`                                                   | generated                                             | Id of the input; also the base for the popover and message ids.                                           |
+| `onOpenChange`    | `(open: boolean) => void`                                  | —                                                     | Fires when the calendar opens or closes.                                                                  |
+| `className`       | `string`                                                   | —                                                     | Class for the root element.                                                                               |
+| `classNames`      | `Partial<Record<DatePickerSlot, string>>`                  | —                                                     | Classes per slot: `root`, `label`, `control`, `input`, `popover`, `calendar`, `day`, `footer`, `presets`. |
+| `style`           | `CSSProperties`                                            | —                                                     | Inline style for the root element (e.g. CSS variables).                                                   |
+| `localeText`      | `Partial<DatePickerLocaleText>`                            | English                                               | Overrides UI text. See [Locale Text](#locale-text).                                                       |
+| `ref`             | `Ref<DatePickerHandle<T>>`                                 | —                                                     | Imperative API. See [Imperative API](#imperative-api-ref).                                                |
+
+### DatePicker
+
+| Prop            | Type                           | Default | Description                                                       |
+| --------------- | ------------------------------ | ------- | ----------------------------------------------------------------- |
+| `value`         | `DateInput` \| `null`          | —       | Selected date (controlled).                                       |
+| `defaultValue`  | `DateInput` \| `null`          | `null`  | Starting date (uncontrolled).                                     |
+| `onChange`      | `(date: Date \| null) => void` | —       | Fires on choose, on clear (`null`) and while a typed date parses. |
+| `closeOnSelect` | `boolean`                      | `true`  | Close the calendar after choosing.                                |
+
+### DateRangePicker
+
+| Prop            | Type                                            | Default | Description                                                         |
+| --------------- | ----------------------------------------------- | ------- | ------------------------------------------------------------------- |
+| `value`         | `{ start, end }`                                | —       | Selected range (controlled). Each end is a `DateInput` or `null`.   |
+| `defaultValue`  | `{ start, end }`                                | empty   | Starting range (uncontrolled).                                      |
+| `onChange`      | `(range: DateRange, complete: boolean) => void` | —       | `complete` is `false` after the first of the two clicks.            |
+| `presets`       | `DatePreset[]`                                  | —       | Shortcuts beside the calendar. See [Range Presets](#range-presets). |
+| `closeOnSelect` | `boolean`                                       | `true`  | Close once both ends are chosen.                                    |
+
+## Typed Entry
+
+People can type instead of picking, and the calendar follows along as they type.
+
+- Numbers are read in the **locale's own field order**: `03/04/2026` is 3 April in `en-GB` and 4 March in `en-US`.
+- ISO (`2026-03-12`) is accepted in every locale.
+- Month names work, long or short: `12 Mar 2026`, `March 12, 2026`.
+- A missing year falls back to the year on screen, and a lone number is a day in the visible month: `15/8` and `5`.
+- Two-digit years use the usual pivot: `26` is 2026, `95` is 1995.
+- Separators are free: `/`, `-`, `.` or spaces.
+
+Text that isn't a date, or a date outside `min` / `max`, shows a message when the field loses focus and leaves the value untouched. Set `allowInput={false}` for a pick-only field.
+
+## Limits and Blocked Days
+
+```tsx
+<DatePicker
+  min="2026-01-01"
+  max={new Date(2026, 11, 31)}
+  isDateDisabled={(day) => day.getDay() === 0 || day.getDay() === 6}
+/>
+```
+
+`min` / `max` stop the arrows, the month and year panels and typed entry. `isDateDisabled` blocks individual days: they stay visible but cannot be chosen. Keep the function stable (module level or `useMemo`) so the months are not rebuilt on every render.
+
+## Range Presets
+
+```tsx
+import {
+  addDays,
+  startOfMonth,
+  type DatePreset,
+} from "@/components/date-picker";
+
+const presets: DatePreset[] = [
+  {
+    label: "Last 7 days",
+    range: { start: addDays(new Date(), -6), end: new Date() },
+  },
+  {
+    label: "This month",
+    range: { start: startOfMonth(new Date()), end: new Date() },
+  },
+];
+
+<DateRangePicker presets={presets} value={range} onChange={setRange} />;
+```
+
+Picking a range takes two clicks: the first sets the start, the second the end, with a preview band in between. Clicking in reverse order is fine — the range is put the right way round. A third click starts a new range.
+
+## Forms
+
+With a `name`, the value posts as a hidden input so `FormData` and server actions pick it up. Dates post as `yyyy-mm-dd`; the range posts two fields:
+
+```tsx
+<form
+  onSubmit={(event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    console.log(data.get("invoice")); // "2026-03-12"
+    console.log(data.get("period-start"), data.get("period-end"));
+  }}
+>
+  <DatePicker name="invoice" label="Invoice date" required error={error} />
+  <DateRangePicker name="period" label="Period" />
+  <button type="submit">Save</button>
+</form>
+```
+
+`error` shows a message below the control, colors the border and sets `aria-invalid`. Validation is yours; the component only displays the state.
+
+## Imperative API (ref)
+
+```tsx
+const picker = useRef<DatePickerHandle<Date | null>>(null);
+
+<DatePicker ref={picker} />;
+
+picker.current?.open();
+```
+
+| Method     | Signature            | Description                                      |
+| ---------- | -------------------- | ------------------------------------------------ |
+| `open`     | `() => void`         | Open the calendar.                               |
+| `close`    | `() => void`         | Close the calendar.                              |
+| `toggle`   | `() => void`         | Open or close.                                   |
+| `focus`    | `() => void`         | Focus the field without opening.                 |
+| `clear`    | `() => void`         | Remove the selection.                            |
+| `getValue` | `() => Date \| null` | Selected date. `DateRange` for the range picker. |
+
+## Keyboard
+
+| Keys                            | Action                                                 |
+| ------------------------------- | ------------------------------------------------------ |
+| **Enter**, **↓**                | Open the calendar from the field.                      |
+| **←** / **→**                   | Previous / next day. Swapped in right-to-left layouts. |
+| **↑** / **↓**                   | Same weekday, previous / next week.                    |
+| **Home** / **End**              | First / last day of the displayed week.                |
+| **Page Up** / **Page Down**     | Previous / next month.                                 |
+| **Shift + Page Up / Page Down** | Previous / next year.                                  |
+| **Enter**, **Space**            | Choose the focused day.                                |
+| **Escape**                      | Close and return focus to the calendar button.         |
+| **Tab**                         | Leave the calendar; it closes.                         |
+
+Accessibility: each month is a `table role="grid"` where only the focused day is tabbable, which is the WAI-ARIA pattern for a date picker. Days carry a full spoken label ("Thursday, 12 March 2026"), today is `aria-current="date"`, selected days are `aria-selected`, and the calendar is a `role="dialog"` labelled by `calendarLabel`. Changes are announced through a status region.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<DatePicker
+  className="max-w-sm"
+  classNames={{ control: "shadow-sm", day: "font-mono" }}
+/>
+```
+
+#### CSS variables
+
+Override them on `.dp-root`, on any ancestor, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable                                 | Used for                                     |
+| ---------------------------------------- | -------------------------------------------- |
+| `--dp-font-size`                         | Base font size.                              |
+| `--dp-height`                            | Control height (set by `size`).              |
+| `--dp-px`                                | Horizontal padding inside the control.       |
+| `--dp-day-size`                          | Width and height of a day cell.              |
+| `--dp-bg`, `--dp-fg`                     | Background and text color.                   |
+| `--dp-muted`                             | Placeholder, weekday names and outside days. |
+| `--dp-border`                            | Borders and separators.                      |
+| `--dp-hover`                             | Hover background of days and buttons.        |
+| `--dp-input-bg`                          | Field background.                            |
+| `--dp-accent`, `--dp-accent-fg`          | Selected day and today's outline.            |
+| `--dp-accent-soft`, `--dp-accent-strong` | The band between the two ends of a range.    |
+| `--dp-focus`                             | Focus ring.                                  |
+| `--dp-danger`                            | Error state.                                 |
+| `--dp-shadow`                            | Calendar shadow.                             |
+| `--dp-radius`                            | Corner radius.                               |
+
+```css
+.dp-root {
+  --dp-accent: #7c3aed;
+  --dp-day-size: 38px;
+}
+```
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+| Element                              | Attributes                                                    |
+| ------------------------------------ | ------------------------------------------------------------- |
+| Root (`.dp-root`)                    | `data-size`, `data-state` (`open` / `closed`), `data-invalid` |
+| Control (`.dp-control`)              | `data-disabled`, `data-invalid`                               |
+| Day (`.dp-day`)                      | `data-today`, `data-selected`, `data-outside`, `data-weekend` |
+| Day cell (`.dp-cell`)                | `data-in-range`, `data-range-start`, `data-range-end`         |
+| Month / year item (`.dp-panel-item`) | `data-selected`                                               |
+
+## Locale Text
+
+```tsx
+<DatePicker
+  localeText={{
+    today: "Heute",
+    clear: "Löschen",
+    invalidDate: "Bitte ein gültiges Datum eingeben",
+  }}
+/>
+```
+
+| Key                                  | Default                                        |
+| ------------------------------------ | ---------------------------------------------- |
+| `calendarLabel`                      | `"Choose a date"`                              |
+| `openCalendar`                       | `"Open calendar"`                              |
+| `clear`                              | `"Clear"`                                      |
+| `today`                              | `"Today"`                                      |
+| `previousMonth` / `nextMonth`        | `"Previous month"` / `"Next month"`            |
+| `previousYears` / `nextYears`        | `"Previous years"` / `"Next years"`            |
+| `chooseMonthYear`                    | `"Choose month and year"`                      |
+| `monthPanelLabel` / `yearPanelLabel` | `"Choose a month"` / `"Choose a year"`         |
+| `weekNumber`                         | `"Week"`                                       |
+| `startDate` / `endDate`              | `"Start date"` / `"End date"`                  |
+| `invalidDate`                        | `"Enter a valid date"`                         |
+| `outOfRange`                         | `"That date is outside the allowed range"`     |
+| `presets`                            | `"Shortcuts"`                                  |
+| `selectedDate`                       | `(date) => "Selected: {date}"`                 |
+| `selectedRange`                      | `(start, end) => "Selected: {start} to {end}"` |
+
+Month names, weekday names, the typing order and the first day of the week come from `locale`, not from `localeText`.
+
+## Headless Use
+
+`useDatePicker()` holds the whole engine — selection, the visible months, typed input, keyboard movement and the popover state — and is exported for building a different UI on the same behavior:
+
+```tsx
+const controlRef = useRef<HTMLDivElement>(null);
+const triggerRef = useRef<HTMLButtonElement>(null);
+
+const picker = useDatePicker({
+  range: false,
+  defaultValue: { start: null, end: null },
+  onSelectionChange: (next) => …,
+  min: null,
+  max: null,
+  numberOfMonths: 1,
+  fixedWeeks: true,
+  disabled: false,
+  readOnly: false,
+  closeOnSelect: true,
+  text: defaultDatePickerText,
+  controlRef,
+  triggerRef,
+});
+```
+
+It returns `open`, `view`, `months`, `weekdays`, `years`, `title`, `focusedDate`, `selection`, `selectDate`, `applyRange`, `clear`, `goToToday`, `goToMonth`, `goToYear`, `selectMonth`, `selectYear`, `onGridKeyDown`, `getDayState`, `inputValue`, `onInputChange`, `onInputBlur`, `inputError`, `onTriggerClick` and `onPopoverClose`.
+
+The framework-free helpers are exported from `@/components/date-picker/core` and can also run on a server:
+
+| Export                                                                              | Description                                                                          |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `buildMonth(year, month, options)`                                                  | One month as weeks of days, with `today`, `outside`, `weekend` and `disabled` flags. |
+| `buildMonths(start, count, options)`                                                | Consecutive months for a multi-month view.                                           |
+| `parseDate(text, locale?, reference?)`                                              | Reads typed text in the locale's order. Returns `null` when it isn't a date.         |
+| `formatDate(date, locale?, options?)`                                               | Cached `Intl` formatting.                                                            |
+| `inputPlaceholder(locale?)` / `fieldOrder(locale?)`                                 | The locale's pattern and field order.                                                |
+| `monthNames` / `weekdayNames`                                                       | Localized names, weekdays ordered from the first day of the week.                    |
+| `moveByKey(date, key, options)`                                                     | Where an arrow, Home/End or Page key moves the focus.                                |
+| `normalizeRange` / `isInRange`                                                      | Range helpers.                                                                       |
+| `toISODate` / `parseISODate` / `toDate`                                             | Local-day conversion, never shifted to UTC.                                          |
+| `addDays` / `addMonths` / `startOfMonth` / `clampDate` / `compareDay` / `isSameDay` | Day arithmetic and comparison.                                                       |
+| `getISOWeek` / `resolveWeekStart` / `yearPage`                                      | Week numbers, the locale's first weekday, year paging.                               |
+| `subscribeToToday` / `getToday` / `getServerToday`                                  | The shared current day, for a `useSyncExternalStore` of your own. It rolls over at midnight, and the server snapshot is `null`. |
+
+## Next.js
+
+The components are client components: `"use client"` is already at the top of the files that need it. The `core` folder imports nothing from React, so a Server Component or a route handler can build months, parse and format dates with the same code.
+
+Pass `locale` when the page is rendered on the server, so the server and the browser produce the same text on the first paint.
+
+Today's date is never part of the server's HTML. The server and the browser can sit on opposite sides of midnight, or in different time zones, so a day marked on the server is a day the browser might disagree with. The calendar therefore renders with no `data-today` until hydration has finished, and marks the day in the render straight after — which costs nothing visible, because the calendar lives in a popover the user has to open first. A page with no server rendering marks it on the very first pass.
+
+The same value updates itself at the next local midnight, so a dashboard left open overnight does not go on pointing at yesterday. One timer serves every picker on the page. To pin the date in a test, pass `today` to the `core` helpers (`buildMonth`, `buildMonths`); `null` marks no day at all.
+
+## Migrating from the Previous DatePicker
+
+| Previous                                                                                              | New                                                                                |
+| ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `selectedDateValue={date}`                                                                            | `value` / `defaultValue`, which also accept ISO strings and timestamps             |
+| `onDateChange={fn}`                                                                                   | `onChange={fn}` — still `(date: Date \| null) => void`                             |
+| `minDate` / `maxDate`                                                                                 | `min` / `max`                                                                      |
+| `yearLimitStart` / `yearLimitEnd` (years counted from today)                                          | `min` / `max`. The year panel pages 12 at a time instead of listing a fixed span   |
+| `placeholder`, `name`, `error`, `disabled`                                                            | Same names                                                                         |
+| `name` posted `Date.toDateString()`                                                                   | Posts `yyyy-mm-dd`                                                                 |
+| Value always shown as `en-GB`                                                                         | `format` and `locale`                                                              |
+| "Today" and "Close" buttons                                                                           | `showToday`; Escape, Tab or a click outside closes                                 |
+| The × clear button                                                                                    | `clearable` (on by default), plus "Clear" in the footer                            |
+| `@grampro/headless-helpers` (`useDatePickerState`, `applyScrollbarStyles`, `months`, `isAtYearLimit`) | No dependency besides React. The calendar maths lives in `core` and is unit tested |
+| Popup positioned with `mt-48`, clipped by scrolling parents                                           | Native Popover API: top layer, flips up when space is tight, light dismiss         |
+| Mouse only                                                                                            | Full WAI-ARIA grid keyboard control                                                |
+| No typed entry                                                                                        | Type in the locale's order, ISO or month names                                     |
+| No range                                                                                              | `<DateRangePicker>`                                                                |
+| Returned `null` until mounted                                                                         | Renders on the server; pass `locale` for identical output                          |
+| Tailwind classes baked into the markup                                                                | `styles.css` with `--dp-*` variables, `classNames` slots and `data-*` attributes   |
+
+#### Notes
+
+- Dates only: no time-of-day or time-zone picking. Values are local midnight.
+- One range per field; several disjoint ranges are not supported.
+- The Gregorian calendar only, though month and weekday names, the field order and the first day of the week all follow `locale`.

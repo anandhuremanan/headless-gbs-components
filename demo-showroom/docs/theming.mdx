@@ -1,0 +1,194 @@
+---
+title: "Theming"
+description: "One set of --gbs-* variables on :root themes every component at once, with per-component and per-section overrides when you need them."
+group: "General"
+order: 0
+---
+
+## One palette, every component
+
+Each component ships a default look and needs no configuration. When you want your own
+palette, set the `--gbs-*` variables once, on `:root`, and every installed component follows —
+the DataGrid included.
+
+```css
+:root {
+  --gbs-accent: #7c3aed;
+  --gbs-accent-soft: #f3e8ff;
+  --gbs-radius: 10px;
+  --gbs-font-size: 14px;
+}
+```
+
+That is the whole API for theming the library. Everything below is for the cases where one
+palette is not enough.
+
+<Notice message="Set --gbs-* on :root, not inside a component. Components read these values through inheritance, so anything you set on an ancestor reaches every control beneath it." />
+
+## How a value is resolved
+
+Every component variable falls through the same chain, stopping at the first one that is set:
+
+1. **The component's own variable** — `--in-accent`, `--dg-accent`, `--ck-border` and so on.
+   Set this to change one component, or one instance of it.
+2. **The shared variable** — `--gbs-accent`. This is the one you normally set.
+3. **The DataGrid's variable** — `--dg-accent`, when the grid's stylesheet is loaded. Kept so
+   that projects which themed the grid before these shared variables existed still work.
+4. **The built-in default** — a `light-dark()` pair, so it follows the page's color scheme.
+
+In CSS that chain looks like this, which is what you will see if you open any `styles.css`:
+
+```css
+.in-root {
+  --in-accent: var(--gbs-accent, var(--dg-accent, light-dark(#2563eb, #60a5fa)));
+}
+```
+
+## The shared variables
+
+Defaults are written light / dark.
+
+#### Surfaces and text
+
+| Variable | Default | Used for |
+| --- | --- | --- |
+| `--gbs-bg` | `#ffffff` / `#0b0b0e` | Component background. |
+| `--gbs-fg` | `#18181b` / `#f4f4f5` | Body text. |
+| `--gbs-muted` | `#71717a` / `#a1a1aa` | Hints, counters, secondary text. |
+| `--gbs-subtle` | `#f4f4f5` / `#1c1c20` | Quiet fills, such as a secondary button. |
+| `--gbs-hover` | `#f4f4f5` / `#1f1f23` | Hover background on buttons and menu items. |
+| `--gbs-input-bg` | `#ffffff` / `#121216` | The inside of a field. |
+| `--gbs-readonly-bg` | `#fafafa` / `#0e0e12` | A field that cannot be edited. |
+| `--gbs-header-bg` | `#fafafa` / `#111114` | Grid header, modal footer. |
+| `--gbs-header-fg` | `#3f3f46` / `#d4d4d8` | Grid header text. |
+
+#### Borders and shape
+
+| Variable | Default | Used for |
+| --- | --- | --- |
+| `--gbs-border` | `#e4e4e7` / `#27272a` | Outer borders. |
+| `--gbs-border-subtle` | `#f0f0f2` / `#1c1c20` | Row separators and other quiet lines. |
+| `--gbs-border-control` | `#a1a1aa` / `#52525b` | The outline of a checkbox or radio, which needs more contrast than a panel edge. |
+| `--gbs-radius` | `8px` | Corner radius. |
+| `--gbs-font-size` | `13px` | Base size; everything else is relative to it. |
+| `--gbs-shadow` | `0 10px 30px -8px …` | Popovers and menus. |
+| `--gbs-backdrop` | `rgb(9 9 11 / 0.45)` / `rgb(0 0 0 / 0.65)` | Behind a modal or dialog. |
+
+#### Accent and status
+
+| Variable | Default | Used for |
+| --- | --- | --- |
+| `--gbs-accent` | `#2563eb` / `#60a5fa` | Selected, checked, active. |
+| `--gbs-accent-fg` | `#ffffff` / `#0b1220` | Text on an accent fill. |
+| `--gbs-accent-soft` | `#eff6ff` / `#172554` | Tinted backgrounds. |
+| `--gbs-accent-strong` | `#1d4ed8` / `#bfdbfe` | The pressed state of an accent fill. |
+| `--gbs-focus` | `#2563eb` / `#60a5fa` | Focus rings. |
+| `--gbs-danger` | `#dc2626` / `#f87171` | Errors and destructive actions. |
+| `--gbs-danger-fg` | `#ffffff` / `#1c0606` | Text on a danger fill. |
+| `--gbs-success` | `#15803d` / `#4ade80` | Completed uploads, success toasts. |
+| `--gbs-warning` | `#d97706` / `#fbbf24` | Warnings. |
+| `--gbs-info` | falls back to `--gbs-accent` | Informational dialogs and toasts. |
+
+#### Component-specific
+
+A few components need a colour the rest of the palette cannot give them.
+
+| Variable | Default | Used for |
+| --- | --- | --- |
+| `--gbs-tooltip-bg` | `#18181b` / `#f4f4f5` | Tooltip background — inverted against the page, so it reads as an overlay rather than another panel. |
+| `--gbs-tooltip-fg` | `#fafafa` / `#18181b` | Tooltip text. |
+| `--gbs-skeleton` | falls back to `--gbs-hover` | The bars in a loading placeholder. |
+| `--gbs-tab-fg` | `#5b5b64` / `#a1a1aa` | Unselected tabs. Darker than `--gbs-muted`, which only just clears 4.5:1 on white and misses it on a tinted page background. |
+
+#### Grid rows
+
+Only the DataGrid uses these.
+
+| Variable | Default | Used for |
+| --- | --- | --- |
+| `--gbs-row-alt` | `#fcfcfd` / `#0e0e12` | Striped rows. |
+| `--gbs-row-hover` | `#f4f4f5` / `#18181c` | Hovered row. |
+| `--gbs-row-selected` | `#eef4ff` / `#14213d` | Selected row. |
+| `--gbs-row-selected-hover` | `#e2ecff` / `#1a2a4d` | Selected and hovered. |
+| `--gbs-cell-px` | `12px` | Horizontal cell padding. |
+| `--gbs-pin-shadow` | `rgb(0 0 0 / 0.08)` / `rgb(0 0 0 / 0.5)` | Edge of a pinned column. |
+
+## Dark mode
+
+Defaults are `light-dark()` pairs, so they follow the page's `color-scheme` with no extra work.
+Set it once:
+
+```css
+:root {
+  color-scheme: light dark;
+}
+```
+
+To force a scheme regardless of the system setting, put `class="dark"` or `data-theme="dark"`
+(or `"light"`) on an ancestor such as `<html>`. Components respond to both.
+
+If you set your own colors, give both schemes or your dark mode will keep the light values:
+
+```css
+:root {
+  --gbs-accent: light-dark(#7c3aed, #c4b5fd);
+}
+```
+
+## Theming one section
+
+The variables inherit, so scoping a palette to part of a page is just a matter of where you
+set it:
+
+```css
+.admin-area {
+  --gbs-accent: #0f766e;
+  --gbs-radius: 4px;
+}
+```
+
+Everything inside `.admin-area` uses the teal accent; the rest of the page does not.
+
+## Theming one component
+
+Set the component's own variable instead of the shared one — it wins over `--gbs-*`:
+
+```css
+.danger-zone .bt-root {
+  --bt-bg: #b91c1c;
+}
+```
+
+Or inline, for a single instance:
+
+```tsx
+<Input style={{ "--in-radius": "999px" } as CSSProperties} />
+```
+
+Each component's page lists its own variables.
+
+## With Tailwind
+
+All component rules live in the CSS `components` layer, so a utility class passed through
+`className` or `classNames` beats them without `!important`:
+
+```tsx
+<Button className="rounded-full px-6" />
+```
+
+Use utilities for one-off adjustments and `--gbs-*` for the palette. If your design tokens are
+already Tailwind theme variables, point the two at each other once:
+
+```css
+:root {
+  --gbs-accent: var(--color-violet-600);
+  --gbs-danger: var(--color-rose-600);
+}
+```
+
+## Before you ship a palette
+
+Check contrast on the pairs that carry meaning: `--gbs-fg` on `--gbs-bg`, `--gbs-muted` on
+`--gbs-bg`, and `--gbs-accent-fg` on `--gbs-accent`. The defaults meet WCAG AA in both
+schemes; a custom accent is the usual way that gets lost, most often on small text such as
+hints and counters.

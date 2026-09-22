@@ -1,0 +1,518 @@
+---
+title: "Combobox"
+description: "Select and MultiSelect — searchable comboboxes for one or many values, with options in the browser or from an API."
+group: "Inputs"
+order: 6
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Combobox -beta
+```
+
+The block copies the `combobox` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `:has()` and the Popover API)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/combobox/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/combobox/styles.css";
+```
+
+`Select` picks one value and `MultiSelect` picks several, shown as tags. Both are comboboxes: a control that opens a searchable list of options. They share one engine, one stylesheet and one set of keyboard rules, and they support options held in the browser or fetched from an API. The list renders in the browser's top layer, so it is never clipped by a scrolling parent — including inside a DataGrid cell.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Select
+
+<SelectWrapperBeta />
+
+#### MultiSelect
+
+<MultiSelectWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import {
+  MultiSelect,
+  Select,
+  type ComboboxOption,
+} from "@/components/combobox";
+
+const countries: ComboboxOption[] = [
+  { value: "in", label: "India", group: "Asia", keywords: ["bharat"] },
+  { value: "jp", label: "Japan", group: "Asia" },
+  { value: "de", label: "Germany", group: "Europe", description: "Berlin" },
+  { value: "mx", label: "Mexico", group: "Americas", disabled: true },
+];
+
+export default function Example() {
+  const [country, setCountry] = useState<string | null>(null);
+  const [tags, setTags] = useState<string[]>([]);
+
+  return (
+    <>
+      <Select
+        label="Country"
+        options={countries}
+        value={country}
+        onChange={setCountry}
+      />
+
+      <MultiSelect
+        label="Countries"
+        options={countries}
+        value={tags}
+        onChange={setTags}
+        max={3}
+      />
+    </>
+  );
+}
+```
+
+Both components are controlled with `value` + `onChange`, or uncontrolled with `defaultValue`. `onChange` also receives the matching option objects:
+
+```tsx
+<Select onChange={(value, option) => console.log(value, option?.label)} />
+<MultiSelect onChange={(values, options) => console.log(values, options.map((o) => o.label))} />
+```
+
+<Notice message="Define options outside the component or wrap them in useMemo. A new options array on every render makes the list re-filter each time. With React Compiler enabled this is handled for you." />
+
+## Options
+
+```ts
+interface ComboboxOption<V = string> {
+  value: V; // string or number, unique
+  label: string; // shown in the list, the control and tags
+  description?: string; // second line under the label
+  group?: string; // heading; groups appear in first-seen order
+  disabled?: boolean; // shown, not selectable, skipped by the keyboard
+  icon?: ReactNode; // rendered before the label
+  keywords?: string[]; // extra search terms, e.g. synonyms or codes
+}
+```
+
+| Field         | Type                 | Description                                                                       |
+| ------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `value`       | `string` \| `number` | Identifies the option. Values are what `onChange` reports and what forms post.    |
+| `label`       | `string`             | Display text. Long labels are shortened with an ellipsis; the value is never cut. |
+| `description` | `string`             | Second line. Matches the search but is not highlighted. Makes every row taller.   |
+| `group`       | `string`             | Adds a heading above the first option of that group.                              |
+| `disabled`    | `boolean`            | Cannot be chosen, and the keyboard skips it.                                      |
+| `icon`        | `ReactNode`          | Small icon before the label; also shown in the `Select` control.                  |
+| `keywords`    | `string[]`           | Extra searchable terms, e.g. `keywords: ["bharat"]` finds "India".                |
+
+## Props Table
+
+### Shared
+
+| Prop             | Type                                          | Default            | Description                                                                                                    |
+| ---------------- | --------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `options`        | `ComboboxOption<V>[]`                         | **required**       | Options to show. In server mode, the current results.                                                          |
+| `mode`           | `"client"` \| `"server"`                      | `"client"`         | `client` filters `options` locally. `server` shows them as given.                                              |
+| `loading`        | `boolean`                                     | `false`            | Shows a spinner. Existing options stay visible.                                                                |
+| `onSearchChange` | `(search: string) => void`                    | —                  | Search text. Fires when the list opens, then debounced in server mode.                                         |
+| `searchDebounce` | `number`                                      | `250`              | Debounce in milliseconds (server mode).                                                                        |
+| `searchable`     | `boolean`                                     | `true`             | Show the search box. When `false`, typing jumps to a matching option.                                          |
+| `hasMore`        | `boolean`                                     | —                  | More results exist: shows "Load more" and requests more while scrolling.                                       |
+| `onLoadMore`     | `() => void`                                  | —                  | Asked for the next page.                                                                                       |
+| `filterFn`       | `(option, search) => boolean`                 | —                  | Replaces the built-in matching (client mode).                                                                  |
+| `renderOption`   | `(option, { selected, active }) => ReactNode` | —                  | Custom option content.                                                                                         |
+| `allowCreate`    | `boolean`                                     | `false`            | Offers "Create …" when the search matches no option.                                                           |
+| `onCreate`       | `(label: string) => void`                     | —                  | Called with the typed text. Add the option to `options` yourself.                                              |
+| `label`          | `ReactNode`                                   | —                  | Field label above the control.                                                                                 |
+| `placeholder`    | `string`                                      | `"Select…"`        | Shown when nothing is selected.                                                                                |
+| `description`    | `ReactNode`                                   | —                  | Hint below the control.                                                                                        |
+| `error`          | `ReactNode`                                   | —                  | Error message below the control; also marks the control invalid.                                               |
+| `required`       | `boolean`                                     | `false`            | Marks the label and sets `aria-required`.                                                                      |
+| `disabled`       | `boolean`                                     | `false`            | Blocks opening, choosing and clearing.                                                                         |
+| `clearable`      | `boolean`                                     | `true`             | Show the clear button when something is selected.                                                              |
+| `size`           | `"sm"` \| `"md"` \| `"lg"`                    | `"md"`             | Control height and font size (30 / 36 / 44 px).                                                                |
+| `name`           | `string`                                      | —                  | Posts hidden inputs so `FormData` picks the values up.                                                         |
+| `id`             | `string`                                      | generated          | Id of the control; also the base for list and option ids.                                                      |
+| `maxHeight`      | `number`                                      | `280`              | Maximum height of the option list in pixels.                                                                   |
+| `virtualize`     | `boolean` \| `number`                         | `true`             | Virtualizes above 80 options. Pass a number to change the threshold, or `false` to disable.                    |
+| `emptyMessage`   | `ReactNode`                                   | "No options found" | Shown when nothing matches.                                                                                    |
+| `onOpenChange`   | `(open: boolean) => void`                     | —                  | Fires when the list opens or closes.                                                                           |
+| `className`      | `string`                                      | —                  | Class for the root element.                                                                                    |
+| `classNames`     | `Partial<Record<ComboboxSlot, string>>`       | —                  | Classes per slot: `root`, `label`, `control`, `value`, `tag`, `popover`, `search`, `list`, `option`, `footer`. |
+| `style`          | `CSSProperties`                               | —                  | Inline style for the root element (e.g. CSS variables).                                                        |
+| `localeText`     | `Partial<ComboboxLocaleText>`                 | English            | Overrides UI text. See [Locale Text](#locale-text).                                                            |
+| `ref`            | `Ref<ComboboxHandle<V>>`                      | —                  | Imperative API. See [Imperative API](#imperative-api-ref).                                                     |
+
+### Select
+
+| Prop            | Type                                                            | Default | Description                            |
+| --------------- | --------------------------------------------------------------- | ------- | -------------------------------------- |
+| `value`         | `V` \| `null`                                                   | —       | Selected value (controlled).           |
+| `defaultValue`  | `V` \| `null`                                                   | `null`  | Starting value (uncontrolled).         |
+| `onChange`      | `(value: V \| null, option: ComboboxOption<V> \| null) => void` | —       | Fires on choose and on clear (`null`). |
+| `closeOnSelect` | `boolean`                                                       | `true`  | Close the list after choosing.         |
+
+### MultiSelect
+
+| Prop             | Type                                                  | Default | Description                                                           |
+| ---------------- | ----------------------------------------------------- | ------- | --------------------------------------------------------------------- |
+| `value`          | `V[]`                                                 | —       | Selected values (controlled).                                         |
+| `defaultValue`   | `V[]`                                                 | `[]`    | Starting values (uncontrolled).                                       |
+| `onChange`       | `(values: V[], options: ComboboxOption<V>[]) => void` | —       | Fires on every change.                                                |
+| `max`            | `number`                                              | —       | Maximum selections. Extra choices are ignored and the footer says so. |
+| `maxVisibleTags` | `number`                                              | `3`     | Tags shown before the rest collapse into "+N more".                   |
+| `showSelectAll`  | `boolean`                                             | `true`  | "Select all" / "Clear all" under the list.                            |
+| `closeOnSelect`  | `boolean`                                             | `false` | Close the list after each choice.                                     |
+
+The value type comes from `options` and `value` only, so passing a state setter straight to `onChange` works:
+
+```tsx
+const [country, setCountry] = useState<string | null>(null);
+<Select options={countries} value={country} onChange={setCountry} />; // V is string
+```
+
+For number values, type it through the options:
+
+```tsx
+const users: ComboboxOption<number>[] = [{ value: 7, label: "Ada Lovelace" }];
+<MultiSelect<number> options={users} value={ids} onChange={setIds} />;
+```
+
+## Search
+
+- The search box filters as you type. Every word must match, so `south k` finds "South Korea".
+- Matching runs against the **label** (and highlights it), the **description** and **keywords**.
+- Disabled options still appear but cannot be chosen.
+- With `searchable={false}` there is no search box; typing letters jumps to the first option starting with them, like a native select.
+
+Custom matching:
+
+```tsx
+<Select
+  options={products}
+  filterFn={(option, search) => option.value.toString().startsWith(search)}
+/>
+```
+
+## Server Options
+
+In server mode the component does no filtering. It reports the search text and shows whatever `options` you pass.
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { MultiSelect, type ComboboxOption } from "@/components/combobox";
+
+const NO_OPTIONS: ComboboxOption<number>[] = [];
+
+export function PeoplePicker({ value, onChange }: Props) {
+  const [query, setQuery] = useState({ search: "", page: 0 });
+  const [result, setResult] = useState<{
+    query: typeof query;
+    options: ComboboxOption<number>[];
+    hasMore: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(
+      `/api/people?search=${encodeURIComponent(query.search)}&page=${query.page}`,
+      {
+        signal: controller.signal,
+      },
+    )
+      .then((res) => res.json())
+      .then((body) =>
+        setResult({ query, options: body.options, hasMore: body.hasMore }),
+      )
+      .catch(() => {}); // aborted
+    return () => controller.abort(); // cancels the previous request
+  }, [query]);
+
+  return (
+    <MultiSelect<number>
+      mode="server"
+      options={result?.options ?? NO_OPTIONS}
+      hasMore={result?.hasMore}
+      loading={result?.query !== query}
+      onSearchChange={(search) => setQuery({ search, page: 0 })}
+      onLoadMore={() => setQuery((prev) => ({ ...prev, page: prev.page + 1 }))}
+      value={value}
+      onChange={onChange}
+      placeholder="Search people"
+    />
+  );
+}
+```
+
+With TanStack Query:
+
+```tsx
+const { data, isFetching } = useQuery({
+  queryKey: ["people", query],
+  queryFn: ({ signal }) => fetchPeople(query, signal),
+  placeholderData: keepPreviousData,
+});
+
+<MultiSelect mode="server" options={data?.options ?? NO_OPTIONS} loading={isFetching} ... />;
+```
+
+**How it behaves**
+
+- `onSearchChange` fires **once when the list opens** (with the current text, usually empty), so you can load a first page, then debounced by `searchDebounce` as the user types.
+- The API should return options for the search, plus whether more exist.
+- Paging: when the list is scrolled near the end — or when new options arrive and it is already at the end — `onLoadMore` is called. A "Load more" button is shown as well.
+- **Labels of chosen options are remembered**, so tags stay readable after the results change. If you set `value` from outside before the matching options have loaded, the raw value is shown until they arrive.
+
+## Creating Options
+
+```tsx
+const [options, setOptions] = useState(initialTags);
+const [values, setValues] = useState<string[]>([]);
+
+<MultiSelect
+  label="Tags"
+  options={options}
+  value={values}
+  onChange={setValues}
+  allowCreate
+  onCreate={(label) => {
+    const option = { value: label.toLowerCase(), label };
+    setOptions((prev) => [...prev, option]);
+    setValues((prev) => [...prev, option.value]);
+  }}
+/>;
+```
+
+"Create …" appears when the typed text matches no option's label. Pressing **Enter** with no option highlighted creates it. The component does not add the option itself: do that in `onCreate`.
+
+## Forms
+
+With a `name`, values post as hidden inputs — one per value — so `FormData` and server actions pick them up.
+
+```tsx
+<form
+  onSubmit={(event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    console.log(data.get("country"), data.getAll("departments"));
+  }}
+>
+  <Select
+    name="country"
+    label="Country"
+    required
+    options={countries}
+    error={error}
+  />
+  <MultiSelect name="departments" label="Departments" options={departments} />
+  <button type="submit">Save</button>
+</form>
+```
+
+`error` shows a message below the control, colors the border and sets `aria-invalid`. Validation is yours; the component only displays the state.
+
+## Imperative API (ref)
+
+```tsx
+const picker = useRef<ComboboxHandle<string>>(null);
+
+<Select ref={picker} options={countries} />;
+
+picker.current?.open();
+```
+
+| Method               | Signature                   | Description                                    |
+| -------------------- | --------------------------- | ---------------------------------------------- |
+| `open`               | `() => void`                | Open the list.                                 |
+| `close`              | `() => void`                | Close the list.                                |
+| `toggle`             | `() => void`                | Open or close.                                 |
+| `focus`              | `() => void`                | Focus the control without opening.             |
+| `clear`              | `() => void`                | Remove the selection.                          |
+| `getValue`           | `() => V[]`                 | Selected values (one entry for `Select`).      |
+| `getSelectedOptions` | `() => ComboboxOption<V>[]` | Selected options, including remembered labels. |
+
+## Keyboard
+
+| Keys                               | Action                                                                       |
+| ---------------------------------- | ---------------------------------------------------------------------------- |
+| **Enter**, **Space**, **↓**, **↑** | Open the list.                                                               |
+| typing (closed)                    | Opens and starts searching, or jumps to an option when `searchable={false}`. |
+| **↓** / **↑**                      | Move between options; disabled options are skipped and it wraps around.      |
+| **Home** / **End**                 | First / last option.                                                         |
+| **Page Down** / **Page Up**        | Move ten options.                                                            |
+| **Enter**                          | Choose the highlighted option, or create when "Create …" is shown.           |
+| **Escape**                         | Close the list and return focus to the control.                              |
+| **Tab**                            | Close the list and move to the next field.                                   |
+| **Backspace**                      | MultiSelect: remove the last tag, when the search box is empty.              |
+
+Accessibility: the control is a `role="combobox"` that owns a `role="listbox"`; the search box keeps focus and the highlighted option is reported with `aria-activedescendant`. Options carry `aria-selected`, disabled ones `aria-disabled`. Group headings are visual only, so include anything essential in the option label.
+
+## Performance
+
+- Above 80 options the list is virtualized: only visible rows are in the page. A 10,000-option list renders about a dozen rows.
+- Rows have a fixed height per `size` (30 / 34 / 40 px), and 16 px taller when any option has a `description`.
+- Filtering is plain string matching over the options array; 10,000 options filter without noticeable delay. For much larger sets, use server mode.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<MultiSelect
+  className="max-w-sm"
+  classNames={{ control: "shadow-sm", tag: "uppercase tracking-wide" }}
+  options={options}
+/>
+```
+
+#### CSS variables
+
+Override them on `.cb-root`, on any ancestor, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable                                 | Used for                                  |
+| ---------------------------------------- | ----------------------------------------- |
+| `--cb-font-size`                         | Base font size.                           |
+| `--cb-height`                            | Control height (set by `size`).           |
+| `--cb-px`                                | Horizontal padding inside the control.    |
+| `--cb-bg`, `--cb-fg`                     | Background and text color.                |
+| `--cb-muted`                             | Placeholder, descriptions and icons.      |
+| `--cb-border`                            | Borders.                                  |
+| `--cb-hover`                             | Hover background of options and buttons.  |
+| `--cb-input-bg`                          | Control and search background.            |
+| `--cb-accent`, `--cb-accent-fg`          | Check marks, highlight and focus accents. |
+| `--cb-accent-soft`, `--cb-accent-strong` | Tag background and text.                  |
+| `--cb-focus`                             | Focus ring.                               |
+| `--cb-danger`                            | Error state.                              |
+| `--cb-shadow`                            | List shadow.                              |
+| `--cb-radius`                            | Corner radius.                            |
+
+```css
+.cb-root {
+  --cb-accent: #7c3aed;
+  --cb-radius: 12px;
+}
+```
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+| Element                 | Attributes                                                    |
+| ----------------------- | ------------------------------------------------------------- |
+| Root (`.cb-root`)       | `data-size`, `data-state` (`open` / `closed`), `data-invalid` |
+| Control (`.cb-control`) | `data-disabled`, `data-invalid`                               |
+| Option (`.cb-item`)     | `data-active`, `data-selected`, `data-disabled`               |
+
+## Locale Text
+
+```tsx
+<MultiSelect
+  localeText={{
+    searchPlaceholder: "Suchen…",
+    noResults: "Keine Treffer",
+    selectedCount: (count) => `${count} ausgewählt`,
+  }}
+/>
+```
+
+| Key                 | Default                             |
+| ------------------- | ----------------------------------- |
+| `searchPlaceholder` | `"Search…"`                         |
+| `noResults`         | `"No options found"`                |
+| `loading`           | `"Loading…"`                        |
+| `loadMore`          | `"Load more"`                       |
+| `clear`             | `"Clear"`                           |
+| `clearAll`          | `"Clear all"`                       |
+| `selectAll`         | `"Select all"`                      |
+| `createOption`      | `(label) => "Create “{label}”"`     |
+| `selectedCount`     | `(count) => "{count} selected"`     |
+| `moreCount`         | `(count) => "+{count} more"`        |
+| `removeOption`      | `(label) => "Remove {label}"`       |
+| `maxReached`        | `(max) => "Maximum {max} selected"` |
+
+## Headless Use
+
+`useCombobox()` holds the whole engine — filtering, the highlighted option, keyboard handling, selection and search requests — and is exported for building a different UI on the same behavior:
+
+```tsx
+const controlRef = useRef<HTMLDivElement>(null);
+const searchRef = useRef<HTMLInputElement>(null);
+const listRef = useRef<HTMLDivElement>(null);
+
+const combobox = useCombobox({
+  options,
+  multiple: false,
+  defaultValue: [],
+  onValuesChange: (values, options) => …,
+  text: defaultComboboxText,
+  id: "my-picker",
+  controlRef,
+  searchRef,
+  listRef,
+});
+```
+
+It returns `open`, `search`, `entries`, `items`, `activeIndex`, `selectedOptions`, `isSelected`, `selectOption`, `removeValue`, `clear`, `selectAllVisible`, `createLabel`, `commitCreate`, `onKeyDown`, `onControlClick`, `onControlPointerDown`, `onPopoverClose` and `handle`.
+
+The framework-free helpers are exported from `@/components/combobox/core` and can also run on a server:
+
+| Export                                                        | Description                                  |
+| ------------------------------------------------------------- | -------------------------------------------- |
+| `filterOptions(options, search, filterFn?)`                   | Matching options with highlight ranges.      |
+| `matchRanges(text, terms)`                                    | Ranges matching every term, or `null`.       |
+| `splitTerms(search)`                                          | Splits search text into lowercase terms.     |
+| `buildListItems(entries)`                                     | Adds group headings and numbers the options. |
+| `nextEnabledIndex` / `firstEnabledIndex` / `lastEnabledIndex` | Keyboard movement over selectable options.   |
+| `findByPrefix(entries, prefix, from)`                         | Type-ahead lookup.                           |
+| `toggleValue(values, value, max?)`                            | Adds or removes a value, respecting `max`.   |
+| `measureItems` / `getVisibleRange` / `scrollToItem`           | List virtualization math.                    |
+
+## Migrating from the Previous Select / MultiSelect
+
+| Previous                                                | New                                                                                          |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `items={[{ value, label }]}`                            | `options={[{ value, label }]}` (plus `group`, `description`, `disabled`, `icon`, `keywords`) |
+| `items="https://api/items"`                             | Fetch in your component and pass `options`. The component no longer fetches.                 |
+| `lazy`                                                  | `mode="server"` with `onSearchChange`, `loading` and `hasMore` / `onLoadMore`                |
+| `showSearch`                                            | `searchable`                                                                                 |
+| `onFiltering`                                           | `onSearchChange`                                                                             |
+| `onSelect` (Select)                                     | `onChange(value, option)`                                                                    |
+| `onSelect` (MultiSelect)                                | `onChange(values, options)`                                                                  |
+| `selectedItem`                                          | `value` / `defaultValue`                                                                     |
+| `selectedItems`                                         | `value` / `defaultValue` (array)                                                             |
+| `truncate`                                              | `maxVisibleTags` (a large number shows all tags)                                             |
+| `error`, `disabled`, `placeholder`, `name`, `className` | Same names                                                                                   |
+| Labels cut at 20 characters                             | Full labels, shortened visually with an ellipsis                                             |
+| `ref.clearSelected()`                                   | `ref.clear()`                                                                                |
+| `ref.togglePopover()`                                   | `ref.toggle()`                                                                               |
+| `ref.selected`                                          | `ref.getValue()`                                                                             |
+| `ref.selectedDisplay`                                   | `ref.getSelectedOptions()`                                                                   |
+| `ref.getSelectItems(url)`                               | Fetch in your app and pass `options`                                                         |
+| `ref.workingDataSource`                                 | `options` (you own the list)                                                                 |
+| `PortalDropdown`                                        | Built in: the list uses the native Popover API, so no portal is needed                       |
+
+#### Notes
+
+- Option rows have a fixed height per `size`, because the list is virtualized.
+- There is no "load a single option by value": pass options that include the selected values, or let the user pick them at least once.
+- Tree or multi-level options are not supported.

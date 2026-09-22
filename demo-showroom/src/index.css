@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import "../../source/beta-components/data-grid/styles.css";
+@import "../../source/beta-components/combobox/styles.css";
+@import "../../source/beta-components/date-picker/styles.css";
+@import "../../source/beta-components/toaster/styles.css";
+@import "../../source/beta-components/file-uploader/styles.css";
+@import "../../source/beta-components/modal/styles.css";
+@import "../../source/beta-components/dialog/styles.css";
+@import "../../source/beta-components/input/styles.css";
+@import "../../source/beta-components/textarea/styles.css";
+@import "../../source/beta-components/spinner/styles.css";
+@import "../../source/beta-components/button/styles.css";
+@import "../../source/beta-components/checkbox/styles.css";
+@import "../../source/beta-components/tabs/styles.css";
+@import "../../source/beta-components/breadcrumb/styles.css";
+@import "../../source/beta-components/menu/styles.css";
+@import "../../source/beta-components/popover/styles.css";
+@import "../../source/beta-components/tooltip/styles.css";
+@import "../../source/beta-components/card/styles.css";
+@import "../../source/beta-components/skeleton/styles.css";
+@import "../../source/beta-components/switch/styles.css";
+@import "../../source/beta-components/radio-group/styles.css";
+@import "../../source/beta-components/number-input/styles.css";
+@import "../../source/beta-components/alert/styles.css";
+@import "../../source/beta-components/badge/styles.css";
+@import "../../source/beta-components/avatar/styles.css";
+@import "../../source/beta-components/progress/styles.css";
+@import "../../source/beta-components/accordion/styles.css";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+body {
+  background: light-dark(#f4f4f5, #09090b);
+  color: light-dark(#18181b, #f4f4f5);
+}

@@ -1,0 +1,206 @@
+---
+title: "Breadcrumb"
+description: "Shows where a page sits in your app, collapses long trails, works with your router's links and can publish structured data."
+group: "Navigation"
+order: 9
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Breadcrumb -beta
+```
+
+The block copies the `breadcrumb` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `:dir()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/breadcrumb/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/breadcrumb/styles.css";
+```
+
+The Breadcrumb shows where the current page sits in your app, and lets people go back up the hierarchy in one click. Long trails collapse to their ends behind an ellipsis. Links can be drawn with your router's link component, such as `next/link`. The trail can also be published as structured data, so search engines can show it in results.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<BreadcrumbWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import Link from "next/link";
+import { Breadcrumb } from "@/components/breadcrumb";
+
+export function InvoiceHeader({ invoice }) {
+  return (
+    <Breadcrumb
+      items={[
+        { label: "Home", href: "/" },
+        { label: "Invoices", href: "/invoices" },
+        { label: invoice.number },
+      ]}
+      renderLink={(props) => <Link {...props} />}
+    />
+  );
+}
+```
+
+Items go from the top level down. The last item is the current page: it isn't a link, and it's marked `aria-current="page"`.
+
+## Props Table
+
+Accepts every `<nav>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `items` | `BreadcrumbItem[]` | **required** | The trail, top level first. |
+| `separator` | `ReactNode` | a chevron | Between crumbs, e.g. `"/"`. |
+| `maxItems` | `number` | — | Collapse the middle when there are more crumbs than this. |
+| `itemsBeforeCollapse` | `number` | `1` | Crumbs kept before the ellipsis. |
+| `itemsAfterCollapse` | `number` | `1` | Crumbs kept after the ellipsis, including the current page. |
+| `renderLink` | `(props: BreadcrumbLinkProps) => ReactElement` | an `<a>` | Draw links with your router. |
+| `structuredData` | `boolean` \| `{ baseUrl: string }` | `false` | Add schema.org `BreadcrumbList` JSON-LD. See [Structured Data](#structured-data). |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Font size. |
+| `aria-label` | `string` | `localeText.label` | Name of the navigation landmark. |
+| `className` | `string` | — | Class for the `<nav>`. |
+| `classNames` | `Partial<Record<BreadcrumbSlot, string>>` | — | Slots: `root`, `list`, `item`, `link`, `current`, `separator`, `ellipsis`. |
+| `localeText` | `Partial<BreadcrumbLocaleText>` | English | See [Locale Text](#locale-text). |
+
+#### BreadcrumbItem
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `label` | `ReactNode` | Text shown. Long labels are cut with an ellipsis and the full text in a tooltip. |
+| `href` | `string` | Link target. Omit for the current page or a crumb that isn't a link. |
+| `icon` | `ReactNode` | Icon before the label, e.g. a home icon. |
+| `name` | `string` | Plain-text name for structured data, when `label` isn't a string. |
+| `onClick` | `() => void` | Click handler, with or without `href`. |
+
+## Collapsing Long Trails
+
+```tsx
+<Breadcrumb items={trail} maxItems={4} itemsBeforeCollapse={1} itemsAfterCollapse={2} />
+```
+
+A 7-crumb trail becomes `Home › … › Invoices › INV-042`. Pressing the ellipsis reveals the full trail and moves keyboard focus to the first crumb that was hidden. Trails with `maxItems` crumbs or fewer are never collapsed.
+
+## Router Links
+
+`renderLink` receives `href`, `className`, `children` and `onClick`. Spread them onto your link:
+
+```tsx
+import Link from "next/link";
+
+<Breadcrumb items={items} renderLink={(props) => <Link {...props} prefetch={false} />} />;
+```
+
+```tsx
+// React Router
+import { Link } from "react-router";
+
+<Breadcrumb items={items} renderLink={({ href, ...props }) => <Link to={href} {...props} />} />;
+```
+
+## Structured Data
+
+```tsx
+<Breadcrumb items={items} structuredData={{ baseUrl: "https://app.example.com" }} />
+```
+
+This adds a `<script type="application/ld+json">` with a schema.org `BreadcrumbList`. Search engines can use it to show the trail under the page title in results. Relative `href`s are resolved against `baseUrl`, because search engines expect absolute URLs. Render the breadcrumb on the server, as a Next.js page does, so crawlers see the data in the HTML.
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **Tab** | Move between crumb links and the ellipsis. The current page isn't a stop. |
+| **Enter** | Follow the focused link, or reveal the collapsed crumbs. |
+
+Accessibility: the trail is a `<nav>` landmark named "Breadcrumb", containing an ordered list. Separators are `aria-hidden`, so screen readers don't read "chevron" between crumbs. The current page has `aria-current="page"`, and the ellipsis says how many crumbs it reveals ("Show 4 more").
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Breadcrumb classNames={{ current: "text-blue-600", separator: "opacity-40" }} />
+```
+
+#### CSS variables
+
+Override them on `.bc-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--bc-font-size` | Font size (set by `size`). |
+| `--bc-fg` | Current page and hovered links. |
+| `--bc-muted` | Links and separators. |
+| `--bc-hover` | Ellipsis hover background. |
+| `--bc-focus` | Focus ring. |
+| `--bc-max-label` | Longest label before it's cut (`24ch`). |
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`nav.bc-root`) | `data-size` |
+| Item (`li.bc-item`) | `data-index` |
+| Current page (`.bc-current`) | `aria-current="page"` |
+
+## Locale Text
+
+```tsx
+<Breadcrumb localeText={{ label: "Brotkrumen", showMore: (count) => `${count} weitere anzeigen` }} />
+```
+
+| Key | Default |
+| --- | --- |
+| `label` | `"Breadcrumb"` |
+| `showMore` | `(count) => "Show {count} more"` |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `collapseItems(count, maxItems?, before?, after?)` | The rendered trail: crumb indexes and an ellipsis with the hidden ones. |
+| `toBreadcrumbJsonLd(items, baseUrl?)` | The schema.org `BreadcrumbList` object. |
+
+## Next.js
+
+The Breadcrumb is a client component with `"use client"` at the top of its file, and it renders fully on the server, structured data included.
+
+A Server Component can render it directly with plain `items` (labels, `href`s and icons). `renderLink` and `onClick` are functions, and functions can't be passed from a Server Component to a client component. Put those in a small client wrapper instead, and pass it the items from the page:
+
+```tsx
+// app/components/AppBreadcrumb.tsx
+"use client";
+
+import Link from "next/link";
+import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
+
+export function AppBreadcrumb({ items }: { items: BreadcrumbItem[] }) {
+  return <Breadcrumb items={items} renderLink={(props) => <Link {...props} />} />;
+}
+```
+
+#### Notes
+
+- In right-to-left layouts, the chevron separator points the other way automatically.
+- There's no previous breadcrumb component, so there's nothing to migrate.

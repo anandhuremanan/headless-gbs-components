@@ -1,0 +1,439 @@
+---
+title: "Toaster"
+description: "Short notifications you mount once and call from anywhere — no hook, context or provider."
+group: "Feedback"
+order: 14
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Toaster -beta
+```
+
+The block copies the `toaster` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `:is()` and `@starting-style`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/toaster/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/toaster/styles.css";
+```
+
+The Toaster shows short notifications — saved, failed, undo, in progress — in a corner of the screen. It works in any React app: Vite, Next.js, Remix or plain React. You mount `<Toaster />` once and call `toast()` from anywhere: a component, an event handler, a data layer, or code outside React. There is no hook, context or provider to set up.
+
+<Notice message="Toasts render in a portal on <body>, so set the --gbs-* variables on :root to theme them along with every other component. They fall back to the built-in palette when nothing is set." />
+
+#### Default
+
+<ToasterWrapperBeta />
+
+## Quick Start
+
+**1. Mount the Toaster once**, near the root of the app:
+
+```tsx
+// Vite / plain React: App.tsx
+import { Toaster } from "@/components/toaster";
+
+export default function App() {
+  return (
+    <>
+      <Routes />
+      <Toaster />
+    </>
+  );
+}
+```
+
+**2. Call `toast()` anywhere:**
+
+```tsx
+"use client";
+
+import { toast } from "@/components/toaster";
+
+export function SaveButton() {
+  return <button onClick={() => toast.success("Settings saved")}>Save</button>;
+}
+```
+
+<Notice message="Import toast and Toaster from the same path everywhere. They meet through one shared store, and a bundler that sees two different import paths can create two stores — then toasts never appear." />
+
+## Props Table
+
+### Toaster
+
+| Prop          | Type                                                                                                        | Default              | Description                                                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `position`    | `"top-left"` \| `"top-center"` \| `"top-right"` \| `"bottom-left"` \| `"bottom-center"` \| `"bottom-right"` | `"top-right"`        | Where the stack sits. On screens narrower than 600 px toasts span the width.                                                    |
+| `limit`       | `number`                                                                                                    | `3`                  | Toasts on screen at once. The rest wait, with their timers held.                                                                |
+| `duration`    | `number`                                                                                                    | `5000`               | Default auto-close delay in milliseconds.                                                                                       |
+| `closeButton` | `boolean`                                                                                                   | `true`               | Show a close button on dismissible toasts.                                                                                      |
+| `hotkey`      | `string[]`                                                                                                  | `["altKey", "KeyT"]` | Moves focus to the notifications. Modifier names from `KeyboardEvent` plus a key `code`. `[]` turns it off.                     |
+| `icons`       | `Partial<Record<ToastType, ReactNode>>`                                                                     | —                    | Replace the icon per type; `null` hides it.                                                                                     |
+| `store`       | `ToastStore`                                                                                                | the `toast()` store  | A store from `createToastStore()`. See [Multiple Toasters](#multiple-toasters).                                                 |
+| `dir`         | `"ltr"` \| `"rtl"` \| `"auto"`                                                                              | inherited            | Text direction of the toasts.                                                                                                   |
+| `className`   | `string`                                                                                                    | —                    | Class for the region.                                                                                                           |
+| `classNames`  | `Partial<Record<ToasterSlot, string>>`                                                                      | —                    | Classes per slot: `region`, `list`, `toast`, `icon`, `content`, `title`, `description`, `actions`, `action`, `cancel`, `close`. |
+| `style`       | `CSSProperties`                                                                                             | —                    | Inline style for the region (e.g. CSS variables).                                                                               |
+| `localeText`  | `Partial<ToasterLocaleText>`                                                                                | English              | Overrides UI text. See [Locale Text](#locale-text).                                                                             |
+
+### Toast options
+
+The second argument of every `toast()` call.
+
+| Option        | Type                             | Default                | Description                                                                                      |
+| ------------- | -------------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `id`          | `string`                         | generated              | Showing a toast with an id already on screen updates it in place.                                |
+| `type`        | `ToastType`                      | `"default"`            | `"default"`, `"success"`, `"error"`, `"warning"`, `"info"` or `"loading"`. Set by the shortcuts. |
+| `description` | `ReactNode`                      | —                      | Second line under the title.                                                                     |
+| `duration`    | `number`                         | `5000`; loading: stays | Milliseconds. `0` or `Infinity` keeps the toast until it is dismissed.                           |
+| `dismissible` | `boolean`                        | `true`                 | Allow the close button, Escape and swipe.                                                        |
+| `action`      | `{ label, onClick(event) }`      | —                      | Main button. The toast closes after the click unless `event.preventDefault()` is called.         |
+| `cancel`      | `{ label, onClick(event) }`      | —                      | Secondary button, same rules.                                                                    |
+| `icon`        | `ReactNode`                      | the type's icon        | `null` hides the icon.                                                                           |
+| `className`   | `string`                         | —                      | Class for this toast.                                                                            |
+| `render`      | `({ id, dismiss }) => ReactNode` | —                      | Custom body. Set by `toast.custom`.                                                              |
+| `onDismiss`   | `(toast) => void`                | —                      | Closed by the user or by `toast.dismiss`.                                                        |
+| `onAutoClose` | `(toast) => void`                | —                      | Closed because its time ran out.                                                                 |
+
+## Toast Types
+
+```tsx
+toast("Event created", { description: "Monday at 10:00" });
+toast.success("Settings saved");
+toast.error("Payment declined", { description: "The card was refused." });
+toast.warning("Storage almost full");
+toast.info("A new version is available");
+toast.loading("Syncing…");
+```
+
+Each type sets the icon and the colored bar on the toast's leading edge. Loading toasts stay until you update or dismiss them.
+
+## Actions
+
+```tsx
+toast("Message archived", {
+  action: { label: "Undo", onClick: () => restoreMessage(id) },
+});
+
+toast.error("Could not connect", {
+  duration: Infinity,
+  cancel: { label: "Dismiss", onClick: () => {} },
+  action: {
+    label: "Retry",
+    onClick: (event) => {
+      event.preventDefault(); // keep this toast open
+      reconnect();
+    },
+  },
+});
+```
+
+Clicking an action or cancel button closes the toast, unless the handler calls `event.preventDefault()`.
+
+## Promises
+
+`toast.promise` shows a loading toast and turns it into a success or error when the promise settles. It returns the same promise, so you can still `await` it.
+
+```tsx
+const user = await toast.promise(saveUser(data), {
+  loading: "Saving…",
+  success: (user) => `${user.name} saved`,
+  error: (error) => `Could not save: ${(error as Error).message}`,
+});
+```
+
+- Pass a promise, or a function that returns one: `toast.promise(() => fetch(url), …)`.
+- Leave out `success` or `error` to close the toast quietly in that case.
+- A rejection is still passed on to the caller, and it is never reported as unhandled.
+
+## Updating a Toast
+
+Every call returns an id. Use it to change the toast in place:
+
+```tsx
+const id = toast.loading("Uploading report.pdf", { description: "0%" });
+
+toast.update(id, { description: "60%" });
+toast.update(id, {
+  type: "success",
+  title: "report.pdf uploaded",
+  description: "2.4 MB",
+});
+```
+
+- Changing `type` without a `duration` gives the toast that type's default, so a loading toast that becomes a success closes on its own.
+- Updating restarts the countdown.
+- Calling `toast(…, { id })` with an id already on screen does the same as `update`. This is handy for events that repeat, such as "Offline", which should not stack.
+
+## Custom Toasts
+
+```tsx
+toast.custom(
+  ({ dismiss }) => (
+    <div className="flex items-center gap-3">
+      <Avatar user={user} />
+      <div className="flex-1">
+        <strong>{user.name}</strong> invited you to “Q3 planning”
+      </div>
+      <button onClick={dismiss}>View</button>
+    </div>
+  ),
+  { duration: 8000 },
+);
+```
+
+A custom toast keeps the frame, timing, swipe, Escape and close button; you provide the content.
+
+## Calling from Outside React
+
+`toast()` is a plain function, so it works where hooks cannot:
+
+```ts
+// api/client.ts
+import { toast } from "@/components/toaster";
+
+export async function request(url: string) {
+  const response = await fetch(url);
+  if (!response.ok)
+    toast.error("Request failed", { description: `${response.status} ${url}` });
+  return response;
+}
+```
+
+The same goes for Redux thunks, Zustand actions, TanStack Query `onError` callbacks and WebSocket handlers.
+
+## Multiple Toasters
+
+The ready-made `toast` shares one store with every `<Toaster />` that has no `store` prop. For a separate notification area, for example inside an embedded widget, create your own:
+
+```tsx
+import {
+  createToastApi,
+  createToastStore,
+  Toaster,
+} from "@/components/toaster";
+
+const widgetStore = createToastStore({ limit: 1 });
+export const widgetToast = createToastApi(widgetStore);
+
+<Toaster store={widgetStore} position="bottom-center" />;
+```
+
+## Timing and Queueing
+
+- **Pausing:** timers pause while the pointer is over the toasts, while keyboard focus is inside them, and while the browser tab is hidden. They continue with the time that was left.
+- **Queueing:** only `limit` toasts are on screen. Newer toasts appear first, and older ones wait with their full time until a slot frees up.
+- **Order:** the newest toast sits nearest the screen edge, at the top for `top-*` positions and at the bottom for `bottom-*`.
+- **Layering:** toasts render in a portal on `<body>` with a very high `z-index`, so no parent's `overflow`, `transform` or stacking context can hide them.
+
+## The toast() API
+
+| Method                                         | Signature                                                   | Description                                                   |
+| ---------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| `toast`                                        | `(title, options?) => id`                                   | A default toast.                                              |
+| `toast.success` / `error` / `warning` / `info` | `(title, options?) => id`                                   | A toast of that type.                                         |
+| `toast.loading`                                | `(title, options?) => id`                                   | Stays until updated or dismissed.                             |
+| `toast.custom`                                 | `(render, options?) => id`                                  | Custom body; `render` receives `{ id, dismiss }`.             |
+| `toast.promise`                                | `(promise \| () => promise, messages, options?) => promise` | Loading, then success or error.                               |
+| `toast.update`                                 | `(id, patch) => void`                                       | Changes an open toast. `patch` takes any option plus `title`. |
+| `toast.dismiss`                                | `(id?) => void`                                             | Closes one toast, or all of them.                             |
+
+## Keyboard
+
+| Keys                      | Action                                                       |
+| ------------------------- | ------------------------------------------------------------ |
+| **Alt + T**               | Move focus to the notifications (change it with `hotkey`).   |
+| **Tab** / **Shift + Tab** | Move between toasts and their buttons.                       |
+| **Escape**                | Dismiss the focused toast. Focus stays in the notifications. |
+| **Enter** / **Space**     | Activate the focused action or close button.                 |
+| swipe sideways            | Dismiss with touch, pen or mouse.                            |
+
+Accessibility: the notifications are a labelled landmark ("Notifications (Alt+T)"). The list is a polite live region that is always in the page, so new toasts are read out without interrupting the user. Error toasts use `role="alert"` and interrupt. Moving focus into the notifications pauses the timers, so there is time to reach an action.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Toaster
+  classNames={{
+    toast: "shadow-xl",
+    title: "tracking-tight",
+    action: "uppercase",
+  }}
+/>
+```
+
+#### CSS variables
+
+Override them on `.ts-region`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable                                                  | Used for                                          |
+| --------------------------------------------------------- | ------------------------------------------------- |
+| `--ts-font-size`                                          | Base font size.                                   |
+| `--ts-width`                                              | Width of the stack (`356px`).                     |
+| `--ts-offset`                                             | Distance from the screen edges (`16px`).          |
+| `--ts-gap`                                                | Space between toasts (`8px`).                     |
+| `--ts-z-index`                                            | Stacking order of the region.                     |
+| `--ts-bg`, `--ts-fg`                                      | Background and text color.                        |
+| `--ts-muted`                                              | Descriptions, default icons and the close button. |
+| `--ts-border`                                             | Borders.                                          |
+| `--ts-hover`                                              | Hover background of buttons.                      |
+| `--ts-accent`, `--ts-accent-fg`                           | The action button.                                |
+| `--ts-success`, `--ts-error`, `--ts-warning`, `--ts-info` | Icon and bar color per type.                      |
+| `--ts-focus`                                              | Focus ring.                                       |
+| `--ts-shadow`                                             | Toast shadow.                                     |
+| `--ts-radius`                                             | Corner radius.                                    |
+
+```css
+.ts-region {
+  --ts-width: 420px;
+  --ts-success: #059669;
+  --ts-radius: 12px;
+}
+```
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+| Element               | Attributes                                                                    |
+| --------------------- | ----------------------------------------------------------------------------- |
+| Region (`.ts-region`) | `data-position`                                                               |
+| Toast (`.ts-toast`)   | `data-type`, `data-state` (`open` / `closing`), `data-custom`, `data-swiping` |
+
+Toasts fade and slide in with `@starting-style`, and fade out while `data-state="closing"`. With `prefers-reduced-motion`, they appear and disappear without movement.
+
+## Locale Text
+
+```tsx
+<Toaster
+  localeText={{
+    regionLabel: (hotkey) => `Benachrichtigungen (${hotkey})`,
+    close: "Schließen",
+  }}
+/>
+```
+
+| Key           | Default                                  |
+| ------------- | ---------------------------------------- |
+| `regionLabel` | `(hotkey) => "Notifications ({hotkey})"` |
+| `close`       | `"Close notification"`                   |
+
+Titles, descriptions and button labels are whatever you pass to `toast()`.
+
+## Headless Use
+
+`useToasts(store?)` returns the live snapshot for building a different notification UI on the same store:
+
+```tsx
+const { toasts, paused, limit } = useToasts();
+const shown = visibleToasts({ toasts, paused, limit });
+```
+
+The framework-free core is exported from `@/components/toaster/core`:
+
+| Export                                                 | Description                                                                                                                                        |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `toast` / `toastStore`                                 | The ready-made API and the store behind it.                                                                                                        |
+| `createToastStore(config?)`                            | A new store: `show`, `update`, `dismiss`, `pause`, `resume`, `configure`, `subscribe`, `getSnapshot`. Config: `duration`, `limit`, `exitDuration`. |
+| `createToastApi(store)`                                | The `toast()` function for a store.                                                                                                                |
+| `visibleToasts(snapshot)`                              | Closing toasts plus the newest `limit` open ones.                                                                                                  |
+| `DEFAULT_DURATION` / `DEFAULT_LIMIT` / `EXIT_DURATION` | `5000`, `3` and `200` ms.                                                                                                                          |
+
+A store's snapshots never change once created, so it works directly with `useSyncExternalStore`, and the timers can be tested with fake timers and no DOM.
+
+## Next.js
+
+Mount the Toaster in the root layout. It is a client component, and a Server Component layout can render it directly:
+
+```tsx
+// app/layout.tsx
+import { Toaster } from "@/components/toaster";
+import "@/components/toaster/styles.css";
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
+        <Toaster />
+      </body>
+    </html>
+  );
+}
+```
+
+`toast()` does nothing on the server, because nobody there can see a toast. This also keeps one request's toasts from leaking into another's. To report a Server Action's result, call `toast` in the client:
+
+```tsx
+"use client";
+
+import { toast } from "@/components/toaster";
+import { saveProfile } from "./actions";
+
+export function ProfileForm() {
+  return (
+    <form
+      action={(formData) => {
+        toast.promise(saveProfile(formData), {
+          loading: "Saving…",
+          success: "Profile saved",
+          error: "Could not save your profile",
+        });
+      }}
+    >
+      …
+    </form>
+  );
+}
+```
+
+The Toaster renders nothing during the server render and hydration, then mounts its portal, so it never causes a hydration mismatch.
+
+## Migrating from the Previous Toast
+
+| Previous                                                            | New                                                                                             |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `const { toast } = useToast(); toast({ title, description, type })` | `toast(title, { description, type })`, or `toast.success(title, …)`. No hook needed             |
+| `useToast().dismiss(id)`                                            | `toast.dismiss(id)`; `toast.dismiss()` closes all                                               |
+| `useToast().toasts`                                                 | `useToasts().toasts`                                                                            |
+| `type`: `default`, `success`, `error`, `warning`                    | Same, plus `info` and `loading`                                                                 |
+| `duration` (ms, `0` stays)                                          | Same; `Infinity` also stays                                                                     |
+| `content` (custom node)                                             | `toast.custom(({ dismiss }) => …)`                                                              |
+| `action` (any node)                                                 | `action: { label, onClick }` and `cancel`; for anything else use `toast.custom`                 |
+| `<Toaster position="top-right" />`                                  | Same prop and values; the default is still `"top-right"`                                        |
+| Unlimited stack                                                     | `limit` (default 3). Extra toasts wait instead of covering the screen                           |
+| Timer ran while reading                                             | Pauses on hover, on focus and while the tab is hidden                                           |
+| Every toast `role="alert"`                                          | A polite live region; only errors interrupt                                                     |
+| No keyboard support                                                 | Alt+T, Tab, Escape, plus swipe to dismiss                                                       |
+| Shared state object mutated in place, ids from `Math.random()`      | Immutable snapshots through `useSyncExternalStore`; `createToastStore()` for separate instances |
+| Tailwind classes, `animate-fade-in` from an uninstalled plugin      | `styles.css` with `--ts-*` variables, `classNames` slots and `data-*` attributes                |
+| Portal mounted with `useState` + `useEffect`                        | Mounts after hydration without a mismatch, and does nothing on a server                         |
+
+#### Notes
+
+- Toasts stack as a list; they do not collapse into an expandable pile.
+- `toast()` only shows toasts in the browser. Call it after a server response arrives, not in server code.
+- One shared store means one import path: don't mix `@/components/toaster` with a relative path to the same files.

@@ -1,0 +1,9 @@
+{
+  "name": "Grampro Kit — Design System Generator",
+  "id": "grampro-kit-design-system-generator",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": { "allowedDomains": ["none"] }
+}

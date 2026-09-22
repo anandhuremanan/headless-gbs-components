@@ -1,0 +1,271 @@
+---
+title: "Modal"
+description: "Forms, details and drawers above the page, built on the native dialog element with focus and dismiss handled for you."
+group: "Overlays"
+order: 12
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Modal -beta
+```
+
+The block copies the `modal` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `:has()` and `@starting-style`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/modal/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/modal/styles.css";
+```
+
+The Modal shows content above the page: forms, details, terms, or anything that needs the user's full attention. It is built on the browser's own `<dialog>` element. The browser keeps it above every other element, makes the page behind it unreachable, keeps keyboard focus inside and returns focus to where it was on close. The component adds controlled state, dismiss rules, a guard for unsaved changes, sizes, side and bottom drawers, and animation.
+
+For short questions — "Delete this?", "Rename to…" — use the [Dialog](/2.0.0-beta/dialog) instead.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<ModalWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Modal } from "@/components/modal";
+
+export default function EditProfile() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>Edit profile</button>
+
+      <Modal
+        open={open}
+        onOpenChange={setOpen}
+        title="Edit profile"
+        description="Changes are saved when you press Save."
+        footer={({ close }) => (
+          <>
+            <button onClick={close}>Cancel</button>
+            <button type="submit" form="profile-form">Save</button>
+          </>
+        )}
+      >
+        <form id="profile-form" onSubmit={(event) => { event.preventDefault(); save(); setOpen(false); }}>
+          <input name="name" data-autofocus />
+        </form>
+      </Modal>
+    </>
+  );
+}
+```
+
+The Modal is controlled with `open` + `onOpenChange`, or uncontrolled with `defaultOpen` and the ref's `open()` / `close()`.
+
+<Notice message="A submit button in the footer can belong to a form in the body through the form attribute (form='profile-form'), so Enter in any field and the Save button submit the same form." />
+
+## Props Table
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `open` | `boolean` | — | Open state (controlled). |
+| `defaultOpen` | `boolean` | `false` | Starting state (uncontrolled). |
+| `onOpenChange` | `(open: boolean, reason?: CloseReason) => void` | — | Fires on open and close. `reason` says what closed it: `escape`, `backdrop`, `close-button` or `api`. |
+| `title` | `ReactNode` | — | Heading; also names the modal for screen readers. |
+| `description` | `ReactNode` | — | Text under the title; also describes the modal. |
+| `aria-label` | `string` | — | Accessible name when there is no `title`. |
+| `children` | `ReactNode` \| `({ close }) => ReactNode` | — | Body. Scrolls on its own when it's taller than the screen. |
+| `footer` | `ReactNode` \| `({ close }) => ReactNode` | — | Footer, usually buttons. Stays visible while the body scrolls. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` \| `"xl"` \| `"full"` | `"md"` | Width: 400, 520, 720 or 960 px, or the whole screen. For drawers, the drawer's width (or height at the bottom). |
+| `placement` | `"center"` \| `"top"` \| `"left"` \| `"right"` \| `"bottom"` | `"center"` | `top` sits near the top of the screen; `left`, `right` and `bottom` slide in as drawers. |
+| `closeButton` | `boolean` | `true` | Show the × button. |
+| `closeOnEscape` | `boolean` | `true` | Close on Escape. |
+| `closeOnBackdrop` | `boolean` | `true` | Close on a click outside the modal. |
+| `onBeforeClose` | `(reason: CloseReason) => boolean \| Promise<boolean>` | — | Return `false` to keep the modal open. See [Closing](#closing). |
+| `initialFocus` | `RefObject<HTMLElement \| null>` | — | Element to focus on open. See [Focus](#focus). |
+| `keepMounted` | `boolean` | `false` | Keep the content mounted while closed, so its state survives. |
+| `id` | `string` | generated | Id of the `<dialog>`; also the base for the title and description ids. |
+| `className` | `string` | — | Class for the `<dialog>`. |
+| `classNames` | `Partial<Record<ModalSlot, string>>` | — | Classes per slot: `root`, `header`, `title`, `description`, `close`, `body`, `footer`. |
+| `style` | `CSSProperties` | — | Inline style for the `<dialog>` (e.g. CSS variables). |
+| `localeText` | `Partial<ModalLocaleText>` | English | Overrides UI text. See [Locale Text](#locale-text). |
+| `ref` | `Ref<ModalHandle>` | — | Imperative API. See [Imperative API](#imperative-api-ref). |
+
+## Closing
+
+A modal closes through Escape, a backdrop click, the × button, or your own code: `close()` from the `children` / `footer` render props, `ref.close()`, or setting `open` to `false`.
+
+| Source | `reason` | Turned off by |
+| --- | --- | --- |
+| **Escape** | `escape` | `closeOnEscape={false}` |
+| Click outside the modal | `backdrop` | `closeOnBackdrop={false}` |
+| × button | `close-button` | `closeButton={false}` |
+| `close()`, `ref.close()` | `api` | — |
+
+Every one of these, except setting `open` yourself, goes through `onBeforeClose`. That makes it the place to protect unsaved work:
+
+```tsx
+<Modal
+  open={open}
+  onOpenChange={setOpen}
+  closeOnBackdrop={false}
+  onBeforeClose={() => !isDirty || dialog.confirm({ title: "Discard your changes?", intent: "warning" })}
+>
+```
+
+- Returning `false`, or a promise that resolves `false`, keeps the modal open. If the guard throws, the modal also stays open.
+- A drag that starts inside the modal and ends on the backdrop, for example while selecting text, doesn't close it.
+
+## Sizes and Drawers
+
+```tsx
+<Modal size="lg" />                       {/* a wider dialog */}
+<Modal size="full" />                     {/* covers the screen */}
+<Modal placement="top" />                 {/* near the top, for command palettes and search */}
+<Modal placement="right" size="sm" />     {/* a 400 px drawer from the right */}
+<Modal placement="bottom" />              {/* a bottom sheet, handy on phones */}
+```
+
+Drawers fill the height of the screen (or the width, at the bottom) and slide in from their side. `left` and `right` refer to the physical screen edges.
+
+## Focus
+
+When the modal opens, focus moves to, in order of preference:
+
+1. the element in `initialFocus`,
+2. the first element with `data-autofocus`,
+3. the first focusable element (the browser's default, often the × button).
+
+Focus stays inside while the modal is open, and returns to the element that had it before, usually the button that opened it.
+
+```tsx
+<input name="email" data-autofocus />
+```
+
+## Imperative API (ref)
+
+```tsx
+const modal = useRef<ModalHandle>(null);
+
+<Modal ref={modal} defaultOpen={false} title="Shortcuts">…</Modal>;
+
+modal.current?.open();
+```
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `open` | `() => void` | Open the modal. |
+| `close` | `() => void` | Ask to close, with reason `api`; `onBeforeClose` still applies. |
+| `getElement` | `() => HTMLDialogElement \| null` | The underlying `<dialog>`. |
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **Tab** / **Shift + Tab** | Move between focusable elements inside the modal only. |
+| **Escape** | Close, unless `closeOnEscape={false}` or `onBeforeClose` says no. |
+
+Accessibility: the modal is a native modal `<dialog>`, so the page behind it is inert. Screen readers can't wander out of it, and clicks and focus can't reach it. The title labels it (`aria-labelledby`) and the description describes it (`aria-describedby`). The × button is labelled with `localeText.close`.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Modal className="max-w-2xl" classNames={{ body: "space-y-4", footer: "justify-between" }} />
+```
+
+#### CSS variables
+
+Override them on `.md-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--md-width` | Width (set by `size`). |
+| `--md-gutter` | Space kept between the modal and the screen edges (`16px`). |
+| `--md-px` | Horizontal padding of the header, body and footer. |
+| `--md-bg`, `--md-fg` | Background and text color. |
+| `--md-muted` | Description and the × button. |
+| `--md-border` | Borders. |
+| `--md-footer-bg` | Footer background. |
+| `--md-backdrop` | The dimmed page behind the modal. |
+| `--md-shadow` | Shadow. |
+| `--md-radius` | Corner radius. |
+| `--md-duration` | Enter and exit animation length (`200ms`). |
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`dialog.md-root`) | `data-size`, `data-placement`, `data-state` (`open` / `closed`), `open` |
+
+Enter and exit use `@starting-style` and `transition-behavior: allow-discrete`. Browsers without them open and close instantly. With `prefers-reduced-motion` the modal fades without moving.
+
+## Locale Text
+
+```tsx
+<Modal localeText={{ close: "Schließen" }} />
+```
+
+| Key | Default |
+| --- | --- |
+| `close` | `"Close"` |
+
+## Headless Use
+
+The rules the Modal follows are exported from the framework-free `@/components/modal/core`:
+
+| Export | Description |
+| --- | --- |
+| `canDismiss(reason, { closeOnEscape, closeOnBackdrop })` | Whether a close request is allowed before the guard runs. |
+| `isOutside(rect, x, y)` | Whether a click on the `<dialog>` landed on its backdrop. |
+| `confirmClose(guard, reason)` | Runs an `onBeforeClose` guard; resolves `false` to stay open. |
+
+## Next.js
+
+The component is a client component, and `"use client"` is already at the top of its file. The `<dialog>` element renders closed on the server and opens after hydration, so there is no hydration mismatch. Opening a modal from a Server Component means rendering it inside a small client component that holds the `open` state.
+
+## Migrating from the Previous Modal
+
+| Previous | New |
+| --- | --- |
+| `isOpen` | `open` |
+| `setIsOpen` | `onOpenChange` — pass your setter: `onOpenChange={setOpen}` |
+| `onButtonClick("Action_1" \| "Action_2")` with built-in Yes/No buttons | Your own buttons in `footer`, or use the [Dialog](/2.0.0-beta/dialog): `await dialog.confirm(...)` |
+| `confirmBtn` / `deletBtn` | Button text in your `footer`, or `confirmLabel` / `cancelLabel` on the Dialog |
+| `title` | Same name |
+| `children` | Same; can also be a function receiving `{ close }` |
+| `gbs-modal-container` | `className` or `classNames.root` |
+| `gbs-modal-title` | `classNames.title` |
+| `gbs-modal-content` | `classNames.body` |
+| `gbs-modal-buttons`, `-action1`, `-action2` | `classNames.footer`, and classes on your own buttons |
+| No Escape, focus trap or focus return | All built in through the native `<dialog>` |
+| — | New: `description`, `size`, `placement` (drawers), `onBeforeClose`, `closeOnEscape`, `closeOnBackdrop`, `initialFocus`, `keepMounted` |
+
+#### Notes
+
+- The page behind is locked with `:root:has(.md-root[open]) { overflow: hidden }`. On pages with a visible scrollbar, content can move sideways by the scrollbar's width while a modal is open.
+- Nested modals work: each new one stacks above the last, and Escape closes the top one.
+- `closeOnBackdrop` needs a visible gap between the modal and the screen edge. A `full`-size modal has none, so use its × button or your own.

@@ -1,0 +1,205 @@
+---
+title: "NumberInput"
+description: "A numeric field that reads and writes numbers the way the locale does, with a spinner, steps that do not drift, and a wheel that cannot edit it by accident."
+group: "Inputs"
+order: 22
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a NumberInput -beta
+```
+
+The block copies the `number-input` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `color-mix()` and `:has()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/number-input/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/number-input/styles.css";
+```
+
+A field for quantities, amounts, percentages and limits. It holds a `number | null` rather than a string, reads what the person in front of the screen actually typed, and shows the number grouped and formatted when they are done.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<NumberInputWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { NumberInput } from "@/components/number-input";
+
+export default function OrderLine() {
+  const [quantity, setQuantity] = useState<number | null>(1);
+
+  return <NumberInput label="Quantity" min={1} max={99} value={quantity} onValueChange={setQuantity} />;
+}
+```
+
+Controlled with `value` + `onValueChange`, or uncontrolled with `defaultValue`. An empty field is `null`, which is a different thing from `0`.
+
+## Why not `<input type="number">`
+
+This is a text input with `role="spinbutton"`, not a native number field. That control has four problems that cannot be fixed from the outside:
+
+1. **The wheel silently edits it.** Focus a number field, scroll the page, and the value changes in Chrome and Safari. In a long form of amounts, someone scrolls past and submits a number they never typed. Here the wheel does nothing unless you ask for it with `wheel`, and even then only while the field has focus.
+2. **What was typed is unreadable.** When the browser judges the content invalid — `1e`, `1.2.3`, a lone `-` mid-typing — `input.value` is `""` and `valueAsNumber` is `NaN`. Empty and invalid cannot be told apart, and the text is gone. Here the entry stays visible while it is being written, and an unreadable one falls back to the last good number rather than being discarded.
+3. **It knows one notation.** Typing `1.234,56` into a German page, or `١٢٣٤` in Arabic, produces nothing usable. Here the notation comes from `locale`, both for reading and for showing.
+4. **Its spin buttons cannot be styled**, which is why most design systems hide them and end up with no increment affordance at all. These are ordinary buttons, and they repeat while held.
+
+## Locales
+
+```tsx
+<NumberInput label="Betrag" locale="de-DE" format="currency" currency="EUR" decimals={2} />
+```
+
+The separators, the digits and the minus sign all come from `Intl` for that locale — nothing is hard-coded — so `1.234,56` and `1,234.56` are the same number to two fields that differ only in `locale`. Currency symbols, percent signs and stray spaces in pasted text are ignored rather than rejected.
+
+The field shows a **formatted** number at rest and the **plain** number while it has focus. Separators inserted under the caret are what makes a "smart" number field unpleasant to type in, so they appear only once you have left.
+
+<Notice message="Pass locale explicitly when you render on a server. Without it the component uses the runtime's locale, and a server whose locale differs from the browser's would format the field differently on the first paint." />
+
+## Formats
+
+```tsx
+<NumberInput format="currency" currency="USD" decimals={2} />   {/* $1,234.50 */}
+<NumberInput format="percent" step={0.01} min={0} max={1} />    {/* 45% is 0.45 */}
+<NumberInput useGrouping={false} />                             {/* 1234.5 */}
+```
+
+`format="percent"` follows `Intl` and multiplies by 100 for display, so a field showing 45% holds `0.45`. That is the convention charts and CSS already use; having one component disagree would be worse than the surprise.
+
+## Limits and steps
+
+| Prop | Effect |
+| --- | --- |
+| `min` / `max` | The range. Reached by **Home** / **End**, and the matching stepper button disables itself. |
+| `step` | How far one arrow press or button moves. Default 1. |
+| `largeStep` | **Page Up** / **Page Down**. Default ten steps. |
+| `snapToStep` | Round every committed value onto the step grid, counted from `min`. |
+| `decimals` | Fraction digits to show, and to round to. |
+| `clampBehavior` | `blur` (the default) pulls an out-of-range number back when the field is left; `strict` does it as it is typed; `none` leaves it alone and lets your own validation speak. |
+
+`strict` sounds tidier than it is: typing `50` into a field with `max: 30` becomes `3` under the caret as soon as the `5` lands. `blur` is the default for that reason.
+
+Steps are computed on scaled integers, so pressing ↑ three times from `0` with `step={0.1}` gives `0.3`, not `0.30000000000000004`. `snapToStep` only applies to committed values — correcting `7` to `5` while someone is still typing `75` would make the field unusable.
+
+## Props Table
+
+Accepts every `<input>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number \| null` | — | The number (controlled). `null` is an empty field. |
+| `defaultValue` | `number \| null` | `null` | The number at first (uncontrolled). |
+| `onValueChange` | `(value: number \| null) => void` | — | Fires with the parsed number. |
+| `min` / `max` | `number` | — | The range. |
+| `step` | `number` | `1` | One arrow press or button. |
+| `largeStep` | `number` | `step * 10` | **Page Up** / **Page Down**. |
+| `snapToStep` | `boolean` | `false` | Round committed values onto the grid. |
+| `decimals` | `number` | — | Fraction digits shown, and rounded to. |
+| `locale` | `string` | runtime | BCP 47 tag deciding notation, for reading and showing. |
+| `format` | `"decimal"` \| `"currency"` \| `"percent"` | `"decimal"` | |
+| `currency` | `string` | — | ISO 4217 code, for `format="currency"`. |
+| `useGrouping` | `boolean` | `true` | Thousands separators at rest. |
+| `clampBehavior` | `"blur"` \| `"strict"` \| `"none"` | `"blur"` | When the range is enforced. |
+| `stepper` | `boolean` | `true` | The up and down buttons. |
+| `wheel` | `boolean` | `false` | Let the wheel change a focused field. See above. |
+| `selectOnFocus` | `boolean` | `false` | Select the number on focus, so typing replaces it. |
+| `clearable` | `boolean` | `false` | A button that empties the field. |
+| `leading` / `trailing` | `ReactNode` | — | A symbol or unit inside the field. |
+| `label`, `description`, `error` | `ReactNode` | — | Wired up with `aria-describedby` and `role="alert"`. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Height 30 / 36 / 44 px, matching Input. |
+| `classNames` | `Partial<Record<NumberInputSlot, string>>` | — | `root` `label` `control` `input` `stepper` `description` `error` |
+| `localeText` | `Partial<NumberInputLocaleText>` | — | `increment` `decrement` `clear` |
+| `ref` | `Ref<HTMLInputElement>` | — | The `<input>` element. |
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **↑** / **↓** | One step. |
+| **Page Up** / **Page Down** | One `largeStep`. |
+| **Home** / **End** | `min` / `max`, where there is one. |
+| **Escape** | Put back the last committed number, dropping whatever is half-typed. |
+
+The stepper buttons are outside the tab order, like the native spinner's: the keyboard already has the arrows, and two extra tab stops per field would make a form of them tiring. Holding a button repeats after 400 ms.
+
+Accessibility: `role="spinbutton"` with `aria-valuenow`, `aria-valuemin` and `aria-valuemax`, plus `aria-valuetext` carrying the formatted string — so a screen reader says "1,234.56 US dollars" rather than reading bare digits. `inputMode` is `decimal`, or `numeric` for a field that takes neither decimals nor negatives, which is what decides the keypad on a phone.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+#### CSS variables
+
+Override them on `.nm-root`, on `:root`, or through `style`. Each falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--nm-height`, `--nm-px`, `--nm-font-size` | Field size (set by `size`). |
+| `--nm-input-bg`, `--nm-readonly-bg` | Field background. |
+| `--nm-border` | Border and the line beside the stepper. |
+| `--nm-fg`, `--nm-muted` | Number, placeholder, adornments. |
+| `--nm-focus` | Focus ring. |
+| `--nm-danger` | Error text and the invalid border. |
+| `--nm-radius` | Corner radius. |
+
+The number is set in tabular figures, so a column of amounts lines up and the digits do not jitter as they are typed.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.nm-root`) | `data-size`, `data-disabled`, `data-invalid` |
+| Control (`.nm-control`) | `data-disabled`, `data-readonly`, `data-invalid` |
+| Step button (`.nm-step`) | `data-direction` |
+
+## Headless Use
+
+The framework-free `core` is the whole value model, and the same parsing can run on a server to accept what the field sends:
+
+| Export | Description |
+| --- | --- |
+| `parseNumber(text, locale?)` | Reads a number in that locale's notation, or `null`. |
+| `formatNumber(value, options?)` | Cached `Intl` formatting. |
+| `toEditText(value, locale?)` | The plain, ungrouped form for editing. |
+| `localeParts(locale?)` | That locale's group, decimal, minus and digits. |
+| `stepBy(value, direction, options)` | One press, without floating-point drift. |
+| `snapToStep`, `clamp`, `round`, `decimalsOf` | The rest of the arithmetic. |
+
+## Next.js
+
+The component is a client component: `"use client"` is at the top of the file. It renders the formatted number on the server, so pass `locale` explicitly there.
+
+With a `name` the field posts with a plain form. The text it posts is the *formatted* value, so read it on the server with the same `parseNumber` and the same locale:
+
+```ts
+import { parseNumber } from "@/components/number-input/core";
+
+const amount = parseNumber(String(formData.get("amount")), "de-DE");
+```
+
+#### Notes
+
+- An empty field is `null`, never `0`. A field that must have a number wants `required` and a `min`.
+- An unreadable entry falls back to the last committed number on blur; it is never turned into `null`, because leaving a field should not destroy a value.
+- The grid's own number cells and filters are separate, simpler inputs; this component is for forms.

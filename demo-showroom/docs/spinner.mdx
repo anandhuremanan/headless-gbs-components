@@ -1,0 +1,183 @@
+---
+title: "Spinner"
+description: "A loading indicator on its own, beside a label or covering content, with a delay and minimum time so it never flickers."
+group: "Feedback"
+order: 13
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Spinner -beta
+```
+
+The block copies the `spinner` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `color-mix()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/spinner/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/spinner/styles.css";
+```
+
+The Spinner shows that something is loading. Use it on its own, next to a label, or around content: wrapped content gets a translucent cover and becomes inert, so it can't be clicked or focused while busy. It can wait before appearing and stay a minimum time once it has, so quick operations don't make it flicker on and off.
+
+<Notice message="The spinner draws in the current text color, so it matches its surroundings without configuration. Covering spinners use the accent color, which reads --gbs-accent when it is set on :root." />
+
+#### Default
+
+<SpinnerWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { Spinner } from "@/components/spinner";
+
+export function Orders({ isPending, orders }) {
+  return (
+    <Spinner loading={isPending} delay={250} minDuration={600}>
+      <OrderTable orders={orders} />
+    </Spinner>
+  );
+}
+```
+
+With React 19 transitions, pass the `isPending` from `useTransition` or `useActionState`:
+
+```tsx
+const [isPending, startTransition] = useTransition();
+
+<Spinner loading={isPending}>
+  <Results />
+</Spinner>;
+```
+
+## Props Table
+
+Accepts every HTML attribute for the root element, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `loading` | `boolean` | `true` | Whether to show. With `children`, the spinner covers them while `true`. |
+| `size` | `"xs"` \| `"sm"` \| `"md"` \| `"lg"` \| `"xl"` \| `number` | `"md"` | 12, 16, 24, 32 or 48 px, or a pixel number. |
+| `variant` | `"ring"` \| `"dots"` | `"ring"` | Spinning ring or pulsing dots. |
+| `label` | `string` | `"Loading"` | Announced to screen readers. |
+| `showLabel` | `boolean` | `false` | Also show the label next to the spinner. |
+| `delay` | `number` | `0` | Milliseconds to wait before appearing. Work that finishes sooner never shows a spinner. |
+| `minDuration` | `number` | `0` | Once shown, stay at least this many milliseconds. |
+| `children` | `ReactNode` | — | Content to cover while loading. It is `inert` meanwhile. |
+| `className` | `string` | — | Class for the root. |
+| `classNames` | `Partial<Record<SpinnerSlot, string>>` | — | Slots: `root`, `status`, `indicator`, `label`, `content`, `overlay`. |
+| `style` | `CSSProperties` | — | Inline style for the root. |
+| `localeText` | `Partial<SpinnerLocaleText>` | English | See [Locale Text](#locale-text). |
+
+## Avoiding Flicker
+
+A spinner that appears for 80 ms and vanishes looks like a glitch. Two props prevent it:
+
+```tsx
+<Spinner loading={isLoading} delay={250} minDuration={600} />
+```
+
+- **`delay`:** nothing is shown until loading has lasted 250 ms. Fast responses never show a spinner.
+- **`minDuration`:** once the spinner appears, it stays at least 600 ms, even if loading ends sooner.
+
+The same timing is available for any loading UI, such as a skeleton or a progress bar:
+
+```tsx
+import { useDelayedLoading } from "@/components/spinner";
+
+const showSkeleton = useDelayedLoading(isLoading, { delay: 250, minDuration: 600 });
+return showSkeleton ? <Skeleton /> : <Content />;
+```
+
+## Covering Content
+
+```tsx
+<Spinner loading={saving} className="rounded-xl">
+  <Card>…</Card>
+</Spinner>
+```
+
+- The content stays rendered, so the layout doesn't jump.
+- While loading, the content is `inert`: it can't be clicked, focused or selected, and screen readers skip it.
+- The wrapper has `aria-busy="true"` while loading.
+- The cover takes the wrapper's `border-radius`, so give the wrapper the same radius as the content.
+
+## Keyboard
+
+The Spinner itself isn't interactive. Covered content is inert while loading, so the keyboard skips it until loading ends.
+
+Accessibility: the spinner is a `role="status"` region, so its label ("Loading") is announced politely. The animated graphic is `aria-hidden`. With `prefers-reduced-motion`, the animation slows down rather than stopping, because a frozen spinner looks like a hang.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Spinner className="text-emerald-600" />
+```
+
+#### CSS variables
+
+| Variable | Used for |
+| --- | --- |
+| `--sp-size` | Indicator size (set by `size`). |
+| `--sp-color` | Indicator color (`currentColor`). |
+| `--sp-track` | The faint ring behind the arc. |
+| `--sp-duration` | One rotation (`0.8s`). |
+| `--sp-overlay-bg` | The cover over busy content. |
+| `--sp-overlay-color` | Spinner color on the cover (the accent). |
+
+Override them on `.sp-root`, on `:root`, or through `style`. The colors fall back to the shared `--gbs-*` variables, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.sp-root`) | `data-variant` |
+| Wrapper (`.sp-container`) | `data-loading`, `aria-busy` |
+| Indicator (`.sp-indicator`) | `data-variant` |
+
+## Locale Text
+
+```tsx
+<Spinner localeText={{ loading: "Wird geladen" }} />
+```
+
+| Key | Default |
+| --- | --- |
+| `loading` | `"Loading"` |
+
+The `label` prop overrides it for a single spinner.
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `useDelayedLoading(loading, { delay, minDuration })` | The spinner's timing for any loading UI. |
+| `stepVisibility(loading, marks, now, options)` | The framework-free rule behind it: whether to show now, and when to check again. |
+| `spinnerPixels(size)` | Pixel size for a named size. |
+
+## Next.js
+
+The Spinner is a client component with `"use client"` at the top of its file. It works in `loading.tsx` files and inside `<Suspense fallback={<Spinner />}>`.
+
+#### Notes
+
+- `inert` also blocks text selection in the covered content while loading.
+- Without `children`, a spinner with `loading={false}` renders nothing.

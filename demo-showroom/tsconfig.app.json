@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "paths": { "@/components/*": ["./component-lib/*"] },
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+    "src",
+    "component-lib/data-grid",
+    "component-lib/combobox",
+    "component-lib/date-picker",
+    "component-lib/toaster",
+    "component-lib/file-uploader",
+    "component-lib/modal",
+    "component-lib/dialog",
+    "component-lib/input",
+    "component-lib/textarea",
+    "component-lib/spinner",
+    "component-lib/button",
+    "component-lib/checkbox",
+    "component-lib/tabs",
+    "component-lib/breadcrumb",
+    "docs/wrappers"
+  ]
+}

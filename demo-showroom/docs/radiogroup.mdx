@@ -1,0 +1,218 @@
+---
+title: "RadioGroup"
+description: "One choice out of a few, on native radios: one tab stop, arrow keys between the choices, and a card variant for choices that need explaining."
+group: "Inputs"
+order: 21
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a RadioGroup -beta
+```
+
+The block copies the `radio-group` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `color-mix()` and `:has()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/radio-group/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/radio-group/styles.css";
+```
+
+A RadioGroup asks one question with a few mutually exclusive answers, all visible at once. The buttons are the browser's own `<input type="radio">` elements sharing a `name`, restyled — which is what gives the group one tab stop, arrow keys that move between the choices and skip the disabled ones, and validation of the whole group as a single required field, with no JavaScript involved.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<RadioGroupWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { RadioGroup } from "@/components/radio-group";
+
+export default function ReportSettings() {
+  const [frequency, setFrequency] = useState<string | null>("weekly");
+
+  return (
+    <RadioGroup
+      label="Send the report"
+      name="frequency"
+      options={[
+        { value: "daily", label: "Daily" },
+        { value: "weekly", label: "Weekly" },
+        { value: "monthly", label: "Monthly" },
+      ]}
+      value={frequency}
+      onValueChange={setFrequency}
+    />
+  );
+}
+```
+
+Plain strings work where the label is the value: `options={["Daily", "Weekly", "Monthly"]}`.
+
+Controlled with `value` + `onValueChange`, or uncontrolled with `defaultValue`. `null` means nothing is chosen.
+
+For choices that need their own markup, pass `<Radio>` children instead:
+
+```tsx
+<RadioGroup label="Delivery" name="delivery">
+  <Radio value="standard" label="Standard" description="3–5 days" />
+  <Radio value="express" label="Express" description="Tomorrow" />
+</RadioGroup>
+```
+
+## Which control?
+
+| Use a | When |
+| --- | --- |
+| **RadioGroup** | Two to about seven choices, all worth showing, exactly one chosen. |
+| **Select** | More choices than fit comfortably, or the list is long enough to need searching. |
+| **Switch** or **Checkbox** | The answer is yes or no, not one-of. |
+| **Tabs** | The choice changes what is displayed rather than recording an answer. |
+
+## Cards
+
+`variant="card"` draws each choice as a bordered tile, for choices that carry a line of explanation — plans, shipping speeds, permission levels.
+
+```tsx
+<RadioGroup
+  label="Plan"
+  variant="card"
+  orientation="horizontal"
+  options={[
+    { value: "starter", label: "Starter", description: "Up to 3 projects" },
+    { value: "team", label: "Team", description: "Unlimited projects and members" },
+  ]}
+/>
+```
+
+The whole tile is the target: the radio covers it, so a press anywhere on the card lands on the control itself rather than on a label that forwards the press. Horizontal card groups wrap, each tile taking at least 180 px.
+
+## Clearing
+
+A radio cannot be unselected by clicking it or by keyboard. That is what the control *is*, not an oversight — so an optional question needs one of these:
+
+- `clearable`, which offers a button that empties the group, or
+- an explicit choice of its own: `{ value: "none", label: "No reminders" }`.
+
+The second is usually better, because "no reminders" is an answer and an empty group is an unanswered question. Use `clearable` when the difference matters — a filter that is either set or not.
+
+## Props Table
+
+### RadioGroup
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string \| null` | — | The chosen value (controlled). |
+| `defaultValue` | `string \| null` | `null` | The chosen value at first (uncontrolled). |
+| `onValueChange` | `(value: string \| null) => void` | — | Fires with the new value, or `null` when cleared. |
+| `options` | `(string \| RadioOption)[]` | — | The choices. A string is its own label and value. |
+| `children` | `ReactNode` | — | `<Radio value>` elements, instead of `options`. |
+| `label` | `ReactNode` | — | The question, rendered as the group's legend. |
+| `description` | `ReactNode` | — | A line under the legend, wired up with `aria-describedby`. |
+| `error` | `ReactNode` | — | Announced with `role="alert"`, and marks every radio invalid. |
+| `required` | `boolean` | `false` | Marks the legend and validates the group as one field. |
+| `disabled` | `boolean` | `false` | Disables the whole group through the `<fieldset>`. |
+| `name` | `string` | generated | Shared by every radio. One is generated when left out. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Button 14 / 16 / 20 px. |
+| `orientation` | `"vertical"` \| `"horizontal"` | `"vertical"` | Stacked, or in a wrapping row. |
+| `variant` | `"default"` \| `"card"` | `"default"` | Plain buttons, or tiles. |
+| `clearable` | `boolean` | `false` | Offer a button that empties the group. |
+| `classNames` | `Partial<Record<RadioGroupSlot, string>>` | — | `root` `legend` `description` `items` `clear` `error` |
+| `localeText` | `Partial<RadioGroupLocaleText>` | — | `clear` |
+
+### Radio
+
+Accepts every `<input>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | **required** | What this choice contributes to the group. |
+| `label` | `ReactNode` | — | The choice. |
+| `description` | `ReactNode` | — | A line under the label. |
+| `error` | `ReactNode` | — | For a single radio outside a group. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | from the group | |
+| `disabled` | `boolean` | `false` | Skipped by the arrows, still announced and still readable. |
+| `classNames` | `Partial<Record<RadioSlot, string>>` | — | `root` `control` `input` `label` `description` `error` |
+| `ref` | `Ref<HTMLInputElement>` | — | The `<input>` element. |
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **Tab** | Into the group, landing on the chosen radio (or the first, when none is chosen), and straight out again. |
+| **↓** / **→** | Next choice, selecting it. Wraps around. |
+| **↑** / **←** | Previous choice, selecting it. Wraps around. |
+| **Space** | Select the focused choice. |
+
+None of this is implemented here: it is what the browser does with radios that share a `name`, in every engine and in right-to-left layouts.
+
+Accessibility: `role="radiogroup"` on the fieldset, named by its legend, with `aria-describedby` wired to the description and the error. Disabled choices keep their label colour instead of fading, because someone still has to be able to read the option they cannot pick.
+
+<Notice message="Give every group a name, whether or not it posts with a form. Radios are grouped by their name, so two unnamed groups on one page would share one set of arrow keys. The component generates one when you leave it out." />
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+#### CSS variables
+
+Override them on `.rd-group`, `.rd-root`, on `:root`, or through `style`. Each falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--rd-size` | Button diameter (set by `size`). |
+| `--rd-border` | The ring when unselected. |
+| `--rd-accent` | The ring and dot when selected, and the clear button. |
+| `--rd-card-border`, `--rd-accent-soft` | The tile's border and its selected background. |
+| `--rd-fg`, `--rd-muted` | Label, description. |
+| `--rd-focus` | Focus ring. |
+| `--rd-danger` | Error text and the invalid ring. |
+| `--rd-radius` | Tile corners. |
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Group (`.rd-group`) | `data-orientation`, `data-variant`, `data-invalid` |
+| Radio (`.rd-root`) | `data-size`, `data-variant`, `data-checked`, `data-disabled`, `data-invalid` |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `normalizeOptions(options)` | Turns plain strings into options. |
+| `resolveValue(options, value)` | The value to show as selected: `null` for one the group does not offer. |
+| `hasEnabledOption(options, disabled)` | Whether anything can still be chosen. |
+| `RadioGroupContext` | Build your own choice markup inside a `RadioGroup`. |
+
+`resolveValue` is why a stale value from a record selects nothing rather than an arbitrary option: showing one would claim a choice that was never made. A *disabled* option still counts, because a locked-in choice has to stay visible.
+
+## Next.js
+
+The components are client components: `"use client"` is at the top of the files. They render the chosen value on the server, so the page paints with the right choice already selected.
+
+With a `name`, the group posts with a plain form and is read from `FormData` by a server action without any client state at all.
+
+#### Notes
+
+- `options` and `children` are alternatives; passing both renders the options and ignores the children.
+- A group inside a `<form>` with `required` is validated by the browser, which points its own message at the first radio.

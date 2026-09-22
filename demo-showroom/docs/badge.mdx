@@ -1,0 +1,157 @@
+---
+title: "Badge and Tag"
+description: "Short labels: a status, a category, a count that stops at 99+, and chips the user can take off."
+group: "Display"
+order: 24
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Badge -beta
+```
+
+The block copies the `badge` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `color-mix()` and `:has()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/badge/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/badge/styles.css";
+```
+
+A **Badge** is static text: a status, a category, a count. A **Tag** is a chip the user can take off — a filter, a recipient, a selected value.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<BadgeWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { Badge, Tag } from "@/components/badge";
+
+<Badge variant="success">Active</Badge>
+<Badge variant="danger" appearance="solid" count={128} />   {/* 99+ */}
+<Tag onRemove={() => remove("berlin")}>Berlin</Tag>
+```
+
+Neither has state, and neither carries `"use client"` — until you pass `onRemove`, which is a function and so needs a client component around it.
+
+## Counts
+
+```tsx
+<Badge count={5} />                                  {/* 5 */}
+<Badge count={128} />                                {/* 99+ */}
+<Badge count={128} max={999} />                      {/* 128 */}
+<Badge count={0} />                                  {/* nothing at all */}
+<Badge count={0} showZero />                         {/* 0 */}
+<Badge count={1234} formatValue={format} />          {/* 1,234 */}
+```
+
+Two decisions worth knowing:
+
+A count of **zero renders nothing**, unless `showZero` says otherwise. An empty counter is noise on a page and a spurious announcement in a screen reader. Pass `showZero` where a gap would read as missing data, such as a column of numbers.
+
+A capped count reads **"more than 99"** aloud, not "99 plus". `99+` is shorthand a sighted reader understands and a screen reader would otherwise guess at.
+
+## Variants and appearances
+
+Six variants — `neutral` `accent` `success` `warning` `danger` `info` — in three appearances:
+
+| Appearance | What it is | Use for |
+| --- | --- | --- |
+| `soft` | A tint of the variant | The default. Quiet enough for a table. |
+| `solid` | A filled block | Counts, and anything that must be seen first. |
+| `outline` | A border only | Dense lists where a fill would be too much. |
+
+`dot` puts a small filled circle before the label, for a status where the word is the message and the colour is a hint.
+
+## Props Table
+
+### Badge
+
+Accepts every `<span>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | — | The label. |
+| `count` | `number` | — | A number instead of children. |
+| `max` | `number` | `99` | Where the count stops. |
+| `showZero` | `boolean` | `false` | Render a count of zero. |
+| `formatValue` | `(value: number) => string` | — | Format the number, e.g. with `Intl.NumberFormat`. |
+| `variant` | `BadgeVariant` | `"neutral"` | |
+| `appearance` | `"soft"` \| `"solid"` \| `"outline"` | `"soft"` | |
+| `size` | `"sm"` \| `"md"` | `"md"` | |
+| `dot` | `boolean` | `false` | A status circle before the label. |
+| `icon` | `ReactNode` | — | A small glyph before the label. |
+| `classNames` | `Partial<Record<BadgeSlot, string>>` | — | `root` `dot` `icon` `label` |
+
+### Tag
+
+The same variants, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `onRemove` | `() => void` | — | Shows the remove button. |
+| `label` | `string` | the children | Names the remove button when the children are not a plain string. |
+| `disabled` | `boolean` | `false` | |
+| `classNames` | `Partial<Record<TagSlot, string>>` | — | `root` `icon` `label` `remove` |
+| `localeText` | `Partial<BadgeLocaleText>` | — | `remove(label)` |
+
+<Notice message="The remove button is named with the tag's own text — 'Remove Berlin' — because a row of identical 'Remove' buttons cannot be told apart by anyone listening to the page. Pass `label` when the children are an element rather than a string." />
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+Every variant only ever sets `--bd-accent`, and the three appearances are mixed from it — so a seventh variant is one rule:
+
+```css
+.bd-root[data-variant="purple"] {
+  --bd-accent: oklch(0.55 0.2 300);
+}
+```
+
+| Variable | Used for |
+| --- | --- |
+| `--bd-accent` | The whole variant. |
+| `--bd-height`, `--bd-px`, `--bd-font-size` | Size. |
+| `--bd-radius` | `999px` — set it to `4px` for square badges. |
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Badge (`.bd-root`) | `data-variant`, `data-appearance`, `data-size`, `data-count` |
+| Tag (`.bd-tag`) | `data-variant`, `data-appearance`, `data-size`, `data-disabled` |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `formatCount(count, max?, format?)` | `{ text, spoken? }` — what is printed, and what is read when they differ. |
+| `showCount(count, showZero?)` | Whether the counter belongs on the page at all. |
+
+## Next.js
+
+Both render in a Server Component as long as no handler is passed. A list of tags with `onRemove` belongs in a client component, or in a form that posts the removal.
+
+#### Notes
+
+- A Badge is not a button. Anything the user can press is a **Button**; anything they can take off is a **Tag**.
+- Long labels ellipsise rather than wrapping: a badge that becomes two lines stops reading as a badge.

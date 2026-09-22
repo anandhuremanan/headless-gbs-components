@@ -1,0 +1,170 @@
+---
+title: "Skeleton"
+description: "Placeholders in the shape of the content that is loading, plus an Empty state for when there is nothing to show."
+group: "Feedback"
+order: 19
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Skeleton -beta
+```
+
+The block copies the `skeleton` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `color-mix()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/skeleton/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/skeleton/styles.css";
+```
+
+Two states that every list and panel eventually needs: one while the data is coming, and one for when it arrives and there is nothing in it.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<SkeletonWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { Skeleton, Empty } from "@/components/skeleton";
+import "@/components/skeleton/styles.css";
+
+{loading ? (
+  <Skeleton lines={3} label="Loading activity" />
+) : items.length === 0 ? (
+  <Empty
+    title="No activity yet"
+    description="Once someone uploads a file, it will show up here."
+    actions={<Button onClick={invite}>Invite your team</Button>}
+  />
+) : (
+  <ActivityList items={items} />
+)}
+```
+
+## Props Table
+
+#### Skeleton
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `"text" \| "circle" \| "rect"` | `text` | The shape to draw. |
+| `lines` | `number` | `1` | Bars, for `text`. |
+| `lastLineWidth` | `number` | `60` | Width of the last line, as a percentage. |
+| `width`, `height` | `number \| string` | — | A number is pixels; a string is used as given. |
+| `radius` | `number \| string` | — | Corner radius for `rect`. |
+| `animation` | `"pulse" \| "wave" \| "none"` | `pulse` | How it moves. |
+| `label` | `string` | — | Announced while the placeholder is up. |
+| `className`, `classNames`, `style` | — | — | Slots: `root`, `line`. |
+| `ref` | `Ref<HTMLDivElement>` | — | The root element. |
+
+#### Empty
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `title` | `ReactNode` | What is missing, in a few words. |
+| `description` | `ReactNode` | Why, and what to do about it. |
+| `icon` | `ReactNode` | Decorative; hidden from assistive technology. |
+| `actions` | `ReactNode` | The way out — usually one button. |
+| `size` | `"sm" \| "md" \| "lg"` | Default `md`. `sm` suits a panel inside a page. |
+| `className`, `classNames`, `style` | — | Slots: `root`, `icon`, `title`, `description`, `actions`. |
+
+## Match the shape, not the pixel
+
+A skeleton earns its keep when it takes the same space as what replaces it, so the page does not jump when the data lands:
+
+```tsx
+<div style={{ display: "flex", gap: 12 }}>
+  <Skeleton variant="circle" width={40} />
+  <div style={{ flex: 1 }}>
+    <Skeleton lines={2} />
+  </div>
+</div>
+```
+
+With more than one line the last is drawn short, because real text does not end flush with the margin. A single line stays full width: one short bar reads as a label rather than a sentence still loading.
+
+## What screen readers hear
+
+The bars are hidden from assistive technology. There is nothing useful to announce about the shape of a grey box, and a dozen of them announcing themselves is worse than silence.
+
+Say the wait once, in whichever place fits:
+
+```tsx
+{/* Either here… */}
+<Skeleton lines={3} label="Loading activity" />
+
+{/* …or on the region, if it already says it is busy. */}
+<section aria-busy={loading}>
+  <Skeleton lines={3} />
+</section>
+```
+
+`Empty` is a normal region, not a live one: an empty result is part of the page rather than an alert, and a search that finds nothing should not interrupt what someone is reading.
+
+## Motion
+
+`pulse` fades, `wave` runs a sheen across the bar, `none` is static. All of them stop under `prefers-reduced-motion` — an animation that repeats forever is exactly what that setting is about.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+#### CSS variables
+
+| Variable | Used for |
+| --- | --- |
+| `--sk-base` | The bar itself. Reads `--gbs-skeleton`, then `--gbs-hover`. |
+| `--sk-sheen` | The highlight in the `wave` animation. |
+| `--sk-radius` | Corner radius of `rect` and `circle`. |
+| `--sk-duration` | One cycle of the animation (default `1.4s`). |
+| `--sk-width`, `--sk-height` | Set by the `width` and `height` props. |
+| `--sk-fg`, `--sk-muted` | `Empty`'s title and description. |
+
+Override them on `.sk-root` / `.em-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Skeleton (`.sk-root`) | `data-variant`, `data-animation`, `data-lines` |
+| Empty (`.em-root`) | `data-size` |
+
+## Headless Use
+
+`core/lines.ts` is framework-free:
+
+```ts
+import { lineWidths, toLength } from "@/components/skeleton";
+
+lineWidths(3);        // ["100%", "100%", "60%"]
+lineWidths(1);        // ["100%"] — one line is never shortened
+toLength(24);         // "24px"
+toLength("3rem");     // "3rem"
+```
+
+## Next.js
+
+Both are marked `"use client"` because they accept refs and style props, but neither holds state — render them from wherever your loading check lives.
+
+#### Notes
+
+- Nothing animates when the tab is in the background; the browser pauses CSS animations there on its own.
+- `Empty` centres its content and caps the description at 46 characters per line, which is about where a paragraph stops being scannable.

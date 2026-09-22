@@ -1,0 +1,168 @@
+---
+title: "Accordion"
+description: "Sections that open and close, on native details and summary, with the group behaviour the platform cannot express."
+group: "Display"
+order: 27
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Accordion -beta
+```
+
+The block copies the `accordion` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`; the open/close animation needs `interpolate-size` and `::details-content`, and is skipped where they are missing)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/accordion/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/accordion/styles.css";
+```
+
+An Accordion is a set of sections where opening one usually closes the others: a FAQ, a settings page, the filters beside a list.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<AccordionWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { Accordion } from "@/components/accordion";
+
+<Accordion
+  defaultValue={["shipping"]}
+  items={[
+    { value: "shipping", title: "Shipping", content: <p>Two to five working days.</p> },
+    { value: "returns", title: "Returns", content: <p>Thirty days, no questions.</p> },
+  ]}
+/>
+```
+
+Or compose them, when each section needs its own markup:
+
+```tsx
+<Accordion multiple variant="contained">
+  <AccordionItem value="filters" title="Filters" meta={<Badge count={3} />}>
+    …
+  </AccordionItem>
+</Accordion>
+```
+
+Controlled with `value` + `onValueChange`, or uncontrolled with `defaultValue`. The value is an array even when only one panel may be open, so switching `multiple` on later changes nothing else.
+
+## What the browser does, and what this adds
+
+Each section is a real `<details>` with a `<summary>`, which means the platform already provides:
+
+- a focusable header that responds to **Enter** and **Space**
+- a panel that is out of the accessibility tree while closed
+- **Ctrl+F** finding text inside a *closed* panel, in browsers that support it — which no JavaScript accordion can do
+
+What the component adds is the group: which panel is open, and whether the last open one may be closed. `<details name="…">` gives exclusive opening natively, but it cannot express a non-collapsible group and gives you no value to store, so the open state is owned here instead.
+
+It also puts an explicit `role="button"` on the `<summary>`. A bare summary is exposed as a *group* in Chromium, and `aria-expanded` on it is ignored — so the one thing a screen reader most needs to know, whether the section is open, is never announced. The role changes nothing about the keyboard: Enter and Space still come from `<details>` itself.
+
+| Prop | Effect |
+| --- | --- |
+| `multiple` | Several panels open at once. Default false. |
+| `collapsible` | Whether the open panel can be closed again. Default true — set it to `false` when the panels are the whole content and an empty page would be a dead end. |
+
+<Notice message="A non-collapsible accordion built from children rather than `items` needs a `defaultValue`: without the list of panels the component cannot pick one to open, and it will not guess." />
+
+## Props Table
+
+### Accordion
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string[]` | — | Open panels (controlled). |
+| `defaultValue` | `string[]` | `[]` | Open at first (uncontrolled). |
+| `onValueChange` | `(value: string[]) => void` | — | Fires with the new set, in the order panels were opened. |
+| `items` | `AccordionItemData[]` | — | `{ value, title, description?, content, disabled? }`. |
+| `children` | `ReactNode` | — | `<AccordionItem>` elements, instead of `items`. |
+| `multiple` | `boolean` | `false` | |
+| `collapsible` | `boolean` | `true` | |
+| `variant` | `"separated"` \| `"contained"` \| `"plain"` | `"separated"` | Cards, one block with dividers, or rules only. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | |
+| `iconPosition` | `"start"` \| `"end"` | `"end"` | |
+| `classNames` | `Partial<Record<AccordionSlot, string>>` | — | `root` |
+
+### AccordionItem
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | **required** | Identifies the panel. |
+| `title` | `ReactNode` | **required** | The header. |
+| `description` | `ReactNode` | — | A second line under the title. |
+| `meta` | `ReactNode` | — | At the end of the header: a badge, a count. |
+| `icon` | `ReactNode` | chevron | Replaces the chevron. |
+| `disabled` | `boolean` | `false` | Cannot be opened, and says so. |
+| `classNames` | `Partial<Record<AccordionItemSlot, string>>` | — | `root` `header` `title` `description` `icon` `content` `body` |
+| `ref` | `Ref<HTMLDetailsElement>` | — | The `<details>` element. |
+
+A disabled item keeps its place in the tab order and is marked `aria-disabled` rather than being removed from it: the heading of a section you cannot open is still worth reading, and taking it out of the tab order loses it silently.
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **Tab** | To the next header. Every header is a tab stop. |
+| **Enter** / **Space** | Open or close the focused section. |
+
+There are no arrow keys here on purpose. Arrow-key roaming belongs to a single composite control such as a tab list; an accordion is a stack of separate disclosures, and the WAI-ARIA pattern makes that navigation optional.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+| Variable | Used for |
+| --- | --- |
+| `--ac-px`, `--ac-py` | Header and body padding (set by `size`). |
+| `--ac-border` | Card borders and dividers. |
+| `--ac-hover` | The header under the pointer. |
+| `--ac-duration` | The chevron's turn and the open animation (`180ms`). |
+
+Opening animates where the browser can do it — `interpolate-size: allow-keywords` makes a height of `auto` interpolable, and `::details-content` is the box to animate — and simply shows and hides everywhere else. Both are behind `@supports`, so nothing breaks in a browser without them.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.ac-root`) | `data-variant`, `data-size` |
+| Item (`.ac-item`) | `open` (the native attribute), `data-disabled` |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `toggleOpen(open, value, options)` | What is open after a header is pressed. |
+| `normalizeOpen(open, values, options)` | Trims a starting value to what the settings allow. |
+
+`toggleOpen` is where the three rules live: whether opening one closes the others, whether the open one can be closed again, and — the case every accordion gets wrong once — that the *last* open panel of a non-collapsible group stays put while any other may still close.
+
+## Next.js
+
+The components are client components: `"use client"` is at the top of the files. They render their open state on the server, so a FAQ paints with the right section open and its text in the HTML for search engines.
+
+#### Notes
+
+- `items` and `children` are alternatives; passing both renders the items and ignores the children.
+- The panel is a `role="region"` named by its header, which is what lets a screen reader jump straight to the content it just opened.

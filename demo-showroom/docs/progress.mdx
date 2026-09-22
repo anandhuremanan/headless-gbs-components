@@ -1,0 +1,130 @@
+---
+title: "Progress"
+description: "A bar or a ring for work with a known end, where an unknown length is a different thing from zero."
+group: "Feedback"
+order: 26
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Progress -beta
+```
+
+The block copies the `progress` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `color-mix()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/progress/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/progress/styles.css";
+```
+
+`Progress` is a bar for something with a known end: an upload, an import, a quota, a wizard. `CircularProgress` is the same thing as a ring, for a tile or a table cell where a bar would be too wide.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<ProgressWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { CircularProgress, Progress } from "@/components/progress";
+
+<Progress label="Uploading report.pdf" value={62} showValue />
+<CircularProgress value={62} size={56} showValue />
+```
+
+## Unknown is not zero
+
+```tsx
+<Progress value={null} label="Preparing export" />
+```
+
+`value={null}` says the length is not known yet. The bar sweeps instead of filling, and — the part that matters — `aria-valuenow` is left off the element entirely. That absence is what makes a screen reader say "busy" rather than announcing a task that is 0% done and apparently stuck.
+
+Use a **Spinner** when there is nothing to measure at all and never will be. A progress bar that spends its whole life indeterminate is a spinner drawn as a promise it cannot keep.
+
+## Props Table
+
+### Progress
+
+Accepts every `<div>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number \| null` | `null` | How far along. `null` means the length is unknown. |
+| `max` | `number` | `100` | What `value` is measured against. |
+| `label` | `ReactNode` | — | Shown above the bar, and used as its accessible name. |
+| `showValue` | `boolean` | `false` | Show the percentage beside the label. |
+| `valueText` | `ReactNode` | — | Replace what is shown and read: "3.2 MB of 8 MB". |
+| `variant` | `"accent"` \| `"success"` \| `"warning"` \| `"danger"` | `"accent"` | |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Track 4 / 8 / 12 px. |
+| `classNames` | `Partial<Record<ProgressSlot, string>>` | — | `root` `header` `label` `value` `track` `bar` |
+| `localeText` | `Partial<ProgressLocaleText>` | — | `label`, `valueText(percent)`, `working` |
+
+### CircularProgress
+
+The same value props, plus `size` in pixels (default 44), `thickness` (default 4), `label`, and `showValue` or `children` for the middle.
+
+## Accessibility
+
+The visible `label` names the bar through `aria-labelledby`, so the name and what is on screen can never drift apart. Without one, the bar falls back to `aria-label` or the locale's word for "Progress".
+
+`aria-valuetext` carries the formatted string — "9.2 GB of 10 GB" rather than "92" — whenever `valueText` or `showValue` gives one.
+
+<Notice message="A bar that updates several times a second will flood a screen reader, because every change to aria-valuenow is announced. For a fast upload, update the value on a timer a few times a second rather than on every progress event." />
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+The bar is drawn with `scale: var(--pr-fraction) 1` rather than a width in percent, so it animates on the compositor: a bar ticking up every few milliseconds costs nothing in layout. The fraction is unrounded, so a 99.6% bar does not snap to full while the last bytes are still moving, even though the label says 100%.
+
+| Variable | Used for |
+| --- | --- |
+| `--pr-bar` | The filled part. Set by `variant`. |
+| `--pr-track` | The groove. |
+| `--pr-height` | Bar thickness (set by `size`). |
+| `--pr-duration` | How long a change takes to animate (`240ms`). |
+
+Under `prefers-reduced-motion` the transitions go and the indeterminate sweep slows rather than stopping — a frozen indeterminate bar looks broken.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.pr-root`) | `data-variant`, `data-size`, `data-indeterminate` |
+| Ring (`.pr-circle`) | `data-variant`, `data-indeterminate` |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `describeProgress(value, max?)` | `{ indeterminate, value, fraction, percent }`, clamped and safe. |
+| `stepFraction(step, total)` | A wizard's fraction: step 2 of 5 is 0.4. |
+
+`describeProgress` is where a `max` of zero stops being a division by zero shown as `NaN%`, and where a value outside the range is clamped rather than drawn past the end.
+
+## Next.js
+
+Neither component has state, and both render on the server — so a quota bar on a server-rendered dashboard paints filled, with no hydration flash.
+
+#### Notes
+
+- The ring is one circle with a dashed stroke, not an arc path, so it scales with `size` without any trigonometry.
+- `CircularProgress` centres whatever `children` it is given, which is a handy place for an icon once the task is finished.

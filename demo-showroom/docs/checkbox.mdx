@@ -1,0 +1,249 @@
+---
+title: "Checkbox"
+description: "Checkbox and CheckboxGroup — the native checkbox, restyled, with labels, hints, errors, a mixed state and select all."
+group: "Inputs"
+order: 5
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Checkbox -beta
+```
+
+The block copies the `checkbox` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `color-mix()` and `:indeterminate`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/checkbox/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/checkbox/styles.css";
+```
+
+`Checkbox` is a single on/off choice with a label, hint and error, including a partly checked state. `CheckboxGroup` is a labelled set of checkboxes sharing one array of values, with an optional "select all" box. The box is the browser's own `<input type="checkbox">`, restyled. Forms post it, form libraries register it, and screen readers announce it exactly as a native checkbox, including "mixed".
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Checkbox
+
+<CheckboxWrapperBeta />
+
+#### CheckboxGroup
+
+<CheckboxGroupWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Checkbox, CheckboxGroup } from "@/components/checkbox";
+
+export default function Preferences() {
+  const [terms, setTerms] = useState(false);
+  const [channels, setChannels] = useState<string[]>(["email"]);
+
+  return (
+    <>
+      <Checkbox label="I accept the terms" checked={terms} onCheckedChange={setTerms} required />
+
+      <CheckboxGroup
+        label="Notify me by"
+        name="channels"
+        options={[
+          { value: "email", label: "Email" },
+          { value: "sms", label: "SMS", description: "Urgent alerts only" },
+          { value: "push", label: "Push" },
+        ]}
+        value={channels}
+        onValueChange={setChannels}
+        selectAll
+      />
+    </>
+  );
+}
+```
+
+Both are controlled (`checked` / `value`) or uncontrolled (`defaultChecked` / `defaultValue`).
+
+## Props Table
+
+### Checkbox
+
+Accepts every `<input>` attribute except `type`, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `checked` | `boolean` \| `"indeterminate"` | — | State (controlled). |
+| `defaultChecked` | `boolean` \| `"indeterminate"` | `false` | Starting state (uncontrolled). |
+| `onCheckedChange` | `(checked: boolean) => void` | — | Fires on toggle. Clicking an indeterminate box checks it. |
+| `value` | `string` | `"on"` | Posted when checked. Inside a group, the value this box adds. |
+| `label` | `ReactNode` | — | Clickable label. |
+| `description` | `ReactNode` | — | Hint under the label. |
+| `error` | `ReactNode` | — | Error under the label; sets `aria-invalid`. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Box 14 / 16 / 20 px. Inside a group, defaults to the group's size. |
+| `className` | `string` | — | Class for the row. |
+| `classNames` | `Partial<Record<CheckboxSlot, string>>` | — | Slots: `root`, `control`, `input`, `label`, `description`, `error`. |
+| `ref` | `Ref<HTMLInputElement>` | — | The `<input>`. |
+
+### CheckboxGroup
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string[]` | — | Checked values (controlled). |
+| `defaultValue` | `string[]` | `[]` | Starting values (uncontrolled). |
+| `onValueChange` | `(values: string[]) => void` | — | Fires on every change. |
+| `options` | `{ value, label, description?, disabled? }[]` | — | The boxes to render. Or pass `<Checkbox value>` children. |
+| `label` | `ReactNode` | — | The group's name, as a `<legend>`. |
+| `description` | `ReactNode` | — | Hint under the legend. |
+| `error` | `ReactNode` | — | Error under the group; marks every box invalid. |
+| `required` | `boolean` | `false` | Marks the legend. |
+| `disabled` | `boolean` | `false` | Disables every box (through the native `<fieldset disabled>`). |
+| `name` | `string` | — | Form field name for every box, so the form posts each checked value. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Size of every box. |
+| `orientation` | `"vertical"` \| `"horizontal"` | `"vertical"` | Stack or wrap in a row. |
+| `selectAll` | `boolean` \| `ReactNode` | — | With `options`: a parent box that checks or clears them all. `true` uses `localeText.selectAll`. |
+| `id`, `className`, `classNames`, `style` | — | — | Slots: `root`, `legend`, `description`, `items`, `error`. |
+| `localeText` | `Partial<CheckboxLocaleText>` | English | See [Locale Text](#locale-text). |
+
+## Indeterminate State
+
+```tsx
+<Checkbox label="Select all rows" checked={someSelected ? "indeterminate" : allSelected} onCheckedChange={toggleAll} />
+```
+
+`"indeterminate"` shows a dash and is announced as "mixed". It is a display state only: clicking the box makes it checked, and `onCheckedChange` receives `true`.
+
+## Groups
+
+**With options**, which supports select-all:
+
+```tsx
+<CheckboxGroup label="Permissions" options={permissions} value={granted} onValueChange={setGranted} selectAll />
+```
+
+- **Select all:** shows checked, unchecked or mixed. Clicking it selects every enabled option, or clears them when all are already selected.
+- **Disabled options:** they keep their state either way.
+
+**With children**, for custom layouts:
+
+```tsx
+<CheckboxGroup label="Size" orientation="horizontal" defaultValue={["md"]}>
+  <Checkbox value="sm" label="Small" />
+  <Checkbox value="md" label="Medium" />
+  <Checkbox value="lg" label="Large" />
+</CheckboxGroup>
+```
+
+Any `Checkbox` with a `value` inside a group reads and updates the group's array, at any depth.
+
+## Forms
+
+```tsx
+<form action={savePreferences}>
+  <Checkbox name="newsletter" value="yes" label="Send me the newsletter" />
+  <CheckboxGroup name="channels" options={channels} />
+  <button type="submit">Save</button>
+</form>
+```
+
+On the server, `formData.get("newsletter")` is `"yes"` when checked, and `formData.getAll("channels")` lists the checked values. Unchecked boxes post nothing, as native checkboxes do.
+
+With react-hook-form, register a single checkbox like a native one:
+
+```tsx
+<Checkbox label="Remember me" {...register("remember")} />
+```
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **Space** | Toggle the focused box. |
+| **Tab** / **Shift + Tab** | Move between boxes. |
+
+Accessibility: every box is a native checkbox with a real `<label>`. A group is a `<fieldset>` with a `<legend>`, so screen readers announce the group name when entering it. Descriptions and errors are linked through `aria-describedby`, and errors are announced with `role="alert"`. The mixed state comes from the native `indeterminate` property.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Checkbox classNames={{ input: "rounded-full", label: "font-medium" }} />
+```
+
+#### CSS variables
+
+Override them on `.ck-root`, `.ck-group`, `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--ck-size` | Box size (set by `size`). |
+| `--ck-radius` | Box corner radius. |
+| `--ck-border` | Unchecked border. |
+| `--ck-input-bg` | Unchecked background. |
+| `--ck-accent`, `--ck-accent-fg` | Checked background and check mark. |
+| `--ck-fg`, `--ck-muted` | Label and hint text. |
+| `--ck-focus` | Focus ring. |
+| `--ck-danger` | Errors. |
+| `--ck-font-size` | Font size. |
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Row (`.ck-root`) | `data-size`, `data-disabled`, `data-invalid` |
+| Box (`.ck-input`) | the native `:checked`, `:indeterminate` and `:disabled` states |
+| Group (`fieldset.ck-group`) | `data-orientation`, `data-select-all`, `data-invalid` |
+
+## Locale Text
+
+```tsx
+<CheckboxGroup localeText={{ selectAll: "Alle auswählen" }} />
+```
+
+| Key | Default |
+| --- | --- |
+| `selectAll` | `"Select all"` |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `toggleValue(values, value, checked)` | Adds or removes one value. |
+| `groupState(values, options)` | `true`, `false` or `"indeterminate"` for a select-all box. |
+| `toggleAll(values, options)` | What select-all does, leaving disabled options alone. |
+| `CheckboxGroupContext` | Build your own group layout that Checkboxes join. |
+
+## Next.js
+
+Both are client components with `"use client"` at the top of their files. They render the same markup on the server and the client. A controlled indeterminate state is applied right after hydration, because it exists only as a DOM property.
+
+## Migrating from the Previous Check Box
+
+| Previous | New |
+| --- | --- |
+| `CheckBox` | `Checkbox` |
+| `checked`, `label`, `name`, `id`, `disabled`, `className` | Same names |
+| `indeterminate={true}` | `checked="indeterminate"` |
+| `onChange={(event) => setChecked(event.checked)}` | `onCheckedChange={setChecked}`, or native `onChange={(event) => setChecked(event.target.checked)}` |
+| `mode` | Not needed; use `size`, `className` or `classNames` |
+| — | New: `description`, `error`, `size`, `CheckboxGroup` with select-all, `ref` to the input |
+
+#### Notes
+
+- A checkbox inside a `CheckboxGroup` without a `value` is independent of the group, which is how the select-all box works.
+- `required` on a single Checkbox uses the browser's validation: the form won't submit until it's checked.

@@ -1,0 +1,151 @@
+---
+title: "Tooltip"
+description: "A short label on hover or keyboard focus, with a delay, Escape to dismiss, and the accessibility rules a tooltip has to follow."
+group: "Overlays"
+order: 16
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Tooltip -beta
+```
+
+The block copies the `tooltip` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and the Popover API)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/tooltip/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/tooltip/styles.css";
+```
+
+A tooltip is a few words explaining the control under the pointer: what an icon button does, what a truncated value says in full. It waits a moment on hover so that sweeping across a toolbar does not set off a chain of them, appears at once on keyboard focus, and goes away on Escape.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<TooltipWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { Tooltip } from "@/components/tooltip";
+import "@/components/tooltip/styles.css";
+
+<Tooltip content="Export as CSV">
+  <Button variant="ghost" aria-label="Export">
+    <DownloadIcon />
+  </Button>
+</Tooltip>
+```
+
+The child is cloned with a `aria-describedby` and the handlers it needs, so pass a single element that renders a real DOM node.
+
+## Props Table
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `content` | `ReactNode` | — | The label. A few words. |
+| `children` | `ReactElement` | — | The control it describes. |
+| `side` | `"top" \| "bottom" \| "left" \| "right"` | `top` | Side to show on, before flipping for space. |
+| `align` | `"start" \| "center" \| "end"` | `center` | Which edge to line up with. |
+| `gap` | `number` | `6` | Distance from the control. |
+| `delay` | `number` | `400` | Wait before showing on hover. Focus never waits. |
+| `closeDelay` | `number` | `120` | Wait before hiding. |
+| `disabled` | `boolean` | `false` | Never show it. |
+| `id`, `className`, `classNames`, `style` | — | — | Slots: `root`, `content`. |
+
+## The three rules
+
+**It describes, it does not name.** The tooltip is wired with `aria-describedby`, so the control keeps its own accessible name. An icon button still needs an `aria-label`:
+
+```tsx
+{/* Right: the button is named, and the tooltip adds to it. */}
+<Tooltip content="Export as CSV">
+  <button aria-label="Export"><DownloadIcon /></button>
+</Tooltip>
+
+{/* Wrong: nothing names the button, and a screen reader announces "button". */}
+<Tooltip content="Export">
+  <button><DownloadIcon /></button>
+</Tooltip>
+```
+
+**Touch devices never see it.** A tooltip shown on tap covers the very thing that was tapped, so pointer events from touch and pen are ignored. Anything essential has to be available another way — in the label, in helper text, or in a Popover that can actually be opened.
+
+**It never takes focus.** The tooltip is `pointer-events: none` and is not focusable, so it cannot be hovered, clicked or tabbed into. Content someone needs to interact with — a link, a button, anything selectable — belongs in a [Popover](/popover).
+
+<Notice message="A tooltip is a manual popover, not an automatic one. Opening an automatic popover closes every other one, so a tooltip on a control inside a menu would close the menu underneath it." />
+
+## When it shows
+
+| Event | Behaviour |
+| --- | --- |
+| Pointer enters | Shows after `delay`. |
+| Pointer leaves | Hides after `closeDelay`. |
+| Keyboard focus | Shows immediately, with no delay. |
+| Blur | Hides. |
+| `Escape` | Hides at once, wherever focus is. |
+| Click on the control | Hides, rather than hanging over whatever the click did. |
+
+Focus only counts when it is `:focus-visible` — clicking a button does not leave a tooltip behind.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+#### CSS variables
+
+| Variable | Used for |
+| --- | --- |
+| `--tt-bg`, `--tt-fg` | Background and text. Inverted against the page by default. |
+| `--tt-radius` | Corner radius. |
+| `--tt-font-size` | One pixel smaller than body text by default. |
+| `--tt-max-width` | Wrapping width (default `240px`). |
+| `--tt-duration` | Fade-in length. |
+
+The colours read `--gbs-tooltip-bg` and `--gbs-tooltip-fg` when those are set on an ancestor, so a tooltip can be themed separately from the panels it sits above. Everything else falls back to the shared `--gbs-*` variables in the usual way.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.tt-root`) | `data-side` — the side it settled on after flipping. |
+
+## Headless Use
+
+`core/visibility.ts` is framework-free, so the timing rules can drive your own markup:
+
+```ts
+import { nextVisibility, isHoverPointer } from "@/components/tooltip";
+
+nextVisibility({ hovered: true, focused: false }, { open: 400, close: 120 });
+// { open: true, delay: 400 }
+nextVisibility({ hovered: false, focused: true }, { open: 400, close: 120 });
+// { open: true, delay: 0 } — the keyboard never waits
+isHoverPointer("touch"); // false
+```
+
+## Next.js
+
+The file is already marked `"use client"`. Import the stylesheet in your root layout and render tooltips inside client components.
+
+#### Notes
+
+- The tooltip renders in the top layer, so it escapes `overflow: hidden` without a portal.
+- `prefers-reduced-motion` removes the fade.
+- Placement comes from `shared/core/position.ts`, which is unit-tested on its own.

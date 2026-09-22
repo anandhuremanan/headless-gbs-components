@@ -1,0 +1,177 @@
+---
+title: "Card"
+description: "A surface that groups related content, with header, body and footer, plus Stat for a single figure and its trend."
+group: "General"
+order: 18
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Card -beta
+```
+
+The block copies the `card` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `color-mix()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/card/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/card/styles.css";
+```
+
+A card groups things that belong together and gives them an edge. `Stat` is the other half of a dashboard: one figure, its label, and how it has changed.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<CardWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { Card, CardHeader, CardBody, CardFooter, Stat, trendDirection } from "@/components/card";
+import "@/components/card/styles.css";
+
+<Card>
+  <CardHeader
+    title={<h3>Revenue</h3>}
+    description="Billed this month"
+    actions={<Menu trigger={<Button variant="ghost" size="sm">Options</Button>}>…</Menu>}
+  />
+  <CardBody>
+    <Stat
+      label="This month"
+      value="£48,120"
+      trend={{ direction: trendDirection(12.4), label: "12.4%", description: "vs last month" }}
+    />
+  </CardBody>
+  <CardFooter>
+    <Button variant="ghost" size="sm">View invoices</Button>
+  </CardFooter>
+</Card>
+```
+
+## Props Table
+
+#### Card
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `"outlined" \| "elevated" \| "plain"` | `outlined` | How the edge is drawn. |
+| `padding` | `"none" \| "sm" \| "md" \| "lg"` | `md` | Applied to header, body and footer. |
+| `href`, `target`, `rel` | `string` | — | Makes the whole card a link. |
+| `interactive` | `boolean` | `false` | Hover and focus styles for a card clickable another way. |
+| `className`, `classNames`, `style` | — | — | Slots: `root`, `header`, `title`, `description`, `actions`, `body`, `footer`. |
+| `ref` | `Ref<HTMLElement>` | — | The root element. |
+
+`CardHeader` takes `title`, `description`, `actions` and children. `CardBody` and `CardFooter` take children and a `className`.
+
+#### Stat
+
+| Prop | Type | Description |
+| --- | --- | --- |
+| `label` | `ReactNode` | What the figure is. Always shown. |
+| `value` | `ReactNode` | The figure, already formatted. |
+| `trend` | `{ direction, label, invert?, description? }` | How it has changed. |
+| `help` | `ReactNode` | A note under the figure. |
+| `icon` | `ReactNode` | Drawn beside the label. |
+| `loading` | `boolean` | Placeholder bars, announced as "Loading". |
+| `className`, `classNames`, `style` | — | Slots: `root`, `label`, `value`, `trend`, `help`, `icon`. |
+
+## Headings belong to the page
+
+`CardHeader` takes whatever you give it as the `title`, rather than choosing a heading level for you:
+
+```tsx
+<CardHeader title={<h3>Revenue</h3>} />
+```
+
+A card can be the main thing on a page or one of twelve tiles in a grid, and the right level is different in each. Passing your own element keeps the document outline yours.
+
+## Trends without relying on colour
+
+```tsx
+<Stat
+  label="Churn"
+  value="2.1%"
+  trend={{ direction: trendDirection(0.6), label: "0.6pp", invert: true }}
+/>
+```
+
+`invert` is for figures where down is the good outcome — churn, refunds, error rates, page weight. It changes the colour only: the arrow still points the way the number moved, because the arrow reports the fact and the colour is the judgement.
+
+The direction is also written out for screen readers ("Up", "Down", "No change"), so the meaning never rests on colour alone. `direction: "flat"` gets no colour at all.
+
+## Cards that are links
+
+```tsx
+<Card href="/invoices/1043">
+  <CardBody>INV-1043 · £2,400</CardBody>
+</Card>
+```
+
+With `href` the card renders as an `<a>`. Keep other links and buttons out of it: nesting interactive elements is invalid HTML and makes a mess of the keyboard. When a card needs both a main link and its own buttons, use `interactive` with your own handler, or put the link on the title.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+#### CSS variables
+
+| Variable | Used for |
+| --- | --- |
+| `--cd-bg`, `--cd-fg` | Card surface and text. |
+| `--cd-muted` | Descriptions, labels, help text. |
+| `--cd-border` | The outline and the footer rule. |
+| `--cd-hover` | Interactive cards, and the Stat placeholder bars. |
+| `--cd-focus` | Focus ring on an interactive card. |
+| `--cd-success`, `--cd-danger` | Trend colours. |
+| `--cd-shadow`, `--cd-radius`, `--cd-font-size` | Card shape. |
+| `--cd-px` | Padding, set by the `padding` prop. |
+
+Override them on `.cd-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.cd-root`) | `data-variant`, `data-padding`, `data-interactive` |
+| Stat (`.st-root`) | `data-loading` |
+| Trend (`.st-trend`) | `data-direction`, `data-positive` |
+
+## Headless Use
+
+`core/trend.ts` is framework-free:
+
+```ts
+import { trendDirection, isPositive, percentChange } from "@/components/card";
+
+trendDirection(12.4);          // "up"
+trendDirection(0.4, 0.5);      // "flat" — under the threshold
+isPositive("down", true);      // true  — down is good for churn
+percentChange(200, 250);       // 25
+percentChange(0, 10);          // null — growth from zero is not a percentage
+```
+
+## Next.js
+
+`Card` and `Stat` are marked `"use client"` because they accept event handlers and refs. Nothing stops you rendering them from a server component — pass the data in as props.
+
+#### Notes
+
+- The card is a plain surface with no elevation tricks: one border, one optional shadow.
+- `Stat`'s figures use tabular numerals, so a column of them lines up.

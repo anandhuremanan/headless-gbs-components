@@ -1,0 +1,145 @@
+---
+title: "Popover"
+description: "A panel anchored to the control that opens it, in the top layer, with light dismiss, Escape and focus returned to the trigger."
+group: "Overlays"
+order: 17
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Popover -beta
+```
+
+The block copies the `popover` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and the Popover API)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/popover/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/popover/styles.css";
+```
+
+A popover is a small panel attached to the control that opened it: a filter form, a colour picker, a paragraph of help too long for a tooltip. It renders in the browser's top layer, so it is never clipped by a scrolling parent, and the browser handles clicking away and Escape.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<PopoverWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { Popover } from "@/components/popover";
+import "@/components/popover/styles.css";
+
+<Popover trigger={<Button variant="outline">Filters</Button>} title="Filters">
+  {({ close }) => (
+    <>
+      <Checkbox label="Only active" />
+      <Checkbox label="Has attachments" />
+      <Button size="sm" data-autofocus onClick={close}>Apply</Button>
+    </>
+  )}
+</Popover>
+```
+
+`children` may be a function, which receives `{ close }` — handy for a button that applies and dismisses in one go.
+
+## Props Table
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `trigger` | `ReactElement` | — | The element that opens it. Cloned with the ARIA wiring. |
+| `children` | `ReactNode \| ({ close }) => ReactNode` | — | The panel's contents. |
+| `open` | `boolean` | — | Controlled open state. |
+| `defaultOpen` | `boolean` | `false` | Uncontrolled initial state. |
+| `onOpenChange` | `(open, reason?) => void` | — | `reason` is `escape`, `outside`, `trigger` or `api`. |
+| `title` | `ReactNode` | — | Heading inside the panel, which also names it. |
+| `description` | `ReactNode` | — | A line under the title. |
+| `aria-label` | `string` | `"More information"` | Names the panel when there is no `title`. |
+| `side` | `"top" \| "bottom" \| "left" \| "right"` | `bottom` | Side to open on, before flipping for space. |
+| `align` | `"start" \| "center" \| "end"` | `start` | Which edge to line up with. |
+| `gap` | `number` | `6` | Distance from the trigger. |
+| `scrollable` | `boolean` | `false` | Cap the height to the space available and scroll. |
+| `autoFocus` | `boolean` | `true` | Move focus into the panel on open. |
+| `id`, `className`, `classNames`, `style`, `localeText` | — | — | Slots below. |
+| `ref` | `Ref<PopoverHandle>` | — | `{ open, close, getElement }`. |
+
+## Focus
+
+When it opens, focus moves to the first element marked `data-autofocus`, or to the panel itself if there is none. When it closes, focus goes back to the trigger, so keyboard work carries on where it left off.
+
+```tsx
+<Popover trigger={<Button>Rename</Button>} title="Rename">
+  {({ close }) => (
+    <>
+      <Input label="Name" data-autofocus />
+      <Button onClick={close}>Save</Button>
+    </>
+  )}
+</Popover>
+```
+
+A popover does not trap focus, and it should not: `Tab` moves through the panel and on into the page, and the browser's light dismiss closes it when focus or a click lands elsewhere. If your content needs focus held — a form that must be finished or cancelled — use the [Modal](/modal).
+
+## Which one to use
+
+| You want | Use |
+| --- | --- |
+| A list of commands | [Menu](/menu) |
+| A few words describing a control | [Tooltip](/tooltip) |
+| A small panel of content or controls | Popover |
+| Something that must be finished or dismissed | [Modal](/modal) or [Dialog](/dialog) |
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Popover trigger={<Button>Filters</Button>} className="w-72" classNames={{ body: "gap-3" }}>
+```
+
+#### CSS variables
+
+| Variable | Used for |
+| --- | --- |
+| `--pv-bg`, `--pv-fg` | Panel background and text. |
+| `--pv-muted` | The description. |
+| `--pv-border`, `--pv-shadow`, `--pv-radius` | Panel shape. |
+| `--pv-focus` | Focus ring when the panel itself is focused by keyboard. |
+| `--pv-font-size` | Base size. |
+| `--pv-px` | Padding (default `12px`). |
+| `--pv-width` | Maximum width (default `280px`). |
+| `--pv-duration` | Entry animation length. |
+
+Override them on `.pv-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.pv-root`) | `data-side` — the side it settled on, which the entry animation follows. |
+
+## Next.js
+
+The file is already marked `"use client"`. Import the stylesheet in your root layout and render the Popover inside a client component.
+
+#### Notes
+
+- Rendered in the top layer through the native Popover API, so no portal and no `z-index` battles.
+- Placement comes from `shared/core/position.ts`, which is unit-tested on its own.
+- Nothing is measured or mounted until it opens.

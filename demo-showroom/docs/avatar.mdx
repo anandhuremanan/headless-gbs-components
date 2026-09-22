@@ -1,0 +1,157 @@
+---
+title: "Avatar"
+description: "A person as a picture or their initials, on a colour derived from their name, with presence dots and overlapping groups."
+group: "Display"
+order: 25
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Avatar -beta
+```
+
+The block copies the `avatar` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and relative `oklch()` colours)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/avatar/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/avatar/styles.css";
+```
+
+An Avatar is a person in a small square or circle: their picture, or the letters of their name on a colour derived from it. `AvatarGroup` overlaps several and counts the rest.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<AvatarWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { Avatar, AvatarGroup } from "@/components/avatar";
+
+<Avatar name="Ada Lovelace" src={user.photo} />
+<Avatar name="Grace Hopper" status="online" size="lg" />
+
+<AvatarGroup label="Assigned to" max={4}>
+  {people.map((person) => <Avatar key={person.id} name={person.name} src={person.photo} />)}
+</AvatarGroup>
+```
+
+`name` does three jobs: the alternative text, the initials when there is no picture, and the colour.
+
+## Initials, and why they are not `slice(0, 2)`
+
+| Name | Initials | Why |
+| --- | --- | --- |
+| `Ada Lovelace` | `AL` | First and last part. |
+| `Ada Byron King Lovelace` | `AL` | Still first and last. |
+| `Madonna` | `M` | One part, one letter — `MA` reads as a mistake. |
+| `jean-luc picard` | `JP` | Hyphens join parts of a name. |
+| `ada.lovelace@example.com` | `AL` | An email is read up to the `@`; nothing in the domain is a name. |
+| `山田 太郎` | `山太` | Scripts without letter case are left alone — uppercasing is meaningless and can change the character. |
+| `🚀 Launch` | `🚀L` | Characters are taken whole, never half a surrogate pair. |
+
+The colour is a hash of the name, so the same person is the same colour on every page and in every session, with nothing stored anywhere. The palette is eight hues generated with relative `oklch()`, all at one lightness, so no one person's initials come out harder to read than another's.
+
+An image that fails to load falls back to the initials rather than leaving a broken frame — which happens more than it should with avatar URLs that have expired or come from a third party.
+
+## Props Table
+
+### Avatar
+
+Accepts every `<span>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | — | The person. Alternative text, initials and colour all come from it. |
+| `src` | `string` | — | Their picture. Falls back to initials if it fails to load. |
+| `initials` | `string` | from `name` | Override the letters. |
+| `children` | `ReactNode` | — | An icon or anything else instead of initials. |
+| `size` | `"xs"` \| `"sm"` \| `"md"` \| `"lg"` \| `"xl"` | `"md"` | 20 / 24 / 32 / 40 / 56 px. |
+| `shape` | `"circle"` \| `"square"` | `"circle"` | |
+| `status` | `"online"` \| `"away"` \| `"busy"` \| `"offline"` | — | A presence dot, named for screen readers. |
+| `decorative` | `boolean` | `false` | For an avatar beside the person's printed name — see below. |
+| `classNames` | `Partial<Record<AvatarSlot, string>>` | — | `root` `image` `fallback` `status` |
+| `localeText` | `Partial<AvatarLocaleText>` | — | `more(count)`, `status` |
+
+### AvatarGroup
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `max` | `number` | `4` | Slots in total, the overflow bubble included. |
+| `size`, `shape` | | | Applied to every avatar that does not set its own. |
+| `label` | `string` | — | Names the set, e.g. "Assigned to". |
+| `classNames` | `Partial<Record<AvatarGroupSlot, string>>` | — | `root` `overflow` |
+
+Five people with `max={4}` show **three faces and a "+2"**, because the counter takes one of the slots. Four faces and a "+2" would be five slots wide and would quietly break a layout built for four.
+
+## Accessibility
+
+An avatar is an image with the person's name as its accessible name, so a screen reader says "Ada Lovelace, image". Beside a printed name that is the name twice — pass `decorative` there, and the avatar drops out of the accessibility tree entirely:
+
+```tsx
+<span>
+  <Avatar name={user.name} decorative />
+  {user.name}
+</span>
+```
+
+The presence dot is named rather than hidden (`Online`, `Away`, `Busy`, `Offline`), because a coloured circle tells a colour-blind or blind user nothing.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+| Variable | Used for |
+| --- | --- |
+| `--av-size`, `--av-font-size` | Set by `size`. |
+| `--av-hue-index` | The hash's result, 0–7. Set it yourself to pin a colour. |
+| `--av-subtle` | The fallback background when there is no name. |
+| `--av-bg` | The ring between overlapping avatars — match it to the surface they sit on. |
+
+```tsx
+{/* A fixed colour for a system account */}
+<Avatar name="Automation" style={{ "--av-hue-index": 3 } as CSSProperties} />
+```
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.av-root`) | `data-size`, `data-shape`, `data-status` |
+| Group (`.av-group`) | `data-size`, `data-shape` |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `initials(name, max?)` | The letters, with every rule in the table above. |
+| `colorIndex(seed, count)` | A stable index into a palette of `count`. |
+| `splitGroup(items, max)` | `{ shown, overflow }` for a group. |
+
+`initials` is worth reusing anywhere a name is abbreviated — a mention chip, a calendar entry — so the same person is abbreviated the same way everywhere.
+
+## Next.js
+
+Neither component has state beyond the image's error handler, and both render on the server. The fallback is what the server produces when there is no `src`, so a list of people paints with the right initials and colours before hydration.
+
+#### Notes
+
+- `alt` on the image is empty on purpose: the name is on the wrapper, and putting it in both places makes a screen reader say it twice.
+- Images are `loading="lazy"` and `decoding="async"`, which matters in a list of a hundred rows.

@@ -1,0 +1,245 @@
+---
+title: "Textarea"
+description: "A multi-line text field with label, hint, error and character counter that can grow with its text."
+group: "Inputs"
+order: 4
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Textarea -beta
+```
+
+The block copies the `textarea` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `color-mix()` and the `lh` unit)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/textarea/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/textarea/styles.css";
+```
+
+The Textarea is a multi-line text field with a label, hint and error message. It can also have a character counter, and it can grow with its text between a minimum and a maximum number of lines. Every other prop — `name`, `required`, `rows`, `cols`, `onKeyDown` — goes straight to the `<textarea>`, so it works with native forms and form libraries unchanged.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<TextareaWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Textarea } from "@/components/textarea";
+
+export default function Feedback() {
+  const [message, setMessage] = useState("");
+
+  return (
+    <Textarea
+      label="Your feedback"
+      name="message"
+      value={message}
+      onValueChange={setMessage}
+      autoResize
+      minRows={3}
+      maxRows={10}
+      maxLength={1000}
+      showCount
+      required
+    />
+  );
+}
+```
+
+The Textarea is controlled with `value` + `onValueChange` (which receives the string), or uncontrolled with `defaultValue`. The native `onChange` still fires with the event.
+
+## Props Table
+
+Accepts every `<textarea>` attribute, plus:
+
+| Prop            | Type                                                   | Default                                  | Description                                                           |
+| --------------- | ------------------------------------------------------ | ---------------------------------------- | --------------------------------------------------------------------- |
+| `value`         | `string`                                               | —                                        | Text (controlled).                                                    |
+| `defaultValue`  | `string`                                               | —                                        | Starting text (uncontrolled).                                         |
+| `onValueChange` | `(value: string) => void`                              | —                                        | New text on every change.                                             |
+| `label`         | `ReactNode`                                            | —                                        | Label above the field, linked with `htmlFor`.                         |
+| `description`   | `ReactNode`                                            | —                                        | Hint under the field.                                                 |
+| `error`         | `ReactNode`                                            | —                                        | Error under the field; also sets `aria-invalid` and a red border.     |
+| `size`          | `"sm"` \| `"md"` \| `"lg"`                             | `"md"`                                   | Font size and padding.                                                |
+| `rows`          | `number`                                               | `3`                                      | Visible lines when not auto-resizing.                                 |
+| `autoResize`    | `boolean`                                              | `false`                                  | Grow and shrink with the text.                                        |
+| `minRows`       | `number`                                               | `rows`, or `3`                           | Smallest height, in lines.                                            |
+| `maxRows`       | `number`                                               | no limit                                 | Largest height, in lines; beyond it the text scrolls.                 |
+| `resize`        | `"none"` \| `"vertical"` \| `"horizontal"` \| `"both"` | `"vertical"`; `"none"` with `autoResize` | Which way people can drag the corner to resize.                       |
+| `showCount`     | `boolean`                                              | `false`                                  | Character counter; shows `count / maxLength` when `maxLength` is set. |
+| `className`     | `string`                                               | —                                        | Class for the wrapper.                                                |
+| `classNames`    | `Partial<Record<TextareaSlot, string>>`                | —                                        | Slots: `root`, `label`, `textarea`, `description`, `error`, `count`.  |
+| `style`         | `CSSProperties`                                        | —                                        | Inline style for the wrapper.                                         |
+| `localeText`    | `Partial<TextareaLocaleText>`                          | English                                  | See [Locale Text](#locale-text).                                      |
+| `ref`           | `Ref<HTMLTextAreaElement>`                             | —                                        | The `<textarea>` element.                                             |
+
+## Auto-Resize
+
+```tsx
+<Textarea autoResize minRows={2} maxRows={8} />
+```
+
+- **Growing and shrinking:** the field grows as lines are added and shrinks as they are removed, but never below `minRows` or above `maxRows`. Past `maxRows` the text scrolls.
+- **Where it runs:** in browsers that support CSS `field-sizing: content` (Chromium-based browsers such as Chrome and Edge at the time of writing), resizing happens entirely in CSS, with no measuring and no extra renders.
+- **Fallback:** other browsers measure the text after each change and when the field's width changes. The result is the same, with a small amount of script.
+
+## Character Count
+
+```tsx
+<Textarea label="Bio" maxLength={160} showCount />
+```
+
+The counter counts characters the way people see them, so an emoji or an accented letter counts as one. `maxLength` is still enforced by the browser. If a value set from code is longer, the counter turns red.
+
+## Forms and Form Libraries
+
+The component passes its props to a real `<textarea>` and forwards `ref` to it, so it registers like a native field:
+
+```tsx
+// react-hook-form
+<Textarea
+  label="Notes"
+  {...register("notes", { maxLength: 500 })}
+  error={errors.notes?.message}
+/>
+```
+
+```tsx
+// Server Action
+<form action={sendFeedback}>
+  <Textarea label="Message" name="message" required autoResize />
+</form>
+```
+
+Submitting with **Ctrl + Enter** is a common pattern for chat and comment boxes, and needs only `onKeyDown`:
+
+```tsx
+<Textarea
+  onKeyDown={(event) => {
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey))
+      event.currentTarget.form?.requestSubmit();
+  }}
+/>
+```
+
+## Imperative API (ref)
+
+`ref` gives you the `<textarea>` element itself:
+
+```tsx
+const notes = useRef<HTMLTextAreaElement>(null);
+
+<Textarea ref={notes} label="Notes" />;
+
+notes.current?.focus();
+notes.current?.setSelectionRange(0, 0);
+```
+
+## Keyboard
+
+The Textarea behaves exactly like a native `<textarea>`: **Enter** adds a line and **Tab** moves to the next field.
+
+Accessibility: the label is a real `<label>`. The description and error are linked through `aria-describedby`, and errors are announced with `role="alert"`.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Textarea classNames={{ textarea: "font-mono", count: "font-semibold" }} />
+```
+
+#### CSS variables
+
+Override them on `.ta-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable             | Used for                                         |
+| -------------------- | ------------------------------------------------ |
+| `--ta-font-size`     | Font size (set by `size`).                       |
+| `--ta-px`, `--ta-py` | Horizontal and vertical padding (set by `size`). |
+| `--ta-fg`            | Text color.                                      |
+| `--ta-input-bg`      | Field background.                                |
+| `--ta-readonly-bg`   | Background when `readOnly`.                      |
+| `--ta-muted`         | Placeholder, hint and counter.                   |
+| `--ta-border`        | Border.                                          |
+| `--ta-focus`         | Focus ring.                                      |
+| `--ta-danger`        | Errors.                                          |
+| `--ta-radius`        | Corner radius.                                   |
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+| Element               | Attributes                                       |
+| --------------------- | ------------------------------------------------ |
+| Root (`.ta-root`)     | `data-size`, `data-disabled`, `data-invalid`     |
+| Field (`.ta-input`)   | `data-autoresize`, `data-resize`, `data-invalid` |
+| Counter (`.ta-count`) | `data-over`                                      |
+
+## Locale Text
+
+```tsx
+<Textarea
+  localeText={{
+    characterCount: (count, max) => (max ? `${count} von ${max}` : count),
+  }}
+/>
+```
+
+| Key              | Default                                                |
+| ---------------- | ------------------------------------------------------ |
+| `characterCount` | `(count, max) => "{count} / {max}"`, or just the count |
+
+## Headless Use
+
+The logic is exported from the framework-free `@/components/textarea/core`:
+
+| Export                                                | Description                                                 |
+| ----------------------------------------------------- | ----------------------------------------------------------- |
+| `countCharacters(text)`                               | Characters as people count them (`Intl.Segmenter`).         |
+| `heightForRows(rows, metrics)`                        | Border-box height for a number of lines.                    |
+| `fitHeight(scrollHeight, metrics, minRows, maxRows?)` | The auto-resize height, and whether the text should scroll. |
+
+## Next.js
+
+The component is a client component, with `"use client"` already at the top of its file. It renders the same markup on the server and the client. Auto-resize runs after hydration, and where `field-sizing` is supported it is already correct in the server-rendered HTML.
+
+## Migrating from the Previous Text Area
+
+| Previous                                                                                  | New                                                                              |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `TextArea`                                                                                | `Textarea`                                                                       |
+| `value`, `disabled`, `required`, `name`, `placeholder`, `id`, `rows`, `cols`, `className` | Same names (passed to the `<textarea>`; `className` styles the wrapper)          |
+| `label`                                                                                   | Same name; now a real `<label>` linked to the field                              |
+| `onChange(event)`                                                                         | Same, plus `onValueChange(value)` for the string                                 |
+| Fixed height from `rows`                                                                  | Still available, or `autoResize` with `minRows` / `maxRows`                      |
+| —                                                                                         | New: `description`, `error`, `size`, `showCount`, `resize`, `ref` to the element |
+
+#### Notes
+
+- `showCount` follows the value typed into the field. If a form library changes the value directly on the element without firing an input event, pass `value` to keep it in sync.
+- With `autoResize`, the drag handle is hidden (`resize="none"`), because the height follows the text. Pass `resize` to bring it back.

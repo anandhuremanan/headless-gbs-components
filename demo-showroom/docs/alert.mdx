@@ -1,0 +1,128 @@
+---
+title: "Alert"
+description: "A message that stays in the page — neither interrupting like a dialog nor leaving like a toast."
+group: "Feedback"
+order: 23
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Alert -beta
+```
+
+The block copies the `alert` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `color-mix()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/alert/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/alert/styles.css";
+```
+
+An Alert is a message that sits in the layout and stays there: a trial ending, a record that is read-only, the summary above a form that failed validation.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<AlertWrapperBeta />
+
+## Quick Start
+
+```tsx
+import { Alert } from "@/components/alert";
+
+<Alert variant="warning" title="Your trial ends in 3 days">
+  After that the workspace becomes read-only. <a href="/billing">Add a card</a> to keep it.
+</Alert>
+```
+
+The component has no state of its own and no `"use client"` — a plain Alert renders in a Server Component. Only `onDismiss` needs a client component around it.
+
+## Which one to reach for
+
+| | Interrupts? | Lives | Dismissed by | Use it for |
+| --- | --- | --- | --- | --- |
+| **Dialog** | Yes, blocks the page | Top layer | Acknowledging it | A decision that has to happen before anything else |
+| **Toast** | No, and it leaves | A corner | Itself, after a few seconds | Confirming something that already happened |
+| **Alert** | No, and it stays | In the layout | Usually nothing | The state a page or section is in |
+
+Your Dialog already covers the modal case — `dialog.alert({ … })`. This is the third row.
+
+## Props Table
+
+Accepts every `<div>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `"info"` \| `"success"` \| `"warning"` \| `"danger"` \| `"neutral"` | `"info"` | Sets the colour, the glyph and how loudly it announces itself. |
+| `size` | `"sm"` \| `"md"` | `"md"` | `sm` is one line, for an inline note. |
+| `title` | `ReactNode` | — | The headline. |
+| `description` | `ReactNode` | — | The message. `children` does the same and is the better place for links. |
+| `icon` | `ReactNode` \| `false` | the variant's | Replace the glyph, or drop it. |
+| `actions` | `ReactNode` | — | Buttons under the message. |
+| `onDismiss` | `() => void` | — | Shows a close button. The alert does not hide itself — remove it in the handler. |
+| `classNames` | `Partial<Record<AlertSlot, string>>` | — | `root` `icon` `content` `title` `description` `actions` `dismiss` |
+| `localeText` | `Partial<AlertLocaleText>` | — | `dismiss` |
+
+## How loudly it speaks
+
+An alert that appears after the page has loaded is news, and a screen reader has to be told whether it is worth interrupting for:
+
+| Variant | Role | Effect |
+| --- | --- | --- |
+| `danger`, `warning` | `alert` | Cuts into whatever is being read. |
+| `info`, `success`, `neutral` | `status` | Waits for a pause. |
+
+"Your card was declined" earns the interruption; "240 rows imported" does not.
+
+An alert that was on the page from the start announces nothing either way — a live region only speaks when its contents change — so it is read in its turn like any other text.
+
+<Notice message="Mount the alert when the thing happens, rather than keeping a hidden one and revealing it with CSS. A live region announces a change to its contents, and a node that was always there with `display: none` may not count as a change at all." />
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+#### CSS variables
+
+Override them on `.al-root`, on `:root`, or through `style`. Each falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--al-accent` | The bar, the glyph and links. Set by `variant`. |
+| `--al-bg` | What the tint is mixed into. |
+| `--al-px`, `--al-py` | Padding (set by `size`). |
+| `--al-radius` | Corner radius. |
+
+The background is `color-mix(in oklab, var(--al-accent) 7%, var(--al-bg))`, so a themed accent tints the banner without a second variable to keep in step. Colour is never the only signal: there is a glyph, a heavier start border and the text itself.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.al-root`) | `data-variant`, `data-size` |
+
+## Next.js
+
+There is no `"use client"` in this component and no state, so it renders in a Server Component — useful for the banner on a page that is server-rendered from a record's own state.
+
+`onDismiss` is a function, so an alert that can be dismissed needs a client component around it.
+
+#### Notes
+
+- A dismissible alert that comes back on the next render will not announce itself twice unless it is actually remounted.
+- Keep the message short enough to read at a glance; an alert with three paragraphs is a page, not a banner.

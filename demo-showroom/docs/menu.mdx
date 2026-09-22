@@ -1,0 +1,208 @@
+---
+title: "Menu"
+description: "A menu of commands with arrow keys, typeahead, checkbox and radio items and submenus, following the WAI-ARIA menu button pattern."
+group: "Overlays"
+order: 15
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Menu -beta
+```
+
+The block copies the `menu` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and the Popover API)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/menu/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/menu/styles.css";
+```
+
+The Menu holds commands: the actions on a row, the options behind a “…” button, a list of things to export. It opens in the browser's top layer, so it is never clipped by a toolbar or a scrolling panel, and the keyboard works the way the WAI-ARIA menu button pattern says it should.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<MenuWrapperBeta />
+
+## Quick Start
+
+```tsx
+import {
+  Menu, MenuItem, MenuSeparator, MenuSub,
+  MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGroup,
+} from "@/components/menu";
+import "@/components/menu/styles.css";
+
+<Menu trigger={<Button variant="outline">Actions</Button>} label="Row actions">
+  <MenuItem icon={<EditIcon />} shortcut="⌘E" onSelect={edit}>Edit</MenuItem>
+  <MenuItem onSelect={duplicate}>Duplicate</MenuItem>
+  <MenuItem disabled>Archive</MenuItem>
+
+  <MenuSub label="Export">
+    <MenuItem onSelect={() => download("csv")}>CSV</MenuItem>
+    <MenuItem onSelect={() => download("pdf")}>PDF</MenuItem>
+  </MenuSub>
+
+  <MenuSeparator />
+
+  <MenuCheckboxItem checked={compact} onCheckedChange={setCompact}>
+    Compact rows
+  </MenuCheckboxItem>
+
+  <MenuRadioGroup value={sort} onValueChange={setSort} label="Sort by">
+    <MenuRadioItem value="recent">Most recent</MenuRadioItem>
+    <MenuRadioItem value="name">Name</MenuRadioItem>
+  </MenuRadioGroup>
+
+  <MenuSeparator />
+
+  <MenuItem destructive onSelect={remove}>Delete</MenuItem>
+</Menu>
+```
+
+`trigger` is cloned with `aria-haspopup`, `aria-expanded` and the handlers it needs, so pass a single element — a `Button` from this library, or your own.
+
+## Props Table
+
+#### Menu
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `trigger` | `ReactElement` | — | The element that opens it. Cloned with the ARIA wiring. |
+| `children` | `ReactNode` | — | Items, groups and separators. |
+| `open` | `boolean` | — | Controlled open state. |
+| `defaultOpen` | `boolean` | `false` | Uncontrolled initial state. |
+| `onOpenChange` | `(open, reason?) => void` | — | `reason` is `escape`, `outside`, `trigger`, `select` or `api`. |
+| `label` | `string` | `"Menu"` | Names the menu for screen readers. |
+| `side` | `"top" \| "bottom" \| "left" \| "right"` | `bottom` | Side to open on, before flipping for space. |
+| `align` | `"start" \| "center" \| "end"` | `start` | Which edge to line up with. |
+| `gap` | `number` | `4` | Distance from the trigger. |
+| `closeOnSelect` | `boolean` | `true` | Whether choosing an item closes the menu. |
+| `id`, `className`, `classNames`, `style`, `localeText` | — | — | Slots below. |
+| `ref` | `Ref<MenuHandle>` | — | `{ open, close, getElement }`. |
+
+#### Items
+
+| Component | Props | Notes |
+| --- | --- | --- |
+| `MenuItem` | `onSelect`, `icon`, `shortcut`, `disabled`, `destructive`, `closeOnSelect` | Closes the menu by default. |
+| `MenuCheckboxItem` | `checked`, `onCheckedChange`, plus the above | Stays open by default, so several can be toggled. |
+| `MenuRadioGroup` | `value`, `onValueChange`, `label` | Wraps `MenuRadioItem`s. |
+| `MenuRadioItem` | `value`, plus the item props | Stays open by default. |
+| `MenuGroup` | `label` | A titled section. The title is never focused. |
+| `MenuSeparator` | — | A rule between sections. |
+| `MenuSub` | `label`, `icon`, `disabled` | A nested menu. |
+
+`shortcut` only draws the hint. Binding the key is yours, because only your page knows what else is listening.
+
+## Keyboard
+
+| Key | Does |
+| --- | --- |
+| `ArrowDown` / `ArrowUp` on the trigger | Opens, starting at the first or last item. |
+| `ArrowDown` / `ArrowUp` | Moves through items, wrapping at the ends. |
+| `Home` / `End` | First / last item. |
+| Letters | Typeahead. Repeating a letter cycles through items starting with it. |
+| `Enter` / `Space` | Chooses the focused item. |
+| `ArrowRight` | Opens a submenu and focuses its first item. |
+| `ArrowLeft` | Closes a submenu, back to its trigger. Mirrored in RTL. |
+| `Escape` | Closes and returns focus to the trigger. |
+| `Tab` | Closes and carries on through the page. |
+
+Disabled items keep their place and stay focusable, as the pattern prefers: someone navigating by keyboard can find out an action exists but is unavailable, rather than have it silently disappear. Arrow keys skip past them, so they never trap the sequence.
+
+## Submenus
+
+```tsx
+<MenuSub label="Export">
+  <MenuItem onSelect={() => download("csv")}>CSV</MenuItem>
+  <MenuSub label="More formats">
+    <MenuItem onSelect={() => download("json")}>JSON</MenuItem>
+  </MenuSub>
+</MenuSub>
+```
+
+A submenu opens on hover after a short pause, on `Enter`, or on `ArrowRight`, and closes when the pointer leaves both it and its trigger. Submenus nest as deeply as you like, though two levels is usually the point at which a dialog would serve people better.
+
+<Notice message="A submenu is a manual popover, not an automatic one. Opening an automatic popover closes every other one, which would take the parent menu down with it the moment a submenu appeared." />
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<Menu
+  trigger={<Button>Actions</Button>}
+  className="min-w-56"
+  classNames={{ item: "text-[13px]", separator: "my-1" }}
+>
+```
+
+#### CSS variables
+
+| Variable | Used for |
+| --- | --- |
+| `--mn-bg`, `--mn-fg` | Panel background and text. |
+| `--mn-muted` | Icons, shortcuts, group titles, disabled items. |
+| `--mn-border` | Panel border and separators. |
+| `--mn-hover` | Hovered and focused items. |
+| `--mn-accent` | The check and the radio dot. |
+| `--mn-danger` | `destructive` items. |
+| `--mn-shadow`, `--mn-radius`, `--mn-font-size` | Panel shape. |
+| `--mn-item-radius` | Corner radius of each item. |
+| `--mn-min-width` | Minimum panel width (default `180px`). |
+
+Override them on `.mn-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.mn-root`) | `data-side` — the side it settled on after flipping. |
+| Item (`.mn-item`) | `data-disabled`, `data-destructive` |
+| Submenu trigger | `aria-expanded` |
+
+## Locale Text
+
+```tsx
+<Menu localeText={{ label: "Acties", submenu: (name) => `${name} submenu` }} … />
+```
+
+## Headless Use
+
+`core/navigation.ts` has no React in it, so the same rules can drive your own markup:
+
+```ts
+import { nextIndex, edgeIndex, typeaheadIndex, typeaheadBuffer } from "@/components/menu";
+
+const items = [{ text: "Save" }, { text: "Save as", disabled: true }, { text: "Print" }];
+nextIndex(items, 0, 1);            // 2 — skips the disabled item
+edgeIndex(items, "last");          // 2
+typeaheadIndex(items, "p", 0);     // 2
+```
+
+## Next.js
+
+The file is already marked `"use client"`. Import the stylesheet in your root layout, and render the Menu inside a client component — it is interactive by definition.
+
+#### Notes
+
+- The menu renders in the top layer through the native Popover API, so it escapes `overflow: hidden` without a portal.
+- Placement comes from `shared/core/position.ts`, which is unit-tested on its own.
+- Nothing is measured until the menu opens, so a page with a hundred row menus pays for none of them.

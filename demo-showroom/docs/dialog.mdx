@@ -1,0 +1,334 @@
+---
+title: "Dialog"
+description: "Alert, confirm and prompt dialogs you call from any event handler and await — no open state to manage."
+group: "Overlays"
+order: 11
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Dialog -beta
+```
+
+The block copies the `dialog` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `:has()` and `@starting-style`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/dialog/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/dialog/styles.css";
+```
+
+The Dialog asks the user a short question and gives you the answer: an **alert** to acknowledge, a **confirm** to approve or cancel, or a **prompt** to type a value. Call it from any event handler and `await` the result. There is no open state to manage and no callback to wire up. Confirm handlers can be async: the dialog shows progress while your request runs, and shows the error in place if it fails. Built on the native `<dialog>` element, it traps focus and keeps the page behind it unreachable.
+
+For larger content such as forms, use the [Modal](/2.0.0-beta/modal).
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<DialogWrapperBeta />
+
+## Quick Start
+
+**1. Mount the host once**, near the root of the app:
+
+```tsx
+// App.tsx or app/layout.tsx
+import { DialogHost } from "@/components/dialog";
+
+<body>
+  {children}
+  <DialogHost />
+</body>;
+```
+
+**2. Ask from anywhere:**
+
+```tsx
+"use client";
+
+import { dialog } from "@/components/dialog";
+
+export function DeleteButton({ ids }: { ids: string[] }) {
+  return (
+    <button
+      onClick={async () => {
+        const confirmed = await dialog.confirm({
+          title: `Delete ${ids.length} invoices?`,
+          description: "This can't be undone.",
+          intent: "danger",
+          confirmLabel: "Delete",
+        });
+        if (confirmed) await deleteInvoices(ids);
+      }}
+    >
+      Delete
+    </button>
+  );
+}
+```
+
+Each method also accepts a plain string as the title: `await dialog.confirm("Leave this page?")`.
+
+<Notice message="Import dialog and DialogHost from the same path everywhere. They meet through one shared store, and a bundler that sees two different import paths can create two stores — then dialogs never appear." />
+
+## Props Table
+
+### dialog.alert / confirm / prompt
+
+| Option         | Type                                                                | Default                     | Description                                                                     |
+| -------------- | ------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------- |
+| `title`        | `ReactNode`                                                         | **required**                | The question or message. Also names the dialog for screen readers.              |
+| `description`  | `ReactNode`                                                         | —                           | Details under the title.                                                        |
+| `intent`       | `"default"` \| `"info"` \| `"success"` \| `"warning"` \| `"danger"` | `"default"`                 | Icon and color. `danger` makes the confirm button red and focuses Cancel first. |
+| `icon`         | `ReactNode`                                                         | the intent's icon           | Custom icon; `null` hides it.                                                   |
+| `confirmLabel` | `ReactNode`                                                         | `"OK"` (alert), `"Confirm"` | Main button text. Prefer a verb: "Delete", "Send".                              |
+| `cancelLabel`  | `ReactNode`                                                         | `"Cancel"`                  | Confirm and prompt only.                                                        |
+| `dismissible`  | `boolean`                                                           | `true`                      | Escape and a backdrop click count as Cancel.                                    |
+| `size`         | `"sm"` \| `"md"`                                                    | `"sm"`                      | Width: 420 or 540 px.                                                           |
+| `onConfirm`    | `() => void \| Promise<void>`; prompt: `(value: string) => …`       | —                           | Runs before the dialog closes. See [Async Confirm](#async-confirm).             |
+
+Prompt adds:
+
+| Option         | Type                                                                      | Default  | Description                                                  |
+| -------------- | ------------------------------------------------------------------------- | -------- | ------------------------------------------------------------ |
+| `defaultValue` | `string`                                                                  | `""`     | Starting text.                                               |
+| `placeholder`  | `string`                                                                  | —        | Placeholder text.                                            |
+| `inputLabel`   | `ReactNode`                                                               | —        | Label above the field.                                       |
+| `inputType`    | `"text"` \| `"email"` \| `"password"` \| `"number"` \| `"url"` \| `"tel"` | `"text"` | Field type, which also picks the phone keyboard.             |
+| `required`     | `boolean`                                                                 | `false`  | Blocks confirming an empty value with `localeText.required`. |
+| `validate`     | `(value: string) => string \| null \| undefined`                          | —        | Return a message to block confirming.                        |
+
+| Method                    | Resolves with                                                    |
+| ------------------------- | ---------------------------------------------------------------- |
+| `dialog.alert(options)`   | `void`, once closed                                              |
+| `dialog.confirm(options)` | `true` on Confirm; `false` on Cancel, Escape or a backdrop click |
+| `dialog.prompt(options)`  | The text on Confirm; `null` when canceled                        |
+| `dialog.dismissAll()`     | Cancels the open dialog and every waiting one                    |
+
+### DialogHost
+
+| Prop         | Type                                  | Default            | Description                                                                                     |
+| ------------ | ------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------- |
+| `store`      | `DialogStore`                         | the `dialog` store | A store from `createDialogStore()`. See [Multiple Hosts](#multiple-hosts).                      |
+| `className`  | `string`                              | —                  | Class for every dialog shown.                                                                   |
+| `classNames` | `Partial<Record<DialogSlot, string>>` | —                  | Slots: `root`, `body`, `icon`, `title`, `description`, `input`, `actions`, `confirm`, `cancel`. |
+| `style`      | `CSSProperties`                       | —                  | Inline style for every dialog.                                                                  |
+| `localeText` | `Partial<DialogLocaleText>`           | English            | See [Locale Text](#locale-text).                                                                |
+
+### Dialog (declarative)
+
+The same dialog as a regular controlled component, for when you'd rather keep it in JSX. It takes every option above, plus:
+
+| Prop                                                   | Type                                                     | Default      | Description                                    |
+| ------------------------------------------------------ | -------------------------------------------------------- | ------------ | ---------------------------------------------- |
+| `open`                                                 | `boolean`                                                | **required** | Whether it's shown.                            |
+| `kind`                                                 | `"alert"` \| `"confirm"` \| `"prompt"`                   | `"confirm"`  | Which buttons and fields it has.               |
+| `onClose`                                              | `(action: "confirm" \| "cancel", value: string) => void` | —            | The user answered. Set `open` to `false` here. |
+| `onExited`                                             | `() => void`                                             | —            | The exit animation finished.                   |
+| `id`, `className`, `classNames`, `style`, `localeText` | —                                                        | —            | As on the host.                                |
+
+```tsx
+const [open, setOpen] = useState(false);
+
+<Dialog
+  open={open}
+  kind="confirm"
+  title="Archive this board?"
+  onConfirm={archiveBoard}
+  onClose={() => setOpen(false)}
+/>;
+```
+
+## Async Confirm
+
+Give `onConfirm` an async function to do the work inside the dialog:
+
+```tsx
+const deleted = await dialog.confirm({
+  title: "Delete project “Atlas”?",
+  intent: "danger",
+  confirmLabel: "Delete project",
+  onConfirm: async () => {
+    const response = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    if (!response.ok)
+      throw new Error("The project couldn't be deleted. Try again.");
+  },
+});
+```
+
+- **While it runs:** the buttons show progress, and further clicks, Escape and backdrop clicks are ignored.
+- **If it resolves:** the dialog closes and `confirm` resolves `true`.
+- **If it throws:** the error's message is shown in the dialog and it stays open, so the user can retry or cancel.
+
+## Prompts and Validation
+
+```tsx
+const email = await dialog.prompt({
+  title: "Invite a teammate",
+  inputLabel: "Email",
+  inputType: "email",
+  required: true,
+  validate: (value) =>
+    /^\S+@\S+\.\S+$/.test(value) ? null : "Enter a valid email",
+  onConfirm: (value) => sendInvite(value),
+});
+```
+
+Enter confirms. A validation message appears under the field and is announced; typing clears it. `validate` runs before `onConfirm`.
+
+## Queueing
+
+Dialogs show one at a time. A request made while another dialog is open waits its turn, and each promise resolves with its own answer:
+
+```tsx
+const [first, second] = await Promise.all([
+  dialog.confirm("First?"),
+  dialog.confirm("Second?"),
+]);
+```
+
+`dialog.dismissAll()` cancels the open dialog and every waiting one, for example when a session expires.
+
+## Multiple Hosts
+
+The ready-made `dialog` shares one store with every `<DialogHost />` that has no `store` prop. For a separate set of dialogs, for example inside an embedded widget, create your own:
+
+```tsx
+import {
+  createDialogApi,
+  createDialogStore,
+  DialogHost,
+} from "@/components/dialog";
+
+const widgetStore = createDialogStore();
+export const widgetDialog = createDialogApi(widgetStore);
+
+<DialogHost store={widgetStore} />;
+```
+
+## Keyboard
+
+| Keys                      | Action                                                      |
+| ------------------------- | ----------------------------------------------------------- |
+| **Enter**                 | Confirm (on the confirm button, or in the prompt field).    |
+| **Escape**                | Cancel, unless `dismissible` is `false`.                    |
+| **Tab** / **Shift + Tab** | Move between the field and buttons, inside the dialog only. |
+
+Accessibility: the dialog is a native modal `<dialog>` with `role="alertdialog"`, labelled by its title and described by its description. Focus starts on the prompt field, on the confirm button, or on Cancel for a `danger` confirm, so a stray Enter doesn't destroy anything. While `onConfirm` runs, the buttons are `aria-disabled` rather than disabled, so focus stays put. Errors are announced with `role="alert"`.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` / `classNames` override them.
+
+```tsx
+<DialogHost classNames={{ title: "text-lg", confirm: "min-w-28" }} />
+```
+
+#### CSS variables
+
+Override them on `.dl-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable                                    | Used for                                 |
+| ------------------------------------------- | ---------------------------------------- |
+| `--dl-width`                                | Width (set by `size`).                   |
+| `--dl-bg`, `--dl-fg`                        | Background and text color.               |
+| `--dl-muted`                                | Description text.                        |
+| `--dl-border`                               | Borders.                                 |
+| `--dl-hover`                                | Hover background of the Cancel button.   |
+| `--dl-input-bg`                             | Prompt field background.                 |
+| `--dl-accent`, `--dl-accent-fg`             | The confirm button.                      |
+| `--dl-danger`, `--dl-danger-fg`             | The `danger` confirm button, and errors. |
+| `--dl-info`, `--dl-success`, `--dl-warning` | Icon colors per intent.                  |
+| `--dl-focus`                                | Focus ring.                              |
+| `--dl-backdrop`                             | The dimmed page behind.                  |
+| `--dl-shadow`                               | Shadow.                                  |
+| `--dl-radius`                               | Corner radius.                           |
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+| Element                 | Attributes                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| Root (`dialog.dl-root`) | `data-intent`, `data-size`, `data-state` (`open` / `closed`)                          |
+| Buttons (`.dl-button`)  | `data-variant` (`primary`, `danger`, `secondary`), `aria-busy` while `onConfirm` runs |
+
+On screens narrower than 480 px the buttons stack at full width.
+
+## Locale Text
+
+```tsx
+<DialogHost
+  localeText={{
+    ok: "OK",
+    confirm: "Bestätigen",
+    cancel: "Abbrechen",
+    required: "Pflichtfeld",
+  }}
+/>
+```
+
+| Key        | Default                       |
+| ---------- | ----------------------------- |
+| `ok`       | `"OK"`                        |
+| `confirm`  | `"Confirm"`                   |
+| `cancel`   | `"Cancel"`                    |
+| `required` | `"Please fill in this field"` |
+
+## Headless Use
+
+The queue and the promise API are exported from the framework-free `@/components/dialog/core`:
+
+| Export                              | Description                                                                                                       |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `dialog` / `dialogStore`            | The ready-made API and the store behind it.                                                                       |
+| `createDialogStore()`               | A new queue: `open(kind, options)`, `resolve(id, confirmed, value?)`, `dismissAll()`, `subscribe`, `getSnapshot`. |
+| `createDialogApi(store)`            | The `alert` / `confirm` / `prompt` API for a store.                                                               |
+| `resultFor(kind, confirmed, value)` | What each kind resolves with.                                                                                     |
+
+To draw dialogs your own way, subscribe to a store with `useSyncExternalStore`, render `queue[0]`, and call `store.resolve` with the answer.
+
+## Next.js
+
+Mount `<DialogHost />` in the root layout; it's a client component, and a Server Component layout can render it. `dialog.*` is for client code: on the server, where nobody can answer, calls resolve right away as a cancel (`false`, `null`), so a stray call can't hang a request.
+
+## Migrating from the Previous Dialog Box
+
+| Previous                                                                  | New                                                                                            |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `<Dialog />` mounted once                                                 | `<DialogHost />` mounted once                                                                  |
+| `messageService.sendMessage({ key: "dialog_alert", type: "confirm", … })` | `await dialog.confirm({ … })`                                                                  |
+| `type: "alert"`                                                           | `await dialog.alert({ … })`                                                                    |
+| `messageService.getMessage().subscribe(…)` with `callbackUrl`             | The returned promise: `const confirmed = await dialog.confirm(…)`                              |
+| `keyData` (entity values passed through)                                  | Not needed; the values are still in scope where you `await`                                    |
+| `title`                                                                   | `title`                                                                                        |
+| `content`                                                                 | `description`                                                                                  |
+| `okButton: { text, icon }`                                                | `confirmLabel` (any `ReactNode`, so it can include an icon)                                    |
+| `cancelButton: { text, icon }`                                            | `cancelLabel`                                                                                  |
+| `position: { X, Y }`                                                      | Always centered; restyle with `className` if needed                                            |
+| `width`                                                                   | `size` (`sm` / `md`), or `--dl-width`                                                          |
+| Dependency on `gbs-fwk-core`                                              | None                                                                                           |
+| —                                                                         | New: `prompt`, `intent`, async `onConfirm` with errors shown in place, queueing, `dismissible` |
+
+#### Notes
+
+- One dialog is shown at a time; the rest queue.
+- The dialog is always centered. For a drawer or a large form, use the Modal.
+- A Dialog opened from inside an open Modal stacks above it, and Escape closes the Dialog first.

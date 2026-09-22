@@ -1,0 +1,1199 @@
+---
+title: "Data Grid"
+description: "A virtualized data grid for React 19 that stays fast with 100,000+ rows, in client or server mode."
+group: "Data"
+order: 2
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a DataGrid -beta
+```
+
+The block copies the `data-grid` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19 and `@types/react` 19
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()`, `:has()` and the Popover API)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/data-grid/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/data-grid/styles.css";
+```
+
+The DataGrid is a virtualized data grid for React 19 and Next.js. It renders only the rows and columns on screen, so it stays fast with 100,000+ rows. It supports sorting, typed column filters, global search, pagination, row selection, column resizing, reordering, pinning and hiding, inline editing with validation, CSV / Excel / PDF export, keyboard navigation, dark mode and right-to-left layouts. It works with data held in the browser (client mode) or fetched page by page from an API (server mode).
+
+#### Demo
+
+<DemoGrid />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { createColumnHelper, DataGrid } from "@/components/data-grid";
+
+interface Employee {
+  id: number;
+  name: string;
+  department: string;
+  salary: number;
+  startDate: string;
+  active: boolean;
+}
+
+const col = createColumnHelper<Employee>();
+
+// Define columns outside the component, or wrap them in useMemo.
+const columns = [
+  col.field("id", { header: "ID", type: "number", width: 80, pin: "left" }),
+  col.field("name", { width: 200 }),
+  col.field("department", {
+    options: [
+      { label: "Engineering", value: "Engineering" },
+      { label: "Sales", value: "Sales" },
+    ],
+  }),
+  col.field("salary", {
+    type: "number",
+    format: (value) => `$${value.toLocaleString()}`,
+  }),
+  col.field("startDate", { header: "Start date", type: "date" }),
+  col.field("active", { type: "boolean" }),
+];
+
+export default function Employees({ data }: { data: Employee[] }) {
+  return (
+    <DataGrid
+      data={data}
+      columns={columns}
+      getRowId="id"
+      enableRowSelection
+      height={600}
+      onRowClick={(row) => console.log("Clicked", row)}
+    />
+  );
+}
+```
+
+<Notice message="Keep data, columns and getRowId stable. Define columns at module level or with useMemo, and pass getRowId as a property name such as getRowId='id'. A new columns array on every render makes the grid re-filter and re-sort each time. With React Compiler enabled this is handled for you." />
+
+## Props Table
+
+### Data
+
+| Prop       | Type                                             | Default                        | Description                                                                                             |
+| ---------- | ------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `data`     | `T[]`                                            | **required**                   | The rows to display. In server mode, the rows of the current page.                                      |
+| `columns`  | `ColumnDef<T>[]`                                 | **required**                   | Column definitions. See [Column Options](#column-options).                                              |
+| `getRowId` | `keyof T` \| `(row: T, index: number) => string` | `row.id`, else the array index | Stable row id used for selection, editing and React keys. Prefer a property name, e.g. `getRowId="id"`. |
+| `mode`     | `"client"` \| `"server"`                         | `"client"`                     | `client`: the grid sorts, filters and paginates `data`. `server`: `data` is already the current page.   |
+| `rowCount` | `number`                                         | `data.length`                  | Total number of rows on the server. Used for pagination in server mode.                                 |
+| `loading`  | `boolean`                                        | `false`                        | Shows a loading bar and sets `aria-busy`. Existing rows stay visible while loading.                     |
+
+### State
+
+| Prop            | Type                                         | Default | Description                                                                                                                      |
+| --------------- | -------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `initialState`  | `Partial<GridState>`                         | —       | Starting state (sorting, filters, page size, column layout, …). The grid manages it afterwards.                                  |
+| `state`         | `Partial<GridState>`                         | —       | Controlled state. Keys you pass here are owned by you: the grid reports changes through `onStateChange` but does not apply them. |
+| `onStateChange` | `(next: GridState, prev: GridState) => void` | —       | Called on every state change (sorting, filters, selection, column layout, density, …).                                           |
+| `onQueryChange` | `(query: GridQuery) => void`                 | —       | Called when sorting, filters, search or pagination change. Use it to fetch data in server mode.                                  |
+
+### Features
+
+| Prop                     | Type                               | Default              | Description                                                                      |
+| ------------------------ | ---------------------------------- | -------------------- | -------------------------------------------------------------------------------- |
+| `enablePagination`       | `boolean`                          | `true`               | Shows the pagination bar. When `false`, all rows scroll in one virtualized list. |
+| `pageSizeOptions`        | `number[]`                         | `[25, 50, 100, 250]` | Choices in the "Rows per page" select. The default page size is 50.              |
+| `enableSorting`          | `boolean`                          | `true`               | Header click, Enter key and the column menu sort columns.                        |
+| `enableMultiSort`        | `boolean`                          | `true`               | Shift + click (or Shift + Enter) adds a column to the sort.                      |
+| `enableFiltering`        | `boolean`                          | `true`               | Shows the filter form in the column menu.                                        |
+| `enableColumnResizing`   | `boolean`                          | `true`               | Drag the header edge to resize. Escape while dragging abandons it; double-click the edge resets the width. |
+| `enableColumnReordering` | `boolean`                          | `true`               | Drag headers to reorder, or use "Move earlier / later" in the column menu.       |
+| `enableColumnPinning`    | `boolean`                          | `true`               | "Pin to start / end" in the column menu.                                         |
+| `enableColumnHiding`     | `boolean`                          | `true`               | "Hide column" in the column menu and the Columns toolbar menu.                   |
+| `enableRowSelection`     | `boolean` \| `(row: T) => boolean` | `false`              | Adds a checkbox column. Pass a function to allow selection only for some rows.   |
+| `selectionMode`          | `"single"` \| `"multiple"`         | `"multiple"`         | `single` keeps at most one row selected and hides the select-all checkbox.       |
+| `toolbar`                | `boolean` \| `ToolbarOptions`      | `true`               | Shows the toolbar. See [Toolbar Options](#toolbar-options).                      |
+
+### Events
+
+| Prop               | Type                                                 | Default | Description                                                                                                             |
+| ------------------ | ---------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `onRowClick`       | `(row: T, event: MouseEvent) => void`                | —       | Row click. Not fired for clicks on buttons, links, inputs, selects, labels or elements with `data-dg-interactive`.      |
+| `onRowDoubleClick` | `(row: T, event: MouseEvent) => void`                | —       | Row double-click, with the same exclusions.                                                                             |
+| `onCellEdit`       | `(event: CellEditEvent<T>) => void \| Promise<void>` | —       | Called when an edit is committed. Update your `data` here. Return a promise to show the pending value until it settles. |
+
+### Layout and Appearance
+
+| Prop              | Type                                                | Default                    | Description                                                                                         |
+| ----------------- | --------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------- |
+| `height`          | `number` \| `string`                                | `520`                      | Height of the scrolling area. Ignored when `autoHeight` is set.                                     |
+| `autoHeight`      | `boolean`                                           | `false`                    | Grow to fit all rows instead of scrolling. Use with pagination or small data sets.                  |
+| `rowHeight`       | `number`                                            | from density: 32 / 40 / 52 | Fixed row height in pixels.                                                                         |
+| `headerHeight`    | `number`                                            | `max(40, rowHeight)`       | Header row height in pixels.                                                                        |
+| `emptyState`      | `ReactNode`                                         | built-in message           | Shown when there are no rows.                                                                       |
+| `getRowClassName` | `(row: T, rowIndex: number) => string \| undefined` | —                          | Extra class name per row.                                                                           |
+| `classNames`      | `Partial<Record<GridSlot, string>>`                 | —                          | Class names for `root`, `toolbar`, `viewport`, `header`, `headerCell`, `row`, `cell`, `pagination`. |
+| `className`       | `string`                                            | —                          | Class name for the root element.                                                                    |
+| `style`           | `CSSProperties`                                     | —                          | Inline style for the root element (e.g. CSS variables).                                             |
+| `locale`          | `string`                                            | browser locale             | BCP 47 locale for dates and numbers, e.g. `"en-IN"`.                                                |
+| `localeText`      | `Partial<LocaleText>`                               | English                    | Overrides UI text. See [Locale Text](#locale-text).                                                 |
+| `aria-label`      | `string`                                            | `"Data grid"`              | Accessible name of the grid.                                                                        |
+| `exportFileName`  | `string`                                            | `"export"`                 | Default file name for exports.                                                                      |
+| `ref`             | `Ref<GridApi<T>>`                                   | —                          | Imperative API. See [Grid API](#grid-api-ref).                                                      |
+
+### Toolbar Options
+
+Pass an object to `toolbar` to choose what the toolbar shows. Omitted options default to `true`.
+
+| Option        | Type        | Default | Description                                                            |
+| ------------- | ----------- | ------- | ---------------------------------------------------------------------- |
+| `search`      | `boolean`   | `true`  | Global search box.                                                     |
+| `filterChips` | `boolean`   | `true`  | Chips for active filters, each with a remove button, plus "Clear all". |
+| `columns`     | `boolean`   | `true`  | "Columns" menu to show or hide columns and reset the layout.           |
+| `density`     | `boolean`   | `true`  | "Density" menu: compact, standard, comfortable.                        |
+| `export`      | `boolean`   | `true`  | "Export" menu: CSV, Excel, PDF.                                        |
+| `start`       | `ReactNode` | —       | Custom content at the start of the toolbar.                            |
+| `end`         | `ReactNode` | —       | Custom content at the end of the toolbar.                              |
+
+```tsx
+<DataGrid
+  data={data}
+  columns={columns}
+  toolbar={{
+    density: false,
+    end: <button onClick={openCreateDialog}>Add employee</button>,
+  }}
+/>
+```
+
+## Column Options
+
+Columns can be written as plain objects (`ColumnDef<T>[]`) or with `createColumnHelper`, which infers the type of `value` in `cell`, `format`, `validate` and `sortFn` from the field.
+
+```tsx
+const col = createColumnHelper<Employee>();
+
+col.field("salary", { type: "number" }); // value: number
+col.accessor("fullName", (row) => `${row.first} ${row.last}`); // value: string
+col.display("actions", { cell: ({ row }) => <Actions row={row} /> }); // no value
+```
+
+| Option            | Type                                                                                                          | Default                                                | Description                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `field`           | `keyof T`                                                                                                     | —                                                      | Property of the row to display.                                                                 |
+| `accessor`        | `(row: T) => V`                                                                                               | —                                                      | Computes the value instead of reading a field. Requires `id`.                                   |
+| `id`              | `string`                                                                                                      | `field`                                                | Unique column id. Required for accessor and display-only columns. Duplicate ids throw an error. |
+| `header`          | `string`                                                                                                      | from the id (`startDate` → "Start Date")               | Header text.                                                                                    |
+| `type`            | `"string"` \| `"number"` \| `"date"` \| `"boolean"`                                                           | `"string"`                                             | Controls filter operators, sorting, alignment, the built-in editor and Excel cell types.        |
+| `options`         | `{ label: string; value: string \| number }[]`                                                                | —                                                      | Fixed choices. Displays labels, sorts by label, adds an "is any of" filter and a select editor. |
+| `width`           | `number`                                                                                                      | `160`                                                  | Initial width in pixels.                                                                        |
+| `minWidth`        | `number`                                                                                                      | `60`                                                   | Minimum width when resizing.                                                                    |
+| `maxWidth`        | `number`                                                                                                      | `1200`                                                 | Maximum width when resizing.                                                                    |
+| `align`           | `"start"` \| `"center"` \| `"end"`                                                                            | `end` for numbers, `center` for booleans, else `start` | Horizontal alignment of header and cells.                                                       |
+| `pin`             | `"left"` \| `"right"`                                                                                         | —                                                      | Initially pinned to the start or end.                                                           |
+| `hidden`          | `boolean`                                                                                                     | `false`                                                | Initially hidden.                                                                               |
+| `format`          | `(value: V, row: T) => string`                                                                                | built-in                                               | Display text. Also used by search, text filters, CSV, PDF and copy.                             |
+| `cell`            | `(ctx: CellContext<T, V>) => ReactNode`                                                                       | text                                                   | Custom cell content (buttons, inputs, badges, …). See [Custom Cells](#custom-cells-templates).  |
+| `sortable`        | `boolean`                                                                                                     | `true` (data columns)                                  | Allow sorting this column.                                                                      |
+| `sortFn`          | `(a: V, b: V, rowA: T, rowB: T) => number`                                                                    | built-in                                               | Custom comparison. Return a negative number, zero or a positive number.                         |
+| `filterable`      | `boolean`                                                                                                     | `true` (data columns)                                  | Show the filter form for this column.                                                           |
+| `filterFn`        | `(value: V, filter: ColumnFilter, row: T) => boolean`                                                         | built-in                                               | Custom filter matching.                                                                         |
+| `searchable`      | `boolean`                                                                                                     | `true` (data columns)                                  | Include this column in the global search.                                                       |
+| `resizable`       | `boolean`                                                                                                     | `true`                                                 | Allow resizing.                                                                                 |
+| `reorderable`     | `boolean`                                                                                                     | `true`                                                 | Allow reordering.                                                                               |
+| `pinnable`        | `boolean`                                                                                                     | `true`                                                 | Allow pinning from the column menu.                                                             |
+| `hideable`        | `boolean`                                                                                                     | `true`                                                 | Allow hiding.                                                                                   |
+| `editable`        | `boolean` \| `(row: T) => boolean`                                                                            | `false`                                                | Allow inline editing. See [Editing](#inline-editing).                                           |
+| `editor`          | `"text"` \| `"number"` \| `"date"` \| `"select"` \| `"checkbox"` \| `(props: EditorProps<T, V>) => ReactNode` | from `type` / `options`                                | Built-in editor, or a custom editor component.                                                  |
+| `validate`        | `(value: V, row: T) => string \| null \| undefined`                                                           | —                                                      | Return an error message to reject an edit.                                                      |
+| `exportable`      | `boolean`                                                                                                     | `true` for data columns                                | Include in CSV, Excel, PDF and copy.                                                            |
+| `exportValue`     | `(row: T) => string \| number \| boolean \| Date \| null`                                                     | the cell value                                         | Value used for export instead of the cell value. Also makes display-only columns exportable.    |
+| `headerClassName` | `string`                                                                                                      | —                                                      | Class name for the header cell.                                                                 |
+| `cellClassName`   | `string` \| `(ctx: CellContext<T, V>) => string \| undefined`                                                 | —                                                      | Class name for cells, optionally based on the row.                                              |
+
+"Data columns" are columns with a `field` or `accessor`. Display-only columns (only `id` and `cell`) cannot be sorted, filtered or searched.
+
+#### CellContext
+
+Passed to `cell` and `cellClassName`.
+
+| Property   | Type                | Description                                                      |
+| ---------- | ------------------- | ---------------------------------------------------------------- |
+| `row`      | `T`                 | The row object.                                                  |
+| `rowId`    | `string`            | The row id from `getRowId`.                                      |
+| `rowIndex` | `number`            | Index of the row in the displayed rows (the page).               |
+| `value`    | `V`                 | The cell value (from `field` or `accessor`).                     |
+| `column`   | `ResolvedColumn<T>` | The resolved column, including `id`, `header`, `type` and `def`. |
+
+## Custom Cells (Templates)
+
+`cell` replaces `template` from the previous grid. It can return any React content, including buttons, inputs and selects.
+
+```tsx
+"use client";
+
+import { useMemo } from "react";
+import { createColumnHelper, DataGrid } from "@/components/data-grid";
+
+const col = createColumnHelper<Employee>();
+
+function RowActions({
+  row,
+  onEdit,
+  onDelete,
+}: {
+  row: Employee;
+  onEdit: (row: Employee) => void;
+  onDelete: (id: number) => void;
+}) {
+  return (
+    <div className="flex gap-2">
+      <button
+        className="rounded-lg bg-blue-500 px-2 py-1 text-white"
+        onClick={() => onEdit(row)}
+      >
+        Edit
+      </button>
+      <button
+        className="rounded-lg bg-red-500 px-2 py-1 text-white"
+        onClick={() => onDelete(row.id)}
+      >
+        Delete
+      </button>
+    </div>
+  );
+}
+
+export function EmployeeGrid({ data, onEdit, onDelete }: Props) {
+  const columns = useMemo(
+    () => [
+      col.field("id", { header: "ID", type: "number", width: 80 }),
+      col.field("name"),
+      col.display("actions", {
+        header: "Actions",
+        width: 160,
+        pin: "right",
+        cell: ({ row }) => (
+          <RowActions row={row} onEdit={onEdit} onDelete={onDelete} />
+        ),
+      }),
+    ],
+    [onEdit, onDelete],
+  );
+
+  return <DataGrid data={data} columns={columns} getRowId="id" />;
+}
+```
+
+**Inputs and selects inside cells**
+
+```tsx
+col.field("quantity", {
+  type: "number",
+  cell: ({ row, value }) => (
+    <input
+      type="number"
+      value={value}
+      onChange={(e) => updateRow(row.id, { quantity: e.target.valueAsNumber })}
+    />
+  ),
+});
+```
+
+Things to know:
+
+- Clicks on buttons, inputs, selects, links and labels inside a cell do not trigger `onRowClick`. Add `data-dg-interactive` to other clickable elements.
+- While focus is inside a control, the grid ignores arrow keys and Space, so the control works normally. Press **Enter** on a cell to move focus into its control, and **Escape** to return to the cell.
+- `cell` is called as a function, so you cannot call hooks directly inside it. Render a component instead: `cell: (ctx) => <MyCell {...ctx} />`.
+- Rows scrolled out of view are unmounted. Keep control values in your data or state, not in uncontrolled inputs.
+- Cells re-render when their row or the columns change. If a renderer depends on other state, add it to the `useMemo` dependencies.
+- Content must fit the fixed row height.
+
+## Inline Editing
+
+Mark columns as `editable` and update your data in `onCellEdit`. The grid never changes `data` itself.
+
+```tsx
+const columns = [
+  col.field("name", {
+    editable: true,
+    validate: (value) => (value.trim() ? null : "Name is required"),
+  }),
+  col.field("salary", {
+    type: "number",
+    editable: (row) => row.active,
+    validate: (value) =>
+      value === null || value < 0 ? "Enter a positive amount" : null,
+  }),
+  col.field("department", { editable: true, options: departmentOptions }), // select editor
+  col.field("startDate", { type: "date", editable: true }), // date editor
+  col.field("active", { type: "boolean", editable: true }), // checkbox editor
+];
+
+<DataGrid
+  data={employees}
+  columns={columns}
+  getRowId="id"
+  onCellEdit={async ({ rowId, columnId, value }) => {
+    await fetch(`/api/employees/${rowId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ [columnId]: value }),
+    });
+    setEmployees((prev) =>
+      prev.map((e) =>
+        String(e.id) === rowId ? { ...e, [columnId]: value } : e,
+      ),
+    );
+  }}
+/>;
+```
+
+| Action                       | Keys / mouse                      |
+| ---------------------------- | --------------------------------- |
+| Start editing                | Double-click, **Enter** or **F2** |
+| Commit and move down / up    | **Enter** / **Shift + Enter**     |
+| Commit and move right / left | **Tab** / **Shift + Tab**         |
+| Cancel                       | **Escape**                        |
+| Commit                       | Click outside the editor          |
+
+- The built-in editor is chosen from `editor`, otherwise: `options` → select, `number` → number input, `date` → date input, `boolean` → checkbox, anything else → text input.
+- The number editor returns a `number` (or `null` when empty). The date editor returns the same kind of value the cell had: a `Date`, a timestamp, or a `"YYYY-MM-DD"` string.
+- If `validate` returns a message, it is shown under the cell and the edit stays open.
+- If `onCellEdit` returns a promise, the cell shows the new value in italics until it resolves. If it rejects, the cell is outlined in red and the error is shown as a tooltip.
+
+#### CellEditEvent
+
+| Property        | Type      | Description                             |
+| --------------- | --------- | --------------------------------------- |
+| `row`           | `T`       | The row being edited (before the edit). |
+| `rowId`         | `string`  | The row id.                             |
+| `columnId`      | `string`  | The column id.                          |
+| `value`         | `unknown` | The new value.                          |
+| `previousValue` | `unknown` | The value before the edit.              |
+
+#### Custom editor
+
+```tsx
+col.field("rating", {
+  type: "number",
+  editable: true,
+  editor: ({ value, onChange, commit, cancel, error }) => (
+    <StarPicker
+      value={value}
+      onChange={(next) => commit(next)} // commit immediately with a new value
+      onCancel={cancel}
+      invalid={Boolean(error)}
+    />
+  ),
+});
+```
+
+| EditorProps property | Type                  | Description                                      |
+| -------------------- | --------------------- | ------------------------------------------------ |
+| `value`              | `V`                   | Current draft value.                             |
+| `row`                | `T`                   | The row.                                         |
+| `column`             | `ResolvedColumn<T>`   | The column.                                      |
+| `error`              | `string \| null`      | Validation message from the last commit attempt. |
+| `onChange`           | `(value: V) => void`  | Update the draft.                                |
+| `commit`             | `(value?: V) => void` | Commit the draft, or the given value.            |
+| `cancel`             | `() => void`          | Close without saving.                            |
+
+## Sorting, Filtering and Search
+
+- **Sorting:** click a header to cycle ascending → descending → off. **Shift + click** adds the column to a multi-column sort. Empty values always sort last. Text sorts naturally ("Item 2" before "Item 10") and ignores case.
+- **Column filters:** open the column menu (the ⋮ button on the header, or **Alt + ↓** on a focused header). A filter with an empty value is ignored. All column filters must match.
+- **Search:** the toolbar search matches the displayed text of every searchable column. Every word must match somewhere in the row, so `paris active` finds rows containing both.
+- Changing filters, search or sorting returns to the first page.
+
+#### Filter operators
+
+| Column type               | Operators                                                                                           | Value format                                                                  |
+| ------------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `string`                  | `contains`, `notContains`, `equals`, `notEquals`, `startsWith`, `endsWith`, `isEmpty`, `isNotEmpty` | text, case-insensitive                                                        |
+| `number`                  | `equals`, `notEquals`, `gt`, `gte`, `lt`, `lte`, `between`, `isEmpty`, `isNotEmpty`                 | number; `between` uses `value` and `value2` (both inclusive, either optional) |
+| `date`                    | `equals` (same day), `before`, `after`, `between`, `isEmpty`, `isNotEmpty`                          | `"YYYY-MM-DD"`, compared as local calendar days                               |
+| `boolean`                 | `equals`                                                                                            | `true` or `false`                                                             |
+| any column with `options` | `in` ("is any of"), `isEmpty`, `isNotEmpty`                                                         | array of option values                                                        |
+
+Set filters from code:
+
+```tsx
+gridRef.current?.setFilter("department", {
+  operator: "in",
+  value: ["Engineering", "Sales"],
+});
+gridRef.current?.setFilter("salary", {
+  operator: "between",
+  value: 50000,
+  value2: 90000,
+});
+gridRef.current?.setFilter("salary", null); // remove
+```
+
+or start with them:
+
+```tsx
+<DataGrid
+  initialState={{
+    sorting: [{ columnId: "salary", desc: true }],
+    filters: [{ columnId: "active", operator: "equals", value: true }],
+    globalFilter: "",
+    pagination: { pageIndex: 0, pageSize: 25 },
+  }}
+/>
+```
+
+## Row Selection
+
+```tsx
+const gridRef = useRef<GridApi<Employee>>(null);
+
+<DataGrid
+  ref={gridRef}
+  data={employees}
+  columns={columns}
+  getRowId="id"
+  enableRowSelection={(row) => row.active} // or just enableRowSelection
+  onStateChange={(next, prev) => {
+    if (next.rowSelection !== prev.rowSelection) {
+      console.log("Selected ids:", Object.keys(next.rowSelection));
+    }
+  }}
+/>;
+
+const selected = gridRef.current?.getSelectedRows();
+```
+
+- Click a checkbox to toggle a row. **Shift + click** selects the range from the last clicked row.
+- The header checkbox selects every row matching the current filters (in server mode, the rows of the current page). It shows a partial state when only some are selected.
+- Selection is stored by row id, so it survives sorting, filtering and data refreshes.
+- `rowSelection` in state looks like `{ "12": true, "57": true }`.
+
+## Controlled State
+
+Every key of `GridState` can be controlled. Pass the keys you want to own in `state` and update them in `onStateChange`. Keys you don't pass stay internal.
+
+```tsx
+const [sorting, setSorting] = useState<SortItem[]>([]);
+
+<DataGrid
+  data={data}
+  columns={columns}
+  state={{ sorting }}
+  onStateChange={(next) => setSorting(next.sorting)}
+/>;
+```
+
+#### Saving the column layout
+
+```tsx
+const saved = JSON.parse(localStorage.getItem("employees-layout") ?? "{}");
+
+<DataGrid
+  data={data}
+  columns={columns}
+  initialState={saved}
+  onStateChange={({
+    columnOrder,
+    columnSizing,
+    columnPinning,
+    columnVisibility,
+    density,
+  }) => {
+    localStorage.setItem(
+      "employees-layout",
+      JSON.stringify({
+        columnOrder,
+        columnSizing,
+        columnPinning,
+        columnVisibility,
+        density,
+      }),
+    );
+  }}
+/>;
+```
+
+#### GridState
+
+| Key                | Type                                           | Default                          | Description                          |
+| ------------------ | ---------------------------------------------- | -------------------------------- | ------------------------------------ |
+| `sorting`          | `SortItem[]`                                   | `[]`                             | Active sorts in priority order.      |
+| `filters`          | `ColumnFilter[]`                               | `[]`                             | Active column filters.               |
+| `globalFilter`     | `string`                                       | `""`                             | Search text.                         |
+| `pagination`       | `{ pageIndex: number; pageSize: number }`      | `{ pageIndex: 0, pageSize: 50 }` | Zero-based page index and page size. |
+| `rowSelection`     | `Record<string, boolean>`                      | `{}`                             | Selected row ids.                    |
+| `columnOrder`      | `string[]`                                     | `[]` (definition order)          | Order of unpinned columns.           |
+| `columnVisibility` | `Record<string, boolean>`                      | from `hidden`                    | `false` hides a column.              |
+| `columnSizing`     | `Record<string, number>`                       | `{}`                             | Widths set by resizing.              |
+| `columnPinning`    | `{ left: string[]; right: string[] }`          | from `pin`                       | Pinned column ids, in display order. |
+| `density`          | `"compact"` \| `"standard"` \| `"comfortable"` | `"standard"`                     | Row height: 32, 40 or 52 px.         |
+
+#### Related types
+
+```ts
+interface SortItem {
+  columnId: string;
+  desc: boolean;
+}
+
+interface ColumnFilter {
+  columnId: string;
+  operator: FilterOperator;
+  value?: string | number | boolean | (string | number)[] | null;
+  value2?: string | number | boolean | (string | number)[] | null; // upper bound for "between"
+}
+
+interface GridQuery {
+  sorting: SortItem[];
+  filters: ColumnFilter[];
+  globalFilter: string;
+  pagination: { pageIndex: number; pageSize: number };
+}
+```
+
+## Server Side Pagination
+
+In server mode the grid does not sort, filter or paginate. It reports what the user asked for through `onQueryChange`, and you fetch the matching page. This replaces `lazy`, `pageSettings`, `pageStatus`, `activeFilterArrayValue`, `onSearch` and the `usePaginatedData` hook.
+
+#### Client
+
+```tsx
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { DataGrid, type GridApi, type GridQuery } from "@/components/data-grid";
+import { columns, type Order } from "./columns";
+
+const initialQuery: GridQuery = {
+  sorting: [{ columnId: "orderedAt", desc: true }],
+  filters: [],
+  globalFilter: "",
+  pagination: { pageIndex: 0, pageSize: 25 },
+};
+
+function toSearchParams(query: GridQuery) {
+  const params = new URLSearchParams({
+    page: String(query.pagination.pageIndex + 1),
+    pageSize: String(query.pagination.pageSize),
+  });
+  if (query.globalFilter) params.set("search", query.globalFilter);
+  if (query.sorting.length) params.set("sort", JSON.stringify(query.sorting));
+  if (query.filters.length)
+    params.set("filters", JSON.stringify(query.filters));
+  return params;
+}
+
+const NO_ROWS: Order[] = [];
+
+export default function OrdersGrid() {
+  const gridRef = useRef<GridApi<Order>>(null);
+  const [query, setQuery] = useState(initialQuery);
+  const [result, setResult] = useState<{
+    query: GridQuery;
+    data: Order[];
+    total: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`/api/orders?${toSearchParams(query)}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((body) => setResult({ query, data: body.data, total: body.total }))
+      .catch(() => {}); // aborted or failed
+    return () => controller.abort(); // cancels the previous request when the query changes
+  }, [query]);
+
+  return (
+    <DataGrid
+      ref={gridRef}
+      mode="server"
+      data={result?.data ?? NO_ROWS}
+      rowCount={result?.total ?? 0}
+      loading={result?.query !== query}
+      columns={columns}
+      getRowId="id"
+      initialState={initialQuery}
+      onQueryChange={setQuery}
+    />
+  );
+}
+```
+
+With TanStack Query the fetching part becomes:
+
+```tsx
+const { data, isFetching } = useQuery({
+  queryKey: ["orders", query],
+  queryFn: ({ signal }) => fetch(`/api/orders?${toSearchParams(query)}`, { signal }).then((r) => r.json()),
+  placeholderData: keepPreviousData,
+});
+
+<DataGrid mode="server" data={data?.data ?? NO_ROWS} rowCount={data?.total ?? 0} loading={isFetching} ... />
+```
+
+#### API contract
+
+The grid doesn't require a specific API format; the example above uses this one.
+
+**Query parameters**
+
+| Parameter  | Type                  | Required | Description                                                     |
+| ---------- | --------------------- | -------- | --------------------------------------------------------------- |
+| `page`     | number                | No       | Page number, starting at 1 (default: 1).                        |
+| `pageSize` | number                | No       | Rows per page (default: 25).                                    |
+| `search`   | string                | No       | Global search text.                                             |
+| `sort`     | JSON `SortItem[]`     | No       | e.g. `[{"columnId":"total","desc":true}]`                       |
+| `filters`  | JSON `ColumnFilter[]` | No       | e.g. `[{"columnId":"status","operator":"in","value":["paid"]}]` |
+| `export`   | `"true"`              | No       | Return all matching rows, ignoring pagination.                  |
+
+Example URL:
+
+```bash
+/api/orders?page=2&pageSize=25&search=keyboard&sort=%5B%7B%22columnId%22%3A%22total%22%2C%22desc%22%3Atrue%7D%5D
+```
+
+**Response**
+
+```json
+{
+  "data": [{ "id": "ORD-100001", "customer": "Ava Smith", "total": 120.5 }],
+  "total": 25000
+}
+```
+
+**Error responses**
+
+- `400 Bad Request`: invalid `sort` or `filters` JSON.
+- `500 Internal Server Error`: any other error.
+
+#### Node.js (Express)
+
+```js
+import express from "express";
+import cors from "cors";
+
+const app = express();
+app.use(cors());
+
+// Fake database. Dates are stored as "YYYY-MM-DD" strings.
+const ORDERS = Array.from({ length: 500 }, (_, i) => ({
+  id: `ORD-${100001 + i}`,
+  customer: `Customer ${i + 1}`,
+  status: ["pending", "paid", "shipped"][i % 3],
+  total: Math.round(Math.random() * 50000) / 100,
+  orderedAt: `2026-0${(i % 9) + 1}-1${i % 10}`,
+}));
+
+const isEmpty = (v) => v === null || v === undefined || v === "";
+const text = (v) => String(v ?? "").toLowerCase();
+
+const OPERATORS = {
+  contains: (v, f) => text(v).includes(text(f.value)),
+  notContains: (v, f) => !text(v).includes(text(f.value)),
+  equals: (v, f) =>
+    typeof f.value === "string" ? text(v) === text(f.value) : v === f.value,
+  notEquals: (v, f) =>
+    typeof f.value === "string" ? text(v) !== text(f.value) : v !== f.value,
+  startsWith: (v, f) => text(v).startsWith(text(f.value)),
+  endsWith: (v, f) => text(v).endsWith(text(f.value)),
+  gt: (v, f) => v > f.value,
+  gte: (v, f) => v >= f.value,
+  lt: (v, f) => v < f.value,
+  lte: (v, f) => v <= f.value,
+  between: (v, f) =>
+    (isEmpty(f.value) || v >= f.value) && (isEmpty(f.value2) || v <= f.value2),
+  before: (v, f) => String(v) < f.value,
+  after: (v, f) => String(v) > f.value,
+  in: (v, f) => Array.isArray(f.value) && f.value.includes(v),
+  isEmpty: (v) => isEmpty(v),
+  isNotEmpty: (v) => !isEmpty(v),
+};
+
+function compare(a, b, sorting) {
+  for (const { columnId, desc } of sorting) {
+    const x = a[columnId];
+    const y = b[columnId];
+    if (x === y) continue;
+    if (isEmpty(x)) return 1; // empty values last
+    if (isEmpty(y)) return -1;
+    const result =
+      typeof x === "string"
+        ? x.localeCompare(y, undefined, { numeric: true, sensitivity: "base" })
+        : x < y
+          ? -1
+          : 1;
+    if (result !== 0) return desc ? -result : result;
+  }
+  return 0;
+}
+
+app.get("/api/orders", (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page ?? "1", 10));
+  const pageSize = Math.min(
+    500,
+    Math.max(1, parseInt(req.query.pageSize ?? "25", 10)),
+  );
+  const terms = text(req.query.search).split(/\s+/).filter(Boolean);
+
+  let sorting;
+  let filters;
+  try {
+    sorting = JSON.parse(req.query.sort ?? "[]");
+    filters = JSON.parse(req.query.filters ?? "[]");
+  } catch {
+    return res.status(400).json({ error: "Invalid sort or filters" });
+  }
+
+  let rows = ORDERS.filter((row) =>
+    filters.every((f) => {
+      const operator = OPERATORS[f.operator];
+      return operator ? operator(row[f.columnId], f) : true;
+    }),
+  );
+
+  if (terms.length) {
+    rows = rows.filter((row) => {
+      const haystack = Object.values(row).map(text).join(" ");
+      return terms.every((term) => haystack.includes(term));
+    });
+  }
+
+  rows.sort((a, b) => compare(a, b, sorting));
+
+  const data =
+    req.query.export === "true"
+      ? rows
+      : rows.slice((page - 1) * pageSize, page * pageSize);
+  res.json({ data, total: rows.length });
+});
+
+app.listen(5000, () => console.log("Server running on http://localhost:5000"));
+```
+
+#### Next.js Route Handler (same logic as the grid)
+
+If the API lives in the same Next.js app, it can import the grid's framework-free functions, so the server sorts, filters and searches exactly like client mode.
+
+```ts
+// app/api/orders/route.ts
+import {
+  buildRows,
+  createFormatters,
+  createRowIdGetter,
+  filterRows,
+  paginate,
+  resolveColumns,
+  sortRows,
+} from "@/components/data-grid/core";
+import { orderColumns, type Order } from "@/lib/order-columns"; // column defs without "use client"
+import { getOrders } from "@/lib/db";
+
+const columns = resolveColumns(orderColumns);
+const formatters = createFormatters("en-US");
+
+export async function GET(request: Request) {
+  const params = new URL(request.url).searchParams;
+  const rows = buildRows(await getOrders(), createRowIdGetter<Order>("id"));
+
+  const filtered = filterRows(
+    rows,
+    columns,
+    JSON.parse(params.get("filters") ?? "[]"),
+    params.get("search") ?? "",
+    formatters,
+  );
+  const sorted = sortRows(
+    filtered,
+    columns,
+    JSON.parse(params.get("sort") ?? "[]"),
+  );
+  const page = paginate(
+    sorted,
+    {
+      pageIndex: Number(params.get("page") ?? 1) - 1,
+      pageSize: Number(params.get("pageSize") ?? 25),
+    },
+    { enabled: params.get("export") !== "true", server: false },
+  );
+
+  return Response.json({
+    data: page.rows.map((row) => row.original),
+    total: sorted.length,
+  });
+}
+```
+
+For large tables, apply the same query in your database instead of loading every row.
+
+#### Exports in server mode
+
+The grid only holds the current page, so the Export menu exports that page. To export every matching row, fetch them and pass them to the API:
+
+```tsx
+const exportAll = async (format: "excel" | "csv") => {
+  const params = toSearchParams(query);
+  params.set("export", "true");
+  const { data } = await fetch(`/api/orders?${params}`).then((r) => r.json());
+
+  if (format === "excel")
+    await gridRef.current?.exportExcel({ rows: data, fileName: "orders" });
+  else await gridRef.current?.exportCsv({ rows: data, fileName: "orders" });
+};
+
+<DataGrid
+  mode="server"
+  toolbar={{
+    export: false,
+    end: <button onClick={() => exportAll("excel")}>Export all</button>,
+  }}
+  {...otherProps}
+/>;
+```
+
+## Grid API (ref)
+
+```tsx
+const gridRef = useRef<GridApi<Employee>>(null);
+
+<DataGrid ref={gridRef} data={data} columns={columns} />;
+
+gridRef.current?.toggleSort("salary");
+```
+
+#### State
+
+| Method     | Signature                                           | Description                               |
+| ---------- | --------------------------------------------------- | ----------------------------------------- |
+| `getState` | `() => GridState`                                   | Current state, including controlled keys. |
+| `setState` | `(updater: (prev: GridState) => GridState) => void` | Update any part of the state.             |
+
+#### Sorting, filtering and pagination
+
+| Method            | Signature                                                                    | Description                                                    |
+| ----------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `toggleSort`      | `(columnId: string, multi?: boolean) => void`                                | Cycle a column through ascending, descending and off.          |
+| `setSorting`      | `(sorting: SortItem[]) => void`                                              | Replace all sorts.                                             |
+| `setFilter`       | `(columnId: string, filter: Omit<ColumnFilter, "columnId"> \| null) => void` | Set or remove (`null`) a column filter.                        |
+| `clearFilters`    | `() => void`                                                                 | Remove all column filters and the search text.                 |
+| `setGlobalFilter` | `(value: string) => void`                                                    | Set the search text.                                           |
+| `setPageIndex`    | `(pageIndex: number) => void`                                                | Go to a page (zero-based).                                     |
+| `setPageSize`     | `(pageSize: number) => void`                                                 | Change the page size, keeping the first visible row on screen. |
+| `setDensity`      | `(density: "compact" \| "standard" \| "comfortable") => void`                | Change row density.                                            |
+
+#### Selection
+
+| Method                  | Signature                                                                 | Description                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `isRowSelectable`       | `(row: T) => boolean`                                                     | Whether `enableRowSelection` allows this row.                                                       |
+| `toggleRowSelected`     | `(rowId: string, options?: { value?: boolean; range?: boolean }) => void` | Toggle (or set with `value`) a row. `range: true` selects from the last toggled row.                |
+| `toggleAllRowsSelected` | `(value: boolean) => void`                                                | Select or deselect all rows matching the filters (current page in server mode). Multiple mode only. |
+| `clearSelection`        | `() => void`                                                              | Deselect everything.                                                                                |
+| `getSelectedRowIds`     | `() => string[]`                                                          | Selected ids, including rows not in the current `data`.                                             |
+| `getSelectedRows`       | `() => T[]`                                                               | Selected rows that exist in the current `data`.                                                     |
+
+#### Columns
+
+| Method                | Signature                                                                      | Description                                                                |
+| --------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `setColumnVisibility` | `(columnId: string, visible: boolean) => void`                                 | Show or hide a column.                                                     |
+| `setColumnWidth`      | `(columnId: string, width: number \| null) => void`                            | Set a width, or `null` to reset to the column's `width`.                   |
+| `pinColumn`           | `(columnId: string, side: "left" \| "right" \| false) => void`                 | Pin to the start or end, or unpin.                                         |
+| `moveColumn`          | `(columnId: string, targetId: string, placement: "before" \| "after") => void` | Move a column next to another. It takes the target's pin side.             |
+| `resetColumns`        | `() => void`                                                                   | Restore order, visibility, widths and pinning from the column definitions. |
+
+#### Navigation and editing
+
+| Method          | Signature                                      | Description                                                                            |
+| --------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `scrollToRow`   | `(rowIndex: number) => void`                   | Scroll a row of the current page into view.                                            |
+| `focusCell`     | `(rowIndex: number, columnId: string) => void` | Scroll to and focus a cell. `rowIndex` is within the current page; `-1` is the header. |
+| `startEditing`  | `(rowId: string, columnId: string) => void`    | Open the editor for an editable cell.                                                  |
+| `cancelEditing` | `() => void`                                   | Close the open editor without saving.                                                  |
+
+#### Export
+
+| Method            | Signature                                          | Description                                                           |
+| ----------------- | -------------------------------------------------- | --------------------------------------------------------------------- |
+| `getRows`         | `(scope?: ExportScope) => T[]`                     | Rows for a scope (default `"filtered"`).                              |
+| `exportCsv`       | `(options?: ExportOptions<T>) => Promise<void>`    | Download a CSV file.                                                  |
+| `exportExcel`     | `(options?: ExportOptions<T>) => Promise<void>`    | Download an `.xlsx` file.                                             |
+| `exportPdf`       | `(options?: PdfExportOptions<T>) => Promise<void>` | Open the print dialog with a formatted table ("Save as PDF").         |
+| `copyToClipboard` | `() => Promise<void>`                              | Copy selected rows as tab-separated text, or the focused cell's text. |
+
+## Export
+
+| Format | Details                                                                                                                                                                                         |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CSV    | UTF-8 with a byte order mark so Excel opens it correctly. Uses display text (`format`). Text starting with `=`, `+`, `-` or `@` is prefixed with `'` so spreadsheets don't run it as a formula. |
+| Excel  | A real `.xlsx` file: numbers, booleans and dates keep their types, the header row is bold and frozen, with auto-filter and column widths. No library is needed.                                 |
+| PDF    | Opens the browser's print dialog with a table laid out for paper; choose "Save as PDF". Suitable for up to a few thousand rows.                                                                 |
+
+Exports include the visible columns in their current order, excluding columns with `exportable: false`. Export code is only downloaded the first time someone exports.
+
+```tsx
+gridRef.current?.exportExcel({ fileName: "employees", scope: "selected" });
+gridRef.current?.exportPdf({
+  title: "Employee report",
+  orientation: "portrait",
+  paperSize: "A4",
+});
+gridRef.current?.exportCsv({ rows: allRowsFromServer });
+```
+
+| ExportOptions | Type                                                  | Default          | Description                                                                                                                          |
+| ------------- | ----------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `fileName`    | `string`                                              | `exportFileName` | File name without extension.                                                                                                         |
+| `scope`       | `"filtered"` \| `"all"` \| `"selected"` \| `"page"`   | `"filtered"`     | `filtered`: rows matching filters, in sorted order. `all`: every row in `data`. `selected`: selected rows. `page`: the current page. |
+| `rows`        | `T[]`                                                 | —                | Export these rows instead of a scope.                                                                                                |
+| `title`       | `string`                                              | the file name    | PDF only: heading and default PDF file name.                                                                                         |
+| `orientation` | `"portrait"` \| `"landscape"`                         | `"landscape"`    | PDF only.                                                                                                                            |
+| `paperSize`   | `"A3"` \| `"A4"` \| `"A5"` \| `"letter"` \| `"legal"` | `"A4"`           | PDF only.                                                                                                                            |
+
+## Keyboard Navigation
+
+The grid follows the WAI-ARIA grid pattern. One cell is focusable at a time; **Tab** moves focus into and out of the grid.
+
+| Keys                                 | Action                                                                                         |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| **Arrow keys**                       | Move between cells, including the header row.                                                  |
+| **Home** / **End**                   | First / last cell in the row.                                                                  |
+| **Ctrl + Home** / **Ctrl + End**     | First header cell / last cell of the last row.                                                 |
+| **Page Up** / **Page Down**          | Move up / down by a screenful of rows.                                                         |
+| **Enter** (header)                   | Sort the column. **Shift + Enter** adds it to the sort.                                        |
+| **Alt + ↓** or **Menu key** (header) | Open the column menu.                                                                          |
+| **Enter** / **F2** (cell)            | Start editing, or move focus into a control inside the cell.                                   |
+| **Space**                            | Toggle row selection (**Shift + Space** selects a range). On the checkbox header, toggles all. |
+| **Ctrl / Cmd + A**                   | Select all rows.                                                                               |
+| **Ctrl / Cmd + C**                   | Copy selected rows, or the focused cell.                                                       |
+| **Escape**                           | Cancel editing, return focus from a control to its cell, or abandon a column resize in progress. |
+
+## Styling and Theming
+
+The grid ships with default styles in `styles.css`. All rules are in the CSS `components` layer, so Tailwind utilities passed through `className` or `classNames` override them.
+
+```tsx
+<DataGrid
+  data={data}
+  columns={columns}
+  className="rounded-xl shadow-sm"
+  classNames={{
+    headerCell: "uppercase tracking-wide",
+    row: "hover:bg-indigo-50",
+  }}
+  getRowClassName={(row) => (row.active ? undefined : "opacity-60")}
+/>
+```
+
+#### CSS variables
+
+Override them on `.dg-root`, any ancestor, or through `style`.
+
+Every `--dg-*` below first looks for the shared `--gbs-*` variable of the same name, so one
+palette on `:root` themes the grid and every other component together:
+
+```css
+:root {
+  --gbs-accent: #7c3aed;
+  --gbs-radius: 12px;
+  --gbs-font-size: 14px;
+}
+```
+
+Set `--dg-*` when you want to change the grid alone, or to override a shared value for it:
+
+```css
+.dg-root {
+  --dg-accent: #7c3aed;
+  --dg-radius: 12px;
+  --dg-font-size: 14px;
+}
+```
+
+| Variable                                       | Used for                                    |
+| ---------------------------------------------- | ------------------------------------------- |
+| `--dg-font-size`                               | Base font size (default `13px`).            |
+| `--dg-bg`, `--dg-fg`                           | Background and text color.                  |
+| `--dg-muted`                                   | Secondary text.                             |
+| `--dg-border`, `--dg-border-subtle`            | Outer / header borders and row separators.  |
+| `--dg-header-bg`, `--dg-header-fg`             | Header row.                                 |
+| `--dg-row-alt`                                 | Alternate row background.                   |
+| `--dg-row-hover`                               | Row hover background.                       |
+| `--dg-row-selected`, `--dg-row-selected-hover` | Selected rows.                              |
+| `--dg-hover`                                   | Hover background of buttons and menu items. |
+| `--dg-input-bg`                                | Inputs, search box and editors.             |
+| `--dg-accent`, `--dg-accent-fg`                | Primary color and text on it.               |
+| `--dg-accent-soft`, `--dg-accent-strong`       | Filter chips.                               |
+| `--dg-focus`                                   | Focus and editing rings.                    |
+| `--dg-danger`                                  | Validation errors.                          |
+| `--dg-pin-shadow`                              | Shadow at the edge of pinned columns.       |
+| `--dg-shadow`                                  | Popover shadow.                             |
+| `--dg-radius`                                  | Corner radius.                              |
+| `--dg-cell-px`                                 | Horizontal cell padding (default `12px`).   |
+
+#### Dark mode
+
+Colors follow the page's `color-scheme`. To force a scheme, put `class="dark"` or `data-theme="dark"` (or `"light"`) on an ancestor such as `<html>`.
+
+#### Data attributes
+
+Use these to style states, for example `.dg-row[data-selected]` or Tailwind's `data-[active]:`.
+
+| Element                         | Attributes                                                                                                                                     |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root (`.dg-root`)               | `data-density`, `data-stale` (while filtering large data), `data-resizing`                                                                     |
+| Row (`.dg-row`)                 | `data-selected`, `data-odd`, `data-row-index`, `aria-selected`                                                                                 |
+| Cell (`.dg-cell`)               | `data-active`, `data-editable`, `data-editing`, `data-pending`, `data-invalid`, `data-pinned`, `data-pin-edge`, `data-align`, `data-col-index` |
+| Header cell (`.dg-header-cell`) | `aria-sort`, `data-sortable`, `data-active`, `data-pinned`, `data-pin-edge`, `data-align`, `data-drop` (while dragging)                        |
+
+## Locale Text
+
+Override any text with `localeText`. Dates and numbers use the `locale` prop.
+
+```tsx
+<DataGrid
+  locale="de-DE"
+  localeText={{
+    searchPlaceholder: "Suchen…",
+    noRows: "Keine Daten",
+    selected: (count) => `${count} ausgewählt`,
+    pageRange: (from, to, total) => `${from}–${to} von ${total}`,
+  }}
+/>
+```
+
+| Key                  | Default                                                                                                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `gridLabel`          | `"Data grid"`                                                                                                  |
+| `search`             | `"Search"`                                                                                                     |
+| `searchPlaceholder`  | `"Search…"`                                                                                                    |
+| `columns`            | `"Columns"`                                                                                                    |
+| `resetColumns`       | `"Reset columns"`                                                                                              |
+| `export`             | `"Export"`                                                                                                     |
+| `exportCsv`          | `"CSV"`                                                                                                        |
+| `exportExcel`        | `"Excel (.xlsx)"`                                                                                              |
+| `exportPdf`          | `"PDF (print)"`                                                                                                |
+| `density`            | `"Density"`                                                                                                    |
+| `densityCompact`     | `"Compact"`                                                                                                    |
+| `densityStandard`    | `"Standard"`                                                                                                   |
+| `densityComfortable` | `"Comfortable"`                                                                                                |
+| `selected`           | `(count) => "{count} selected"`                                                                                |
+| `clearSelection`     | `"Clear"`                                                                                                      |
+| `clearFilters`       | `"Clear all"`                                                                                                  |
+| `removeFilter`       | `(label) => "Remove filter: {label}"`                                                                          |
+| `filtered`           | `"Filtered"`                                                                                                   |
+| `noRows`             | `"No rows"`                                                                                                    |
+| `noResults`          | `"No rows match the current filters"`                                                                          |
+| `loading`            | `"Loading…"`                                                                                                   |
+| `pagination`         | `"Pagination"`                                                                                                 |
+| `rowsPerPage`        | `"Rows per page"`                                                                                              |
+| `pageRange`          | `(from, to, total) => "{from}–{to} of {total}"`                                                                |
+| `page`               | `"Page"`                                                                                                       |
+| `pageOf`             | `(total) => "of {total}"`                                                                                      |
+| `firstPage`          | `"First page"`                                                                                                 |
+| `previousPage`       | `"Previous page"`                                                                                              |
+| `nextPage`           | `"Next page"`                                                                                                  |
+| `lastPage`           | `"Last page"`                                                                                                  |
+| `columnMenu`         | `(header) => "{header} column options"`                                                                        |
+| `sortAscending`      | `"Sort ascending"`                                                                                             |
+| `sortDescending`     | `"Sort descending"`                                                                                            |
+| `clearSort`          | `"Clear sort"`                                                                                                 |
+| `pinLeft`            | `"Pin to start"`                                                                                               |
+| `pinRight`           | `"Pin to end"`                                                                                                 |
+| `unpin`              | `"Unpin"`                                                                                                      |
+| `hideColumn`         | `"Hide column"`                                                                                                |
+| `moveLeft`           | `"Move earlier"`                                                                                               |
+| `moveRight`          | `"Move later"`                                                                                                 |
+| `filter`             | `"Filter"`                                                                                                     |
+| `filterValue`        | `"Value"`                                                                                                      |
+| `filterFrom`         | `"From"`                                                                                                       |
+| `filterTo`           | `"To"`                                                                                                         |
+| `filterOperator`     | `"Condition"`                                                                                                  |
+| `applyFilter`        | `"Apply"`                                                                                                      |
+| `clearFilter`        | `"Clear"`                                                                                                      |
+| `operators`          | Labels for every filter operator, e.g. `contains: "contains"`, `in: "is any of"` (pass all 16 when overriding) |
+| `yes` / `no`         | `"Yes"` / `"No"`                                                                                               |
+| `selectRow`          | `"Select row"`                                                                                                 |
+| `selectAllRows`      | `"Select all rows"`                                                                                            |
+
+## Utilities
+
+Everything below is exported from `@/components/data-grid`. The same functions (without React) are exported from `@/components/data-grid/core`, which is safe to import in server code.
+
+| Export               | Signature                                                             | Description                                                                                                        |
+| -------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `createColumnHelper` | `<T>() => { field, accessor, display }`                               | Typed column builders.                                                                                             |
+| `filterRows`         | `(rows, columns, filters, globalFilter, formatters) => GridRow<T>[]`  | Apply column filters and search, like client mode.                                                                 |
+| `sortRows`           | `(rows, columns, sorting) => GridRow<T>[]`                            | Stable multi-column sort, like client mode.                                                                        |
+| `paginate`           | `(rows, pagination, { enabled, server, rowCount? }) => PageResult<T>` | Slice a page and compute `pageCount`, `rowCount`, `pageOffset`.                                                    |
+| `buildRows`          | `(data, getRowId) => GridRow<T>[]`                                    | Wrap data as `{ id, index, original }` rows.                                                                       |
+| `createRowIdGetter`  | `(getRowId?) => (row, index) => string`                               | Turn a `getRowId` prop value into a function.                                                                      |
+| `resolveColumns`     | `(defs: ColumnDef<T>[]) => ResolvedColumn<T>[]`                       | Apply column defaults.                                                                                             |
+| `createFormatters`   | `(locale?, labels?) => Formatters`                                    | Date and yes/no formatting used by filters, search and export.                                                     |
+| `formatCellValue`    | `(column, value, row, formatters) => string`                          | Display text of a cell.                                                                                            |
+| `getFilterOperators` | `(column) => FilterOperator[]`                                        | Operators available for a column.                                                                                  |
+| `isFilterActive`     | `(filter) => boolean`                                                 | Whether a filter has a usable value.                                                                               |
+| `toggleSorting`      | `(sorting, columnId, multi) => SortItem[]`                            | The header-click sort cycle.                                                                                       |
+| `createInitialState` | `(options) => GridState`                                              | The grid's starting state for a set of props.                                                                      |
+| `compileFilter`      | `(column, filter, formatters) => ((row: T) => boolean) \| null`       | Build a predicate for one filter (`null` when the filter is inactive).                                             |
+| `computeLayout`      | `(columns, state, leading?) => ColumnLayout<T>`                       | Column order, widths and pin sections for a state. Used to build custom grid UIs.                                  |
+| `createGridEngine`   | `(options) => GridEngine<T>`                                          | The state engine behind `DataGrid` (store, selection, editing, navigation, export). Used to build custom grid UIs. |
+| `defaultLocaleText`  | `LocaleText`                                                          | Default English text.                                                                                              |
+
+All types (`ColumnDef`, `GridState`, `GridQuery`, `GridApi`, `SortItem`, `ColumnFilter`, `CellContext`, `EditorProps`, `CellEditEvent`, `ExportOptions`, `LocaleText`, …) are exported as well.
+
+## Next.js
+
+- Every component file starts with `"use client"`, so `DataGrid` works in the App Router.
+- Column definitions contain functions, which can't be passed from a Server Component to a Client Component. Define columns in a client module (a file with `"use client"`) and render the grid there.
+- A Server Component can fetch the first page and pass `data`, `rowCount` and `initialState` (plain values) to that client component.
+
+## Migrating from the Previous Grid
+
+| Previous                                                                       | New                                                                                      |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `dataSource` (array)                                                           | `data`                                                                                   |
+| `dataSource` (URL string)                                                      | Fetch in your component and pass `data`. The grid no longer fetches.                     |
+| `lazy` + `pageSettings.totalCount`                                             | `mode="server"` + `rowCount`                                                             |
+| `pageSettings.pageNumber` / `pageSize`                                         | `initialState={{ pagination: { pageIndex: 0, pageSize: 10 } }}`                          |
+| `enableSearch`, `enableExcelExport`, `enablePdfExport`                         | `toolbar={{ search, export }}` (both on by default)                                      |
+| `excelName`, `pdfName`                                                         | `exportFileName`, or `fileName` in `exportExcel()` / `exportPdf()`                       |
+| `pdfOptions`                                                                   | `exportPdf({ orientation, paperSize })`                                                  |
+| `selectAll`, `onSelectRow`                                                     | `enableRowSelection`, `onStateChange` / `getSelectedRows()`                              |
+| `isFetching`                                                                   | `loading`                                                                                |
+| `rowChange` (row click)                                                        | `onRowClick`                                                                             |
+| `rowChange` (from templates)                                                   | Pass your own callbacks to the component in `cell`                                       |
+| `pageStatus`, `activeFilterArrayValue`, `searchParamValue`, `onSearch`         | `onQueryChange`                                                                          |
+| `initialFilters`, `initialSearchParam`                                         | `initialState={{ filters, globalFilter }}`                                               |
+| `showTotalPages`                                                               | Always shown ("1–25 of 1,000")                                                           |
+| `onToolbarButtonClick`                                                         | `toolbar={{ export: false, end: <YourButtons /> }}` and the Grid API                     |
+| `gridContainerClass`, `tableHeaderStyle`, `gridColumnStyle`, other class props | `className`, `classNames`, `getRowClassName`, CSS variables                              |
+| Column `headerText`                                                            | `header`                                                                                 |
+| Column `template`                                                              | `cell`                                                                                   |
+| Column `filter: true`                                                          | Filtering is on by default; use `filterable: false` to turn it off                       |
+| Column `tooltip`                                                               | Not built in. Use `cell`, e.g. `cell: ({ value }) => <span title={value}>{value}</span>` |
+| Column `showInPdf`, `showInExcel`                                              | `exportable`, `exportValue`                                                              |
+| Filter `{ filterColumn, filterCondition, filterValue }`                        | `{ columnId, operator, value }`                                                          |
+| `ref.goToPage(n)`, `nextPage()`, `handleSearch()`, `getActiveFilters()`        | `setPageIndex(n)`, `setGlobalFilter()`, `getState().filters`                             |
+| `usePaginatedData` hook                                                        | Not needed. See [Server Side Pagination](#server-side-pagination).                       |
+
+#### Notes
+
+- Rows have a fixed height (set by density or `rowHeight`). Variable-height rows are not supported.
+- Grouping, tree data and pivoting are not supported yet.
+- Client mode handles 100,000+ rows. For millions of rows, use server mode.

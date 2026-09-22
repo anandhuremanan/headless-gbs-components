@@ -1,0 +1,215 @@
+---
+title: "Tabs"
+description: "Accessible tabs in underline, pill or segmented styles, horizontal or vertical, with panels that can keep their state."
+group: "Navigation"
+order: 10
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -a Tabs -beta
+```
+
+The block copies the `tabs` folder into your project, along with the small `shared` folder that every component imports. You own the code and can change it freely.
+There are **no peer dependencies** other than React.
+
+**Requirements**
+
+- React 19.2 and `@types/react` 19.2 (for `<Activity>`)
+- TypeScript target ES2022 or newer, with `"jsx": "react-jsx"`
+- Browsers from 2024 or newer (the styles use `light-dark()` and `color-mix()`)
+
+Import the stylesheet once, for example in your global CSS:
+
+```css
+@import "../components/tabs/styles.css";
+```
+
+or in your root layout / entry file:
+
+```ts
+import "@/components/tabs/styles.css";
+```
+
+Tabs switch between related views in the same place: a settings page, a record's sections, a dashboard's periods. They follow the WAI-ARIA tabs pattern. There's one stop in the tab order, the arrow keys move between tabs, and disabled tabs are skipped. They come in three looks (an underline, pills or an enclosed segmented control), horizontal or vertical, with a sliding indicator. Hidden panels can keep their state — typed input, scroll position — using React's `<Activity>`.
+
+<Notice message="Set the --gbs-* variables on :root to theme every component at once, the grid included. Each component's own variables fall back to them, and then to the built-in palette, so components look identical out of the box." />
+
+#### Default
+
+<TabsWrapperBeta />
+
+## Quick Start
+
+```tsx
+"use client";
+
+import { Tab, TabList, TabPanel, Tabs } from "@/components/tabs";
+
+export default function Project() {
+  return (
+    <Tabs defaultValue="overview">
+      <TabList aria-label="Project">
+        <Tab value="overview">Overview</Tab>
+        <Tab value="activity" badge={3}>Activity</Tab>
+        <Tab value="settings">Settings</Tab>
+      </TabList>
+
+      <TabPanel value="overview"><Overview /></TabPanel>
+      <TabPanel value="activity"><ActivityFeed /></TabPanel>
+      <TabPanel value="settings"><SettingsForm /></TabPanel>
+    </Tabs>
+  );
+}
+```
+
+Tabs are controlled with `value` + `onValueChange`, or uncontrolled with `defaultValue`. Without either, the first enabled tab is selected.
+
+<Notice message="Give the TabList an aria-label (or aria-labelledby) that names the set of tabs, such as 'Project' or 'Account settings'. Screen readers announce it when focus enters the tabs." />
+
+## Props Table
+
+### Tabs
+
+Accepts every `<div>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | — | Selected tab (controlled). |
+| `defaultValue` | `string` | first enabled tab | Selected tab at first (uncontrolled). |
+| `onValueChange` | `(value: string) => void` | — | Fires when another tab is selected. |
+| `orientation` | `"horizontal"` \| `"vertical"` | `"horizontal"` | Tabs in a row, or in a column beside the panel. |
+| `activation` | `"automatic"` \| `"manual"` | `"automatic"` | `automatic` selects as the arrows move; `manual` waits for Enter or Space. |
+| `variant` | `"line"` \| `"pills"` \| `"enclosed"` | `"line"` | Underline, filled pills, or a segmented control. |
+| `size` | `"sm"` \| `"md"` \| `"lg"` | `"md"` | Tab height 30 / 36 / 44 px. |
+| `keepMounted` | `boolean` | `false` | Keep hidden panels mounted, preserving their state. See [Keeping Panel State](#keeping-panel-state). |
+
+### TabList
+
+Accepts every `<div>` attribute. Give it `aria-label` or `aria-labelledby`.
+
+### Tab
+
+Accepts every `<button>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | **required** | Identifies the tab and its panel. |
+| `disabled` | `boolean` | `false` | Can't be selected; the arrow keys skip it. It stays visible and announced. |
+| `icon` | `ReactNode` | — | Icon before the label. |
+| `badge` | `ReactNode` | — | A count or short label after the text. |
+
+### TabPanel
+
+Accepts every `<div>` attribute, plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | **required** | The tab this panel belongs to. |
+| `keepMounted` | `boolean` | from `Tabs` | Overrides `keepMounted` for this panel. |
+
+## Keeping Panel State
+
+By default, only the selected panel's content is rendered. That keeps pages light, but a half-filled form in a hidden tab loses its input when you switch away.
+
+```tsx
+<Tabs defaultValue="details" keepMounted>
+```
+
+With `keepMounted`, hidden panels stay mounted inside React's `<Activity mode="hidden">`:
+
+- **State survives:** component state and DOM state (typed text, scroll position) are kept.
+- **Hidden panels cost little:** their effects are cleaned up while hidden and run again when shown, so subscriptions and timers don't keep running in the background.
+- **Updates are deferred:** hidden panels render at low priority, so they don't slow down the visible one.
+
+Use it per panel for the ones that need it: `<TabPanel value="form" keepMounted>`.
+
+## Variants and Orientation
+
+```tsx
+<Tabs variant="line" />                                 {/* underline, the default */}
+<Tabs variant="pills" />                                {/* filled background on the selected tab */}
+<Tabs variant="enclosed" />                             {/* segmented control */}
+<Tabs orientation="vertical" variant="pills" />         {/* a settings sidebar */}
+```
+
+The indicator slides between tabs and follows size changes, for example when a badge count changes. Horizontal tab lists that don't fit scroll sideways, and keyboard focus scrolls the focused tab into view.
+
+## Keyboard
+
+| Keys | Action |
+| --- | --- |
+| **Tab** | Move into the tab list (to the selected tab), then into the panel. |
+| **←** / **→** | Previous / next tab (horizontal; swapped in right-to-left layouts). Wraps around. |
+| **↑** / **↓** | Previous / next tab (vertical). |
+| **Home** / **End** | First / last enabled tab. |
+| **Enter** / **Space** | Select the focused tab (with `activation="manual"`). |
+
+Accessibility: `role="tablist"`, `role="tab"` and `role="tabpanel"` with `aria-selected`, `aria-controls` and `aria-labelledby` wired up. Only the selected tab is in the tab order (roving `tabindex`), and panels are focusable so keyboard users can reach content without links or buttons. Disabled tabs use `aria-disabled`, so they're still announced.
+
+Use `activation="manual"` when showing a panel is slow (it fetches data, for example), so moving through tabs with the arrows doesn't load each one.
+
+## Styling and Theming
+
+All rules are in the CSS `components` layer, so utility classes passed through `className` override them.
+
+```tsx
+<TabList className="gap-6" />
+<Tab className="uppercase tracking-wide" value="…" />
+```
+
+#### CSS variables
+
+Override them on `.tb-root`, on `:root`, or through `style`. Each variable falls back to the shared `--gbs-*` of the same name, then to the DataGrid's `--dg-*` when that stylesheet is loaded, and finally to the built-in palette.
+
+| Variable | Used for |
+| --- | --- |
+| `--tb-height`, `--tb-px`, `--tb-font-size` | Tab size (set by `size`). |
+| `--tb-fg` | Selected tab text, and the panel's text. |
+| `--tb-tab-fg` | Unselected tab text. Darker than ordinary muted text: a tab is a control, and the strip usually sits on the page background rather than on a white card. |
+| `--tb-muted` | Badges and other secondary text. |
+| `--tb-border` | The line under `line` tabs. |
+| `--tb-accent` | The `line` indicator and `pills` text. |
+| `--tb-accent-soft` | The `pills` background and the selected badge. |
+| `--tb-track` | The `enclosed` background. |
+| `--tb-bg` | The `enclosed` indicator. |
+| `--tb-hover` | Badge background. |
+| `--tb-focus` | Focus ring. |
+| `--tb-radius` | Corner radius. |
+| `--tb-duration` | Indicator slide (`200ms`). |
+
+#### Data attributes
+
+| Element | Attributes |
+| --- | --- |
+| Root (`.tb-root`) | `data-orientation`, `data-variant`, `data-size` |
+| Tab (`.tb-tab`) | `aria-selected`, `aria-disabled`, `data-value` |
+| Panel (`.tb-panel`) | `hidden` when not selected |
+
+## Headless Use
+
+| Export | Description |
+| --- | --- |
+| `nextTab(tabs, current, key, { orientation, rtl, loop })` | Which tab a key moves to, skipping disabled ones. |
+| `tabDomId(base, "tab" \| "panel", value)` | Safe, distinct element ids from any value. |
+| `useTabsContext()` | Build your own tab or panel parts inside `<Tabs>`. |
+
+## Next.js
+
+The components are client components with `"use client"` at the top of their files. They render the selected tab on the server. Before hydration, the `line` variant marks the selected tab with a static underline, and the sliding indicator takes over once measured.
+
+To keep the selected tab in the URL, control it from search params:
+
+```tsx
+const searchParams = useSearchParams();
+const router = useRouter();
+
+<Tabs value={searchParams.get("tab") ?? "overview"} onValueChange={(tab) => router.replace(`?tab=${tab}`)}>
+```
+
+#### Notes
+
+- A `value` that matches no tab selects the first enabled tab.
+- Nested `<Tabs>` work; each list only moves between its own tabs.
+- There's no previous tabs component, so there's nothing to migrate.
