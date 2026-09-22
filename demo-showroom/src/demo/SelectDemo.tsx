@@ -17,7 +17,12 @@ const COUNTRIES: ComboboxOption[] = [
   { value: "fr", label: "France", group: "Europe", description: "Paris" },
   { value: "es", label: "Spain", group: "Europe", description: "Madrid" },
   { value: "se", label: "Sweden", group: "Europe", description: "Stockholm" },
-  { value: "uk", label: "United Kingdom", group: "Europe", description: "London" },
+  {
+    value: "uk",
+    label: "United Kingdom",
+    group: "Europe",
+    description: "London",
+  },
   { value: "us", label: "United States", group: "Americas" },
   { value: "ca", label: "Canada", group: "Americas" },
   { value: "br", label: "Brazil", group: "Americas" },
@@ -27,44 +32,57 @@ const COUNTRIES: ComboboxOption[] = [
   { value: "au", label: "Australia", group: "Oceania" },
 ];
 
-const DEPARTMENT_OPTIONS: ComboboxOption[] = DEPARTMENTS.map((d) => ({ value: d, label: d }));
+const DEPARTMENT_OPTIONS: ComboboxOption[] = DEPARTMENTS.map((d) => ({
+  value: d,
+  label: d,
+}));
 
 // 10,000 options: the list virtualizes automatically.
-const CITY_OPTIONS: ComboboxOption[] = Array.from({ length: 10_000 }, (_, i) => ({
-  value: `city-${i}`,
-  label: `City ${i + 1}`,
-  description: i % 3 === 0 ? "Regional office" : undefined,
-}));
+const CITY_OPTIONS: ComboboxOption[] = Array.from(
+  { length: 10_000 },
+  (_, i) => ({
+    value: `city-${i}`,
+    label: `City ${i + 1}`,
+    description: i % 3 === 0 ? "Regional office" : undefined,
+  }),
+);
 
 const PAGE_SIZE = 20;
 const DIRECTORY = createEmployees(2_000);
 
 /** Stands in for an API: search + paging with latency. */
 function searchEmployees(search: string, page: number, signal: AbortSignal) {
-  return new Promise<{ options: ComboboxOption<number>[]; hasMore: boolean }>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      const term = search.trim().toLowerCase();
-      const matches = term
-        ? DIRECTORY.filter((e) => `${e.name} ${e.email} ${e.department}`.toLowerCase().includes(term))
-        : DIRECTORY;
-      const slice = matches.slice(0, (page + 1) * PAGE_SIZE);
-      resolve({
-        options: slice.map((employee: Employee) => ({
-          value: employee.id,
-          label: employee.name,
-          description: `${employee.department} · ${employee.email}`,
-        })),
-        hasMore: matches.length > slice.length,
+  return new Promise<{ options: ComboboxOption<number>[]; hasMore: boolean }>(
+    (resolve, reject) => {
+      const timer = setTimeout(() => {
+        const term = search.trim().toLowerCase();
+        const matches = term
+          ? DIRECTORY.filter((e) =>
+              `${e.name} ${e.email} ${e.department}`
+                .toLowerCase()
+                .includes(term),
+            )
+          : DIRECTORY;
+        const slice = matches.slice(0, (page + 1) * PAGE_SIZE);
+        resolve({
+          options: slice.map((employee: Employee) => ({
+            value: employee.id,
+            label: employee.name,
+            description: `${employee.department} · ${employee.email}`,
+          })),
+          hasMore: matches.length > slice.length,
+        });
+      }, 320);
+      signal.addEventListener("abort", () => {
+        clearTimeout(timer);
+        reject(signal.reason);
       });
-    }, 320);
-    signal.addEventListener("abort", () => {
-      clearTimeout(timer);
-      reject(signal.reason);
-    });
-  });
+    },
+  );
 }
 
-const card = "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";
+const card =
+  "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";
 const cardTitle = "mb-1 text-sm font-semibold";
 const cardNote = "mb-3 text-xs text-zinc-600 dark:text-zinc-400";
 
@@ -81,7 +99,10 @@ export function SelectDemo() {
 
 function ClientSelects() {
   const [country, setCountry] = useState<string | null>("de");
-  const [departments, setDepartments] = useState<string[]>(["Engineering", "Design"]);
+  const [departments, setDepartments] = useState<string[]>([
+    "Engineering",
+    "Design",
+  ]);
   const [city, setCity] = useState<string | null>(null);
   const selectRef = useRef<ComboboxHandle<string>>(null);
 
@@ -89,7 +110,8 @@ function ClientSelects() {
     <section className={card}>
       <h2 className={cardTitle}>Client options</h2>
       <p className={cardNote}>
-        Search, groups, descriptions, disabled options, and a 10,000-option list that virtualizes.
+        Search, groups, descriptions, disabled options, and a 10,000-option list
+        that virtualizes.
       </p>
       <div className="flex flex-col gap-4">
         <Select
@@ -98,7 +120,11 @@ function ClientSelects() {
           value={country}
           onChange={setCountry}
           placeholder="Choose a country"
-          description={country ? `Value: ${country}` : "Grouped, with keyword search (try “bharat”)"}
+          description={
+            country
+              ? `Value: ${country}`
+              : "Grouped, with keyword search (try “bharat”)"
+          }
         />
 
         <MultiSelect
@@ -129,7 +155,7 @@ function ClientSelects() {
             Open “No search”
           </button>
           <Select
-            className="max-w-[220px]"
+            className="max-w-55"
             aria-label="Country, without search"
             ref={selectRef}
             options={COUNTRIES}
@@ -176,8 +202,9 @@ function ServerSelect() {
     <section className={card}>
       <h2 className={cardTitle}>Server options</h2>
       <p className={cardNote}>
-        The component reports the search text (debounced 250&nbsp;ms) and asks for more while scrolling. Stale
-        requests are aborted; chosen names keep their labels after the results change.
+        The component reports the search text (debounced 250&nbsp;ms) and asks
+        for more while scrolling. Stale requests are aborted; chosen names keep
+        their labels after the results change.
       </p>
       <div className="flex flex-col gap-4">
         <MultiSelect<number>
@@ -187,7 +214,9 @@ function ServerSelect() {
           hasMore={result?.hasMore}
           loading={loading}
           onSearchChange={(term) => setQuery({ search: term, page: 0 })}
-          onLoadMore={() => !loading && setQuery((prev) => ({ ...prev, page: prev.page + 1 }))}
+          onLoadMore={() =>
+            !loading && setQuery((prev) => ({ ...prev, page: prev.page + 1 }))
+          }
           value={people}
           onChange={setPeople}
           placeholder="Search 2,000 employees"
@@ -212,7 +241,9 @@ function CreatableSelect() {
   return (
     <section className={card}>
       <h2 className={cardTitle}>Create options</h2>
-      <p className={cardNote}>Type a value that doesn&apos;t exist and pick “Create …”.</p>
+      <p className={cardNote}>
+        Type a value that doesn&apos;t exist and pick “Create …”.
+      </p>
       <MultiSelect
         label="Tags"
         options={tags}
@@ -231,16 +262,21 @@ function CreatableSelect() {
 }
 
 function FormExample() {
-  const [submitted, setSubmitted] = useState<Record<string, string[]> | null>(null);
+  const [submitted, setSubmitted] = useState<Record<string, string[]> | null>(
+    null,
+  );
   const [country, setCountry] = useState<string | null>(null);
-  const error = useMemo(() => (submitted && !country ? "Please choose a country" : undefined), [submitted, country]);
+  const error = useMemo(
+    () => (submitted && !country ? "Please choose a country" : undefined),
+    [submitted, country],
+  );
 
   return (
     <section className={card}>
       <h2 className={cardTitle}>Inside a form</h2>
       <p className={cardNote}>
-        Values post as hidden inputs, so <code>FormData</code> picks them up. Required, error and disabled states
-        included.
+        Values post as hidden inputs, so <code>FormData</code> picks them up.
+        Required, error and disabled states included.
       </p>
       <form
         className="flex flex-col gap-4"
@@ -270,7 +306,12 @@ function FormExample() {
           defaultValue={["Sales"]}
           size="lg"
         />
-        <Select label="Disabled" options={COUNTRIES} disabled placeholder="Not available" />
+        <Select
+          label="Disabled"
+          options={COUNTRIES}
+          disabled
+          placeholder="Not available"
+        />
         <div className="flex items-center gap-3">
           <button
             type="submit"
@@ -279,7 +320,9 @@ function FormExample() {
             Submit
           </button>
           {submitted && (
-            <code className="text-xs text-zinc-600 dark:text-zinc-400">{JSON.stringify(submitted)}</code>
+            <code className="text-xs text-zinc-600 dark:text-zinc-400">
+              {JSON.stringify(submitted)}
+            </code>
           )}
         </div>
       </form>
