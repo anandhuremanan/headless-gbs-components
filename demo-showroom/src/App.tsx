@@ -108,7 +108,12 @@ function App() {
     <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 md:p-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Grampro Kit Developer Demo</h1>
+          <h1 className="text-xl font-semibold">
+            Grampro Kit Developer Demo{" "}
+            <span className="text-xs text-white px-1 rounded-sm font-extralight bg-linear-to-r from-[#29abe2] via-[#6366f1] via-60% to-[#a855f7]">
+              version 2.0.0 beta
+            </span>
+          </h1>
 
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Zero-dependency components for React 19
@@ -130,6 +135,7 @@ function App() {
             ))}
           </TabList>
 
+          <div className="w-full flex text-xs justify-end text-gray-500">Scroll For More Components »»</div>
           {TABS.map(({ id, Panel, label }) => (
             <TabPanel key={id} value={id} className="pt-4">
               <Suspense fallback={<div>Loading {label}...</div>}>
