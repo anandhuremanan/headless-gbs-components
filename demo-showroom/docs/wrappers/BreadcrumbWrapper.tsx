@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  Breadcrumb,
-  type BreadcrumbItem,
-} from "../../../source/beta-components/breadcrumb";
+import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
 
 const TRAIL: BreadcrumbItem[] = [
   { label: "Home", href: "#" },

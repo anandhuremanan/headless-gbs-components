@@ -9,7 +9,7 @@ import {
   MenuRadioItem,
   MenuSeparator,
   MenuSub,
-} from "../../../source/beta-components/menu";
+} from "@/components/menu";
 
 const button: CSSProperties = {
   padding: "6px 12px",

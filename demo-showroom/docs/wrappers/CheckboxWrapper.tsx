@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Checkbox } from "../../../source/beta-components/checkbox";
+import { Checkbox } from "@/components/checkbox";
 
 /** Live example used in the Checkbox documentation. */
 export function CheckboxWrapper() {

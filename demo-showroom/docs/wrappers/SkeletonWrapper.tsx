@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { Empty, Skeleton } from "../../../source/beta-components/skeleton";
+import { Empty, Skeleton } from "@/components/skeleton";
 
 const button: CSSProperties = {
   padding: "6px 12px",

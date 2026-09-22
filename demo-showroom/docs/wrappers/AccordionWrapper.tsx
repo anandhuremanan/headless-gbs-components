@@ -1,10 +1,7 @@
 "use client";
 
-import {
-  Accordion,
-  AccordionItem,
-} from "../../../source/beta-components/accordion";
-import { Badge } from "../../../source/beta-components/badge";
+import { Accordion, AccordionItem } from "@/components/accordion";
+import { Badge } from "@/components/badge";
 
 /** Live example used in the Accordion documentation. */
 export function AccordionWrapper() {

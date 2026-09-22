@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Select,
-  type ComboboxOption,
-} from "../../../source/beta-components/combobox";
+import { Select, type ComboboxOption } from "@/components/combobox";
 
 const COUNTRIES: ComboboxOption[] = [
   { value: "in", label: "India", group: "Asia", keywords: ["bharat"] },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Alert } from "../../../source/beta-components/alert";
+import { Alert } from "@/components/alert";
 
 /** Live example used in the Alert documentation. */
 export function AlertWrapper() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { Popover } from "../../../source/beta-components/popover";
+import { Popover } from "@/components/popover";
 
 const button: CSSProperties = {
   padding: "6px 12px",

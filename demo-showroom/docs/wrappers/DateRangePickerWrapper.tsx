@@ -8,7 +8,7 @@ import {
   toISODate,
   type DatePreset,
   type DateRange,
-} from "../../../source/beta-components/date-picker";
+} from "@/components/date-picker";
 
 const TODAY = new Date();
 

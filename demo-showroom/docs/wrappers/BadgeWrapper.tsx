@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Tag } from "../../../source/beta-components/badge";
+import { Badge, Tag } from "@/components/badge";
 
 /** Live example used in the Badge documentation. */
 export function BadgeWrapper() {

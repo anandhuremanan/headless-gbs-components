@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import { Spinner } from "../../../source/beta-components/spinner";
+import { Spinner } from "@/components/spinner";
 
 const button: CSSProperties = {
   padding: "6px 12px",

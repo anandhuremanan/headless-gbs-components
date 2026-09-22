@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RadioGroup } from "../../../source/beta-components/radio-group";
+import { RadioGroup } from "@/components/radio-group";
 
 /** Live example used in the RadioGroup documentation. */
 export function RadioGroupWrapper() {

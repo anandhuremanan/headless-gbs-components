@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { Tooltip } from "../../../source/beta-components/tooltip";
+import { Tooltip } from "@/components/tooltip";
 
 const button: CSSProperties = {
   display: "inline-flex",

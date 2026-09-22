@@ -6,7 +6,7 @@ import {
   type ExistingFile,
   type FileUploaderHandle,
   type Transport,
-} from "../../../source/beta-components/file-uploader";
+} from "@/components/file-uploader";
 
 const card =
   "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";

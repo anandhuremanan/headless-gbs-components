@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "../../../source/beta-components/button";
+import { Button } from "@/components/button";
 
 const PlusIcon = () => (
   <svg

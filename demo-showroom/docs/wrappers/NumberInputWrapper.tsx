@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { NumberInput } from "../../../source/beta-components/number-input";
+import { NumberInput } from "@/components/number-input";
 
 /** Live example used in the NumberInput documentation. */
 export function NumberInputWrapper() {

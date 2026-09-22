@@ -4,7 +4,7 @@ import {
   Select,
   type ComboboxHandle,
   type ComboboxOption,
-} from "../../../source/beta-components/combobox";
+} from "@/components/combobox";
 import { createEmployees, DEPARTMENTS, type Employee } from "./data";
 
 const COUNTRIES: ComboboxOption[] = [

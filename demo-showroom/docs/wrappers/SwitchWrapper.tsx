@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Switch } from "../../../source/beta-components/switch";
+import { Switch } from "@/components/switch";
 
 const wait = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));

@@ -1,11 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import {
-  createToastApi,
-  createToastStore,
-  Toaster,
-} from "../../../source/beta-components";
+import { createToastApi, createToastStore, Toaster } from "@/components/toaster";
 
 // Its own store, so this example never shows toasts in a Toaster the page may
 // already mount. In an app you would use the ready-made `toast` instead.
@@ -30,10 +26,20 @@ function wait(ms: number) {
 export function ToasterWrapper() {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-      <button type="button" style={button} onClick={() => toast("Event created", { description: "Monday at 10:00" })}>
+      <button
+        type="button"
+        style={button}
+        onClick={() =>
+          toast("Event created", { description: "Monday at 10:00" })
+        }
+      >
         Default
       </button>
-      <button type="button" style={button} onClick={() => toast.success("Settings saved")}>
+      <button
+        type="button"
+        style={button}
+        onClick={() => toast.success("Settings saved")}
+      >
         Success
       </button>
       <button
@@ -42,13 +48,20 @@ export function ToasterWrapper() {
         onClick={() =>
           toast.error("Upload failed", {
             description: "report.pdf could not be sent.",
-            action: { label: "Retry", onClick: () => toast.success("Upload restarted") },
+            action: {
+              label: "Retry",
+              onClick: () => toast.success("Upload restarted"),
+            },
           })
         }
       >
         Error with action
       </button>
-      <button type="button" style={button} onClick={() => toast.warning("Storage almost full")}>
+      <button
+        type="button"
+        style={button}
+        onClick={() => toast.warning("Storage almost full")}
+      >
         Warning
       </button>
       <button

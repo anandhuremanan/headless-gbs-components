@@ -1,14 +1,12 @@
 import { useState } from "react";
-import {
-  toast,
-  Toaster,
-  type ToastPosition,
-} from "../../../source/beta-components/toaster";
+import { toast, Toaster, type ToastPosition } from "@/components/toaster";
 
-const card = "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";
+const card =
+  "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";
 const cardTitle = "mb-1 text-sm font-semibold";
 const cardNote = "mb-3 text-xs text-zinc-600 dark:text-zinc-400";
-const button = "rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700";
+const button =
+  "rounded-md border border-zinc-300 px-3 py-1.5 text-sm dark:border-zinc-700";
 
 const POSITIONS: ToastPosition[] = [
   "top-left",
@@ -27,7 +25,10 @@ function saveSettings() {
   const fails = attempt % 2 === 0;
   return new Promise<{ name: string }>((resolve, reject) =>
     setTimeout(
-      () => (fails ? reject(new Error("Network timeout")) : resolve({ name: "Profile" })),
+      () =>
+        fails
+          ? reject(new Error("Network timeout"))
+          : resolve({ name: "Profile" }),
       1500,
     ),
   );
@@ -43,7 +44,11 @@ function simulateUpload() {
       return;
     }
     clearInterval(timer);
-    toast.update(id, { type: "success", title: "report.pdf uploaded", description: "2.4 MB" });
+    toast.update(id, {
+      type: "success",
+      title: "report.pdf uploaded",
+      description: "2.4 MB",
+    });
   }, 400);
 }
 
@@ -58,35 +63,55 @@ export function ToasterDemo() {
         <section className={card}>
           <h2 className={cardTitle}>Types</h2>
           <p className={cardNote}>
-            Hover a toast to pause its timer. Press Alt+T to focus the notifications, Escape to
-            dismiss one, or swipe it away.
+            Hover a toast to pause its timer. Press Alt+T to focus the
+            notifications, Escape to dismiss one, or swipe it away.
           </p>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               className={button}
-              onClick={() => toast("Event created", { description: "Monday, 16 September at 10:00" })}
+              onClick={() =>
+                toast("Event created", {
+                  description: "Monday, 16 September at 10:00",
+                })
+              }
             >
               Default
             </button>
-            <button type="button" className={button} onClick={() => toast.success("Settings saved")}>
+            <button
+              type="button"
+              className={button}
+              onClick={() => toast.success("Settings saved")}
+            >
               Success
             </button>
             <button
               type="button"
               className={button}
-              onClick={() => toast.error("Payment declined", { description: "The card was refused." })}
+              onClick={() =>
+                toast.error("Payment declined", {
+                  description: "The card was refused.",
+                })
+              }
             >
               Error
             </button>
             <button
               type="button"
               className={button}
-              onClick={() => toast.warning("Storage almost full", { description: "92% of 10 GB used" })}
+              onClick={() =>
+                toast.warning("Storage almost full", {
+                  description: "92% of 10 GB used",
+                })
+              }
             >
               Warning
             </button>
-            <button type="button" className={button} onClick={() => toast.info("A new version is available")}>
+            <button
+              type="button"
+              className={button}
+              onClick={() => toast.info("A new version is available")}
+            >
               Info
             </button>
             <button
@@ -102,7 +127,8 @@ export function ToasterDemo() {
         <section className={card}>
           <h2 className={cardTitle}>Actions, promises and updates</h2>
           <p className={cardNote}>
-            The promise alternates between success and failure. The upload updates one toast in place.
+            The promise alternates between success and failure. The upload
+            updates one toast in place.
           </p>
           <div className="flex flex-wrap gap-2">
             <button
@@ -110,7 +136,10 @@ export function ToasterDemo() {
               className={button}
               onClick={() =>
                 toast("Message archived", {
-                  action: { label: "Undo", onClick: () => toast.success("Message restored") },
+                  action: {
+                    label: "Undo",
+                    onClick: () => toast.success("Message restored"),
+                  },
                 })
               }
             >
@@ -136,7 +165,11 @@ export function ToasterDemo() {
                         cancel: undefined,
                       });
                       setTimeout(
-                        () => toast.update("connect", { type: "success", title: "Connected" }),
+                        () =>
+                          toast.update("connect", {
+                            type: "success",
+                            title: "Connected",
+                          }),
                         1200,
                       );
                     },
@@ -153,7 +186,8 @@ export function ToasterDemo() {
                 toast.promise(saveSettings, {
                   loading: "Saving profile…",
                   success: (result) => `${result.name} saved`,
-                  error: (error) => `Could not save: ${(error as Error).message}`,
+                  error: (error) =>
+                    `Could not save: ${(error as Error).message}`,
                 })
               }
             >
@@ -168,18 +202,24 @@ export function ToasterDemo() {
         <section className={card}>
           <h2 className={cardTitle}>Placement and queueing</h2>
           <p className={cardNote}>
-            Toasts beyond the limit wait with their timers held and appear as others close.
+            Toasts beyond the limit wait with their timers held and appear as
+            others close.
           </p>
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
-              <label className="text-xs text-zinc-600 dark:text-zinc-400" htmlFor="toast-position">
+              <label
+                className="text-xs text-zinc-600 dark:text-zinc-400"
+                htmlFor="toast-position"
+              >
                 Position
               </label>
               <select
                 id="toast-position"
                 className={button}
                 value={position}
-                onChange={(event) => setPosition(event.target.value as ToastPosition)}
+                onChange={(event) =>
+                  setPosition(event.target.value as ToastPosition)
+                }
               >
                 {POSITIONS.map((value) => (
                   <option key={value} value={value}>
@@ -187,7 +227,10 @@ export function ToasterDemo() {
                   </option>
                 ))}
               </select>
-              <label className="text-xs text-zinc-600 dark:text-zinc-400" htmlFor="toast-limit">
+              <label
+                className="text-xs text-zinc-600 dark:text-zinc-400"
+                htmlFor="toast-limit"
+              >
                 Limit
               </label>
               <select
@@ -216,7 +259,8 @@ export function ToasterDemo() {
                 type="button"
                 className={button}
                 onClick={() => {
-                  for (let i = 1; i <= 6; i++) toast(`Notification ${i}`, { description: "Queued" });
+                  for (let i = 1; i <= 6; i++)
+                    toast(`Notification ${i}`, { description: "Queued" });
                 }}
               >
                 Show six
@@ -224,11 +268,17 @@ export function ToasterDemo() {
               <button
                 type="button"
                 className={button}
-                onClick={() => toast("Stays until you close it", { duration: Infinity })}
+                onClick={() =>
+                  toast("Stays until you close it", { duration: Infinity })
+                }
               >
                 Sticky
               </button>
-              <button type="button" className={button} onClick={() => toast.dismiss()}>
+              <button
+                type="button"
+                className={button}
+                onClick={() => toast.dismiss()}
+              >
                 Dismiss all
               </button>
             </div>
@@ -237,7 +287,10 @@ export function ToasterDemo() {
 
         <section className={card}>
           <h2 className={cardTitle}>Custom content</h2>
-          <p className={cardNote}>Render any content; the toast still handles timing, swipe and Escape.</p>
+          <p className={cardNote}>
+            Render any content; the toast still handles timing, swipe and
+            Escape.
+          </p>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -251,9 +304,15 @@ export function ToasterDemo() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="font-semibold">Aarav Kim</div>
-                        <div className="text-zinc-600 dark:text-zinc-400">Invited you to “Q3 planning”</div>
+                        <div className="text-zinc-600 dark:text-zinc-400">
+                          Invited you to “Q3 planning”
+                        </div>
                       </div>
-                      <button type="button" className={button} onClick={dismiss}>
+                      <button
+                        type="button"
+                        className={button}
+                        onClick={dismiss}
+                      >
                         View
                       </button>
                     </div>
@@ -267,7 +326,11 @@ export function ToasterDemo() {
             <button
               type="button"
               className={button}
-              onClick={() => toast("Party time", { icon: <span aria-hidden="true">🎉</span> })}
+              onClick={() =>
+                toast("Party time", {
+                  icon: <span aria-hidden="true">🎉</span>,
+                })
+              }
             >
               Custom icon
             </button>

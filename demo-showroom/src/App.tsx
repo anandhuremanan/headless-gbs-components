@@ -52,7 +52,7 @@ function App() {
     <div className="mx-auto flex max-w-7xl flex-col gap-4 p-4 md:p-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">Grampro Kit</h1>
+          <h1 className="text-xl font-semibold">Grampro Kit Developer Demo</h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Zero-dependency components for React 19
           </p>

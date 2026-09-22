@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Input, OtpInput } from "../../../source/beta-components/input";
-import { Textarea } from "../../../source/beta-components/textarea";
+import { Input, OtpInput } from "@/components/input";
+import { Textarea } from "@/components/textarea";
 
 const card =
   "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";

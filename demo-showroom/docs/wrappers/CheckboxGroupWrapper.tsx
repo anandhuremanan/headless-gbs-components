@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  CheckboxGroup,
-  type CheckboxOption,
-} from "../../../source/beta-components/checkbox";
+import { CheckboxGroup, type CheckboxOption } from "@/components/checkbox";
 
 const PERMISSIONS: CheckboxOption[] = [
   { value: "read", label: "View invoices" },

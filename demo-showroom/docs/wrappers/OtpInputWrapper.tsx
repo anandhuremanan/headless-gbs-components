@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { OtpInput } from "../../../source/beta-components/input";
+import { OtpInput } from "@/components/input";
 
 /** Live example used in the Input documentation, for one-time codes. */
 export function OtpInputWrapper() {
@@ -19,10 +19,18 @@ export function OtpInputWrapper() {
           setStatus("idle");
         }}
         onComplete={(next) => setStatus(next === "123456" ? "ok" : "wrong")}
-        error={status === "wrong" ? "That code isn't right. Try 123456." : undefined}
-        description={status === "ok" ? "Verified." : "Type or paste the 6-digit code. Try 123456."}
+        error={
+          status === "wrong" ? "That code isn't right. Try 123456." : undefined
+        }
+        description={
+          status === "ok"
+            ? "Verified."
+            : "Type or paste the 6-digit code. Try 123456."
+        }
       />
-      <code style={{ fontSize: 12, opacity: 0.7 }}>value: {JSON.stringify(code)}</code>
+      <code style={{ fontSize: 12, opacity: 0.7 }}>
+        value: {JSON.stringify(code)}
+      </code>
     </div>
   );
 }

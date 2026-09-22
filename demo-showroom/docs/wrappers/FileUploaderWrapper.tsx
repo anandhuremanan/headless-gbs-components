@@ -5,7 +5,7 @@ import {
   FileUploader,
   readFileId,
   type Transport,
-} from "../../../source/beta-components/file-uploader";
+} from "@/components/file-uploader";
 
 /**
  * The docs site has no upload server, so this example simulates one: each chunk

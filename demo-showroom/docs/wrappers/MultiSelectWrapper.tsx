@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  MultiSelect,
-  type ComboboxOption,
-} from "../../../source/beta-components/combobox";
+import { MultiSelect, type ComboboxOption } from "@/components/combobox";
 
 const SKILLS: ComboboxOption[] = [
   { value: "react", label: "React", group: "Frontend" },

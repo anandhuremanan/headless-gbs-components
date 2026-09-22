@@ -8,7 +8,7 @@ import {
   CardHeader,
   Stat,
   trendDirection,
-} from "../../../source/beta-components/card";
+} from "@/components/card";
 
 const button: CSSProperties = {
   padding: "6px 12px",

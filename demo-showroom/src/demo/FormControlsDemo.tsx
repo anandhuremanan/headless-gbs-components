@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { NumberInput } from "../../../source/beta-components/number-input";
-import { RadioGroup, Radio } from "../../../source/beta-components/radio-group";
-import { Switch } from "../../../source/beta-components/switch";
+import { NumberInput } from "@/components/number-input";
+import { RadioGroup, Radio } from "@/components/radio-group";
+import { Switch } from "@/components/switch";
 
-const card = "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";
+const card =
+  "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";
 const cardTitle = "mb-1 text-sm font-semibold";
 const cardNote = "mb-3 text-xs text-zinc-600 dark:text-zinc-400";
 
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const wait = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export function FormControlsDemo() {
   return (
@@ -29,8 +31,8 @@ function Switches() {
     <section className={card}>
       <h2 className={cardTitle}>Switch</h2>
       <p className={cardNote}>
-        Settings that take effect at once. The second one saves to a pretend server; the third
-        always fails and puts itself back.
+        Settings that take effect at once. The second one saves to a pretend
+        server; the third always fails and puts itself back.
       </p>
       <div className="flex flex-col gap-3">
         <Switch label="Email notifications" defaultChecked />
@@ -53,7 +55,12 @@ function Switches() {
             throw new Error("nope");
           }}
         />
-        <Switch label="Weekly digest" labelPosition="start" defaultChecked size="sm" />
+        <Switch
+          label="Weekly digest"
+          labelPosition="start"
+          defaultChecked
+          size="sm"
+        />
         <Switch label="Read-only, on" checked readOnly />
         <Switch label="Disabled" disabled />
       </div>
@@ -68,8 +75,8 @@ function Radios() {
     <section className={card}>
       <h2 className={cardTitle}>RadioGroup</h2>
       <p className={cardNote}>
-        Native radios: one tab stop, arrows move between them. Clearable, because a radio cannot be
-        unselected.
+        Native radios: one tab stop, arrows move between them. Clearable,
+        because a radio cannot be unselected.
       </p>
       <div className="flex flex-col gap-4">
         <RadioGroup
@@ -80,7 +87,12 @@ function Radios() {
           onValueChange={setFrequency}
           clearable
         />
-        <RadioGroup label="Delivery" name="delivery" orientation="horizontal" defaultValue="standard">
+        <RadioGroup
+          label="Delivery"
+          name="delivery"
+          orientation="horizontal"
+          defaultValue="standard"
+        >
           <Radio value="standard" label="Standard" />
           <Radio value="express" label="Express" />
           <Radio value="courier" label="Courier" disabled />
@@ -94,16 +106,31 @@ function Cards() {
   return (
     <section className={card}>
       <h2 className={cardTitle}>RadioGroup · cards</h2>
-      <p className={cardNote}>The whole tile is the target, for choices that need explaining.</p>
+      <p className={cardNote}>
+        The whole tile is the target, for choices that need explaining.
+      </p>
       <RadioGroup
         label="Plan"
         name="plan"
         variant="card"
         defaultValue="team"
         options={[
-          { value: "starter", label: "Starter", description: "Up to 3 projects" },
-          { value: "team", label: "Team", description: "Unlimited projects and members" },
-          { value: "enterprise", label: "Enterprise", description: "Talk to us", disabled: true },
+          {
+            value: "starter",
+            label: "Starter",
+            description: "Up to 3 projects",
+          },
+          {
+            value: "team",
+            label: "Team",
+            description: "Unlimited projects and members",
+          },
+          {
+            value: "enterprise",
+            label: "Enterprise",
+            description: "Talk to us",
+            disabled: true,
+          },
         ]}
       />
     </section>
@@ -121,7 +148,13 @@ function Numbers() {
         <code>{qty === null ? "null" : qty}</code>
       </p>
       <div className="flex flex-col gap-3">
-        <NumberInput label="Quantity" min={1} max={99} value={qty} onValueChange={setQty} />
+        <NumberInput
+          label="Quantity"
+          min={1}
+          max={99}
+          value={qty}
+          onValueChange={setQty}
+        />
         <NumberInput
           label="Weight"
           description="Steps of 0.1 — press ↑ repeatedly and watch for 0.30000000000000004."
@@ -138,7 +171,12 @@ function Numbers() {
           snapToStep
           defaultValue={10}
         />
-        <NumberInput label="No stepper, clearable" stepper={false} clearable defaultValue={42} />
+        <NumberInput
+          label="No stepper, clearable"
+          stepper={false}
+          clearable
+          defaultValue={42}
+        />
       </div>
     </section>
   );
@@ -152,7 +190,8 @@ function Money() {
     <section className={card}>
       <h2 className={cardTitle}>NumberInput · locales and units</h2>
       <p className={cardNote}>
-        The same number in three notations. Type <code>1.234,56</code> into the German field.
+        The same number in three notations. Type <code>1.234,56</code> into the
+        German field.
       </p>
       <div className="flex flex-col gap-3">
         <NumberInput

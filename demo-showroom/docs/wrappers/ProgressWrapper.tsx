@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  CircularProgress,
-  Progress,
-} from "../../../source/beta-components/progress";
+import { CircularProgress, Progress } from "@/components/progress";
 
 /** Live example used in the Progress documentation. */
 export function ProgressWrapper() {

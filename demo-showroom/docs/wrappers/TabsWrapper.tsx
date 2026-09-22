@@ -1,12 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
-} from "../../../source/beta-components/tabs";
+import { Tab, TabList, TabPanel, Tabs } from "@/components/tabs";
 
 /** Live example used in the Tabs documentation. */
 export function TabsWrapper() {

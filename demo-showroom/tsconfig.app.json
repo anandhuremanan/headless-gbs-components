@@ -15,7 +15,16 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "paths": { "@/components/*": ["./component-lib/*"] },
+    "paths": {
+      "@/components/*": ["../source/beta-components/*"],
+      /* The library lives outside this package, so its `react` imports cannot
+         reach demo-showroom/node_modules by directory walking. */
+      "react": ["./node_modules/@types/react"],
+      "react/*": ["./node_modules/@types/react/*"],
+      "react-dom": ["./node_modules/@types/react-dom"],
+      "react-dom/*": ["./node_modules/@types/react-dom/*"],
+      "vitest": ["./node_modules/vitest"]
+    },
 
     /* Linting */
     "noUnusedLocals": true,
@@ -25,20 +34,20 @@
   },
   "include": [
     "src",
-    "component-lib/data-grid",
-    "component-lib/combobox",
-    "component-lib/date-picker",
-    "component-lib/toaster",
-    "component-lib/file-uploader",
-    "component-lib/modal",
-    "component-lib/dialog",
-    "component-lib/input",
-    "component-lib/textarea",
-    "component-lib/spinner",
-    "component-lib/button",
-    "component-lib/checkbox",
-    "component-lib/tabs",
-    "component-lib/breadcrumb",
+    "../source/beta-components/data-grid",
+    "../source/beta-components/combobox",
+    "../source/beta-components/date-picker",
+    "../source/beta-components/toaster",
+    "../source/beta-components/file-uploader",
+    "../source/beta-components/modal",
+    "../source/beta-components/dialog",
+    "../source/beta-components/input",
+    "../source/beta-components/textarea",
+    "../source/beta-components/spinner",
+    "../source/beta-components/button",
+    "../source/beta-components/checkbox",
+    "../source/beta-components/tabs",
+    "../source/beta-components/breadcrumb",
     "docs/wrappers"
   ]
 }

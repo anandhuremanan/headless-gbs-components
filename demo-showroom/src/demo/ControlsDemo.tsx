@@ -1,20 +1,9 @@
 import { useState } from "react";
-import {
-  Breadcrumb,
-  type BreadcrumbItem,
-} from "../../../source/beta-components/breadcrumb";
-import { Button } from "../../../source/beta-components/button";
-import {
-  Checkbox,
-  CheckboxGroup,
-} from "../../../source/beta-components/checkbox";
-import { Spinner } from "../../../source/beta-components/spinner";
-import {
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
-} from "../../../source/beta-components/tabs";
+import { Breadcrumb, type BreadcrumbItem } from "@/components/breadcrumb";
+import { Button } from "@/components/button";
+import { Checkbox, CheckboxGroup } from "@/components/checkbox";
+import { Spinner } from "@/components/spinner";
+import { Tab, TabList, TabPanel, Tabs } from "@/components/tabs";
 
 const card =
   "rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950";

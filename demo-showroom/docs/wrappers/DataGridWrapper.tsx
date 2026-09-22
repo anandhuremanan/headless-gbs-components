@@ -5,7 +5,7 @@ import {
   createColumnHelper,
   DataGrid,
   type CellEditEvent,
-} from "../../../source/beta-components/data-grid";
+} from "@/components/data-grid";
 
 interface Employee {
   id: number;
