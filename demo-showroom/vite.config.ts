@@ -12,6 +12,11 @@ export default defineConfig({
   ],
 
   resolve: {
+    // The library is imported from outside this package, so its bare `react`
+    // imports cannot reach demo-showroom/node_modules by directory walking.
+    // `dedupe` resolves them from the Vite root, and keeps a single copy.
+    dedupe: ["react", "react-dom"],
+
     alias: {
       "@/components": fileURLToPath(
         new URL("../source/beta-components", import.meta.url),

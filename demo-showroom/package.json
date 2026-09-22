@@ -15,8 +15,6 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
-    "file-saver": "^2.0.5",
-    "jszip": "^3.10.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3"

@@ -1,23 +1,79 @@
-import { useState } from "react";
-import { ClientDemo } from "./demo/ClientDemo";
-import { DatePickerDemo } from "./demo/DatePickerDemo";
-import { SelectDemo } from "./demo/SelectDemo";
-import { ToasterDemo } from "./demo/ToasterDemo";
-import { UploaderDemo } from "./demo/UploaderDemo";
-import { OverlaysDemo } from "./demo/OverlaysDemo";
-import { FieldsDemo } from "./demo/FieldsDemo";
-import { ControlsDemo } from "./demo/ControlsDemo";
-import { ServerDemo } from "./demo/ServerDemo";
-import { SurfacesDemo } from "./demo/SurfacesDemo";
-import { FormControlsDemo } from "./demo/FormControlsDemo";
-import { DisplayDemo } from "./demo/DisplayDemo";
-import { Button } from "../../source/beta-components/button";
-import {
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
-} from "../../source/beta-components/tabs";
+import { useState, lazy, Suspense } from "react";
+
+import { Button } from "@/components/button";
+import { Tab, TabList, TabPanel, Tabs } from "@/components/tabs";
+
+const ClientDemo = lazy(() =>
+  import("./demo/ClientDemo").then((module) => ({
+    default: module.ClientDemo,
+  })),
+);
+
+const ServerDemo = lazy(() =>
+  import("./demo/ServerDemo").then((module) => ({
+    default: module.ServerDemo,
+  })),
+);
+
+const SelectDemo = lazy(() =>
+  import("./demo/SelectDemo").then((module) => ({
+    default: module.SelectDemo,
+  })),
+);
+
+const DatePickerDemo = lazy(() =>
+  import("./demo/DatePickerDemo").then((module) => ({
+    default: module.DatePickerDemo,
+  })),
+);
+
+const ToasterDemo = lazy(() =>
+  import("./demo/ToasterDemo").then((module) => ({
+    default: module.ToasterDemo,
+  })),
+);
+
+const UploaderDemo = lazy(() =>
+  import("./demo/UploaderDemo").then((module) => ({
+    default: module.UploaderDemo,
+  })),
+);
+
+const OverlaysDemo = lazy(() =>
+  import("./demo/OverlaysDemo").then((module) => ({
+    default: module.OverlaysDemo,
+  })),
+);
+
+const FieldsDemo = lazy(() =>
+  import("./demo/FieldsDemo").then((module) => ({
+    default: module.FieldsDemo,
+  })),
+);
+
+const ControlsDemo = lazy(() =>
+  import("./demo/ControlsDemo").then((module) => ({
+    default: module.ControlsDemo,
+  })),
+);
+
+const SurfacesDemo = lazy(() =>
+  import("./demo/SurfacesDemo").then((module) => ({
+    default: module.SurfacesDemo,
+  })),
+);
+
+const FormControlsDemo = lazy(() =>
+  import("./demo/FormControlsDemo").then((module) => ({
+    default: module.FormControlsDemo,
+  })),
+);
+
+const DisplayDemo = lazy(() =>
+  import("./demo/DisplayDemo").then((module) => ({
+    default: module.DisplayDemo,
+  })),
+);
 
 /** Each demo, in the order they appear along the tab strip. */
 const TABS = [
@@ -53,18 +109,18 @@ function App() {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Grampro Kit Developer Demo</h1>
+
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Zero-dependency components for React 19
           </p>
         </div>
+
         <Button variant="outline" size="sm" onClick={toggleTheme}>
           {dark ? "Light mode" : "Dark mode"}
         </Button>
       </header>
 
       <main>
-        {/* The Tabs component owns the selection, the roles and the keyboard,
-            so there is no tablist wrapper and no tab state here. */}
         <Tabs defaultValue="client">
           <TabList aria-label="Demos">
             {TABS.map(({ id, label }) => (
@@ -74,9 +130,11 @@ function App() {
             ))}
           </TabList>
 
-          {TABS.map(({ id, Panel }) => (
+          {TABS.map(({ id, Panel, label }) => (
             <TabPanel key={id} value={id} className="pt-4">
-              <Panel />
+              <Suspense fallback={<div>Loading {label}...</div>}>
+                <Panel />
+              </Suspense>
             </TabPanel>
           ))}
         </Tabs>
