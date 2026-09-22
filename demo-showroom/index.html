@@ -4,7 +4,41 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>grid_cluade_api_rework</title>
+    <meta name="color-scheme" content="light dark" />
+    <meta
+      name="description"
+      content="Every GramproKit 2.0 beta component running live, straight from source."
+    />
+    <title>Developer demo · GramproKit</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+    />
+
+    <!--
+      Resolve the theme before the first paint, so the page never flashes the
+      wrong one. A stored choice wins; otherwise we follow the device. App.tsx
+      reads the result back off the element rather than deciding again.
+    -->
+    <script>
+      (function () {
+        var stored = null;
+        try {
+          stored = localStorage.getItem("gbs-theme");
+        } catch (error) {
+          /* Private mode, or storage blocked. Fall through to the device. */
+        }
+        document.documentElement.dataset.theme =
+          stored === "light" || stored === "dark"
+            ? stored
+            : window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
