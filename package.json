@@ -1,11 +1,12 @@
 {
   "name": "gbs-add-block",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "React Component Library",
   "type": "module",
   "files": [
     "index.cjs",
-    "source"
+    "source",
+    ".gbs"
   ],
   "engines": {
     "node": ">=17"

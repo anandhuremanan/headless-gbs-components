@@ -80,9 +80,41 @@ const CONFIG = {
   docs: "https://gramprokit.vercel.app/",
 };
 
+const { version: PACKAGE_VERSION } = require("./package.json");
+
 const SOURCE_PATH = path.join(__dirname, "source", "components");
 const BETA_SOURCE_PATH = path.join(__dirname, "source", "beta-components");
 const DEFAULT_DEST_PATH = path.join(process.cwd(), "component-lib");
+
+/**
+ * The agent skill. It teaches a coding agent how to use these components, so it
+ * belongs at the root of the project being worked on, not in component-lib.
+ */
+const SKILL_SOURCE_PATH = path.join(__dirname, ".gbs");
+const SKILL_DEST_DIR = ".gbs";
+const SKILL_NAME = "gbs-components";
+
+/** Where SKILL.md and references/ live inside the package. */
+const SKILL_SRC_DIR = path.join(
+  SKILL_SOURCE_PATH,
+  "skills",
+  SKILL_NAME,
+);
+
+/**
+ * Agents we can write a copy of the skill for. Each looks in its own place and
+ * none of them reads `.gbs`, which stays the canonical copy either way.
+ */
+const SKILL_TARGETS = ["claude", "codex", "antigravity"];
+
+/** Codex reads one always-on file the project usually maintains by hand, so we
+ *  own a marked block inside it and never touch a line outside. */
+const AGENTS_FILE = "AGENTS.md";
+const BLOCK_START = "<!-- gbs-add-block:start -->";
+const BLOCK_END = "<!-- gbs-add-block:end -->";
+
+/** Newline, named so long template literals stay readable. */
+const NL = String.fromCharCode(10);
 
 /**
  * Every beta component imports its shared helpers from `../../shared`, so this
@@ -281,6 +313,296 @@ const installShared = async (destPath, { force = false } = {}) => {
       : `✓ shared v${srcVersion} installed`,
   );
 };
+
+/* --------------------------------------------------------------- the skill */
+
+/** Posix-style path, so manifest keys read the same on every platform. */
+const rel = (...parts) => parts.join("/");
+
+/**
+ * Removes directories a removal left empty, up to but not including `root`.
+ *
+ * Only ever removes an empty directory, so a `.claude` folder that also holds
+ * the project's own settings survives having our skill taken out of it.
+ */
+const pruneEmptyDirs = async (root, from) => {
+  const stop = path.resolve(root);
+  let dir = path.dirname(path.resolve(root, from));
+
+  while (dir !== stop && dir.startsWith(stop)) {
+    if (!fs.existsSync(dir) || fs.readdirSync(dir).length > 0) return;
+    await fs.remove(dir);
+    dir = path.dirname(dir);
+  }
+};
+
+/** Splits `---` front matter from the body of a markdown document. */
+const parseSkillDoc = (file) => {
+  const text = fs.readFileSync(file, "utf8").split("\r\n").join(NL);
+  const opener = "---" + NL;
+  if (!text.startsWith(opener)) return { frontMatter: "", body: text };
+
+  const marker = NL + "---" + NL;
+  const close = text.indexOf(marker, opener.length);
+  if (close === -1) return { frontMatter: "", body: text };
+
+  return {
+    frontMatter: text.slice(opener.length, close),
+    body: text.slice(close + marker.length),
+  };
+};
+
+/** One `key: value` line out of front matter we wrote ourselves. */
+const frontMatterField = (frontMatter, key) => {
+  const prefix = key + ":";
+  const line = frontMatter.split(NL).find((item) => item.startsWith(prefix));
+  return line ? line.slice(prefix.length).trim() : "";
+};
+
+/**
+ * Claude Code: a full skill folder, references included, since it reads files
+ * bundled beside SKILL.md. Only the front matter changes — it spells the glob
+ * list `paths` where the GBS agent spells it `autoAttach`.
+ */
+const writeClaudeSkill = async (root) => {
+  const base = rel(".claude", "skills", SKILL_NAME);
+  const written = [];
+
+  for (const file of listFiles(SKILL_SRC_DIR)) {
+    const from = path.join(SKILL_SRC_DIR, file);
+    const to = path.join(root, base, file);
+
+    if (file === "SKILL.md") {
+      const { frontMatter, body } = parseSkillDoc(from);
+      const globs = frontMatterField(frontMatter, "autoAttach");
+      const lines = [
+        "---",
+        "name: " + (frontMatterField(frontMatter, "name") || SKILL_NAME),
+        "description: " + frontMatterField(frontMatter, "description"),
+      ];
+      // Claude Code spells the glob list `paths`; the GBS agent spells it `autoAttach`.
+      if (globs) lines.push("paths: " + globs);
+      lines.push("---");
+
+      // `body` keeps the blank line that followed the original front matter.
+      await fs.outputFile(to, lines.join(NL) + NL + body);
+    } else {
+      await fs.copy(from, to, { overwrite: true });
+    }
+
+    written.push(rel(base, file));
+  }
+
+  return written;
+};
+
+/**
+ * Antigravity: one markdown rule, well inside its 12,000 character limit. Its
+ * glob activation is set on the rule in the IDE rather than in the file, so the
+ * globs are stated in the text for whoever configures it.
+ */
+const writeAntigravityRule = async (root) => {
+  const { frontMatter, body } = parseSkillDoc(
+    path.join(SKILL_SRC_DIR, "SKILL.md"),
+  );
+  const target = rel(".agents", "rules", SKILL_NAME + ".md");
+
+  const preamble = [
+    "> Applies to React UI files: " +
+      (frontMatterField(frontMatter, "autoAttach") || "src/**/*.tsx") +
+      ".",
+    "> Set that as this rule's glob if you want it attached automatically.",
+    "> Deeper reference files live in " +
+      rel(SKILL_DEST_DIR, "skills", SKILL_NAME, "references") +
+      "/.",
+    "",
+  ].join(NL);
+
+  await fs.outputFile(path.join(root, target), preamble + body);
+  return [target];
+};
+
+/**
+ * Codex: a pointer in AGENTS.md rather than the skill itself, because that file
+ * is always in context and the skill is 5 KB. Everything outside our markers is
+ * left exactly as it was.
+ */
+const writeAgentsPointer = async (root) => {
+  const file = path.join(root, AGENTS_FILE);
+  const skillPath = rel(SKILL_DEST_DIR, "skills", SKILL_NAME, "SKILL.md");
+
+  const block = [
+    BLOCK_START,
+    "",
+    "## GBS components",
+    "",
+    "This project uses the GBS headless component library. Before adding or",
+    "changing UI, read `" + skillPath + "` and follow it.",
+    "",
+    "It covers the import rule (components are copied into `component-lib/`, not",
+    "imported from a package), the change-handler name each component uses, and",
+    "the props that do not exist. Deeper detail is in the `references/` folder",
+    "beside it — open the one the task needs.",
+    "",
+    BLOCK_END,
+  ].join(NL);
+
+  const existing = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
+  let next;
+
+  if (existing.includes(BLOCK_START) && existing.includes(BLOCK_END)) {
+    next =
+      existing.slice(0, existing.indexOf(BLOCK_START)) +
+      block +
+      existing.slice(existing.indexOf(BLOCK_END) + BLOCK_END.length);
+  } else if (existing.trim()) {
+    next = existing.replace(/\s+$/, "") + NL + NL + block + NL;
+  } else {
+    next = "# AGENTS.md" + NL + NL + block + NL;
+  }
+
+  await fs.outputFile(file, next);
+  return existing.includes(BLOCK_START) ? "updated" : "added";
+};
+
+/**
+ * Installs or updates the skill at the project root.
+ *
+ * `.gbs/` is always written: it is the canonical copy and the one the GBS agent
+ * reads. The other agents each look somewhere else, so they get an adapter
+ * generated from the same source rather than a second copy to maintain.
+ *
+ * Everything we write is tracked by sha256 in one manifest, so a file the user
+ * has edited is never replaced without `--force`. AGENTS.md is the exception:
+ * the project owns that file, and we only rewrite our own marked block.
+ */
+const installSkill = async (
+  destRoot,
+  { force = false, targets = SKILL_TARGETS } = {},
+) => {
+  const src = SKILL_SOURCE_PATH;
+
+  if (!fs.existsSync(src)) {
+    throw new Error(
+      `The skill is missing from ${src}. Update the CLI and try again.`,
+    );
+  }
+
+  const manifestPath = path.join(destRoot, SKILL_DEST_DIR, MANIFEST_FILE);
+  const manifest = readJson(manifestPath);
+  const installedVersion = manifest ? manifest.version : null;
+  const edited = locallyEdited(destRoot, manifest);
+
+  if (edited.length > 0 && !force) {
+    console.error(`${NL}✗ These skill files have local changes:`);
+    edited.forEach((file) => console.error(`  - ${file}`));
+    console.error(
+      NL +
+        "  Updating the skill would replace them. Re-run with --force to do that,",
+    );
+    console.error(
+      "  or move your own guidance into a separate skill folder first.",
+    );
+    process.exit(1);
+  }
+
+  // The canonical copy.
+  const written = [];
+  for (const file of listFiles(src)) {
+    await fs.copy(path.join(src, file), path.join(destRoot, SKILL_DEST_DIR, file), {
+      overwrite: true,
+    });
+    written.push(rel(SKILL_DEST_DIR, file));
+  }
+
+  // One adapter per agent that looks somewhere else.
+  if (targets.includes("claude")) {
+    written.push(...(await writeClaudeSkill(destRoot)));
+  }
+  if (targets.includes("antigravity")) {
+    written.push(...(await writeAntigravityRule(destRoot)));
+  }
+  const agents = targets.includes("codex")
+    ? await writeAgentsPointer(destRoot)
+    : null;
+
+  // Drop what an older version left behind, but only files we installed and
+  // the user has not since changed.
+  if (manifest) {
+    const removed = Object.keys(manifest.files).filter(
+      (file) => !written.includes(file),
+    );
+    for (const file of removed) {
+      const target = path.join(destRoot, file);
+      if (
+        fs.existsSync(target) &&
+        (force || manifest.files[file] === sha256(target))
+      ) {
+        await fs.remove(target);
+        await pruneEmptyDirs(destRoot, file);
+      }
+    }
+  }
+
+  fs.writeJsonSync(
+    manifestPath,
+    {
+      version: PACKAGE_VERSION,
+      installedAt: new Date().toISOString(),
+      targets,
+      // Hashed after writing, because the adapters are generated rather than copied.
+      files: Object.fromEntries(
+        written.map((file) => [file, sha256(path.join(destRoot, file))]),
+      ),
+    },
+    { spaces: 2 },
+  );
+
+  console.log(
+    installedVersion
+      ? `✓ skill updated ${installedVersion} → ${PACKAGE_VERSION}`
+      : `✓ skill v${PACKAGE_VERSION} installed`,
+  );
+  console.log(`  ${SKILL_DEST_DIR}/ (canonical, ${listFiles(src).length} files)`);
+  if (targets.includes("claude")) {
+    console.log(`  .claude/skills/${SKILL_NAME}/ for Claude Code`);
+  }
+  if (targets.includes("antigravity")) {
+    console.log(`  .agents/rules/${SKILL_NAME}.md for Antigravity`);
+  }
+  if (agents) {
+    console.log(`  ${AGENTS_FILE} block ${agents}, for Codex`);
+  }
+  console.log("  Commit them so the whole team's agents pick this up.");
+};
+
+/** `--for claude,codex` picks the adapters; `none` writes only `.gbs/`. */
+const parseSkillTargets = (value) => {
+  if (value === undefined || value === null || value === "") {
+    return SKILL_TARGETS;
+  }
+
+  const wanted = String(value)
+    .split(",")
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (wanted.includes("none")) return [];
+
+  const unknown = wanted.filter((item) => !SKILL_TARGETS.includes(item));
+  if (unknown.length > 0) {
+    console.error(
+      `Unknown --for target(s): ${unknown.join(", ")}. Valid: ${SKILL_TARGETS.join(", ")}, none.`,
+    );
+    process.exit(1);
+  }
+
+  return wanted;
+};
+
+/** `-a skill` is accepted as well as `--skill`, since both read naturally. */
+const isSkillWord = (value) =>
+  typeof value === "string" && value.trim().toLowerCase() === "skill";
 
 /** The files a component needs beside it, which differ between the two sets. */
 const copySupportFiles = async (destPath, beta, options) => {
@@ -544,9 +866,11 @@ const validateComponents = (components, beta = false) => {
 };
 
 const main = async () => {
-  const args = hideBin(process.argv).map((arg) =>
-    arg === "-beta" ? "--beta" : arg,
-  );
+  const args = hideBin(process.argv).map((arg) => {
+    if (arg === "-beta") return "--beta";
+    if (arg === "-skill") return "--skill";
+    return arg;
+  });
   const argv = yargs(args)
     .option("add", {
       alias: "a",
@@ -569,8 +893,19 @@ const main = async () => {
       type: "boolean",
       default: false,
     })
+    .option("skill", {
+      describe:
+        "Install the GBS agent skill at the project root, for every supported agent",
+      type: "boolean",
+      default: false,
+    })
+    .option("for", {
+      describe:
+        "With --skill: which agents to write adapters for (claude, codex, antigravity, or none)",
+      type: "string",
+    })
     .option("force", {
-      describe: "Replace files in shared/ that you have edited locally",
+      describe: "Replace files you have edited locally in shared/ or the skill",
       type: "boolean",
       default: false,
     })
@@ -578,6 +913,10 @@ const main = async () => {
     .example("$0 -a Button,Card,Modal", "Install multiple components")
     .example("$0 -a DataGrid -beta", "Install the redesigned beta DataGrid")
     .example("$0 -a Combobox -beta", "Install the redesigned beta Combobox")
+    .example("$0 -skill", "Install the agent skill for every supported agent")
+    .example("$0 -skill --for claude", "Only the Claude Code copy")
+    .example("$0 -skill --for none", "Only .gbs/, no adapters")
+    .example("$0 -a DataGrid -beta -skill", "Install a component and the skill")
     .example("$0 -i", "Interactive selection mode")
     .help().argv;
 
@@ -594,6 +933,9 @@ const main = async () => {
     if (argv.beta) {
       console.log(
         `\nEvery beta component also installs component-lib/${SHARED_DIR}, which they all import.`,
+      );
+      console.log(
+        `${NL}The agent skill installs separately, at the project root, for ${SKILL_TARGETS.join(", ")} and the GBS agent:${NL}  npx gbs-add-block -skill`,
       );
     } else {
       console.log("\nRedesigned beta components (install with -beta):");
@@ -623,9 +965,21 @@ const main = async () => {
     return;
   }
 
+  // The skill goes to the project root, not component-lib, so it is handled
+  // before anything reaches the component installer.
+  if (argv.skill || isSkillWord(argv.add)) {
+    await installSkill(process.cwd(), {
+      force: argv.force,
+      targets: parseSkillTargets(argv.for),
+    });
+
+    // `-a --skill` leaves `add` empty, and `-a skill` names no component.
+    if (!argv.add || isSkillWord(argv.add)) return;
+  }
+
   if (!argv.add) {
     console.error(
-      "Please specify a component to install using -a/--add, use -i/--interactive for interactive mode, or -l/--list to see available components",
+      "Please specify a component to install using -a/--add, install the agent skill with --skill, use -i/--interactive for interactive mode, or -l/--list to see available components",
     );
     process.exit(1);
   }

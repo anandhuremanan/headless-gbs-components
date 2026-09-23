@@ -1,0 +1,130 @@
+---
+title: "Agent skill"
+description: "Teach a coding agent this library's real API — imports, prop names and the traps — so it stops guessing and inventing props."
+group: "General"
+order: 28
+---
+
+## Installation
+
+```bash
+npx gbs-add-block@latest -skill
+```
+
+The block writes the skill at the root of the project you run it in — not into `component-lib/` — in the place each supported agent looks. Commit the result so that everyone on the team, and CI, gets the same guidance.
+
+`-a -skill` and `-a skill` do the same thing, and it can be combined with a component install:
+
+```bash
+npx gbs-add-block@latest -a DataGrid -beta -skill
+```
+
+An agent that has never seen this library will otherwise guess. It will write `import { Button } from "gbs-add-block"`, which does not resolve, because the CLI copies source into your repo rather than publishing a package to import from. It will reach for `onChange` on a `Switch`, which the type omits. It will wrap an `Input` in its own `<label>` and break the wiring the component already does. The skill is the file that stops all three.
+
+<Notice message="This is not documentation for people — it is a file your coding agent reads. It is written as rules rather than prose, and it is deliberately short, because the part that is always in the agent's context has a budget measured in characters." />
+
+## What lands in your repo
+
+```
+.gbs/                                canonical, and what the GBS agent reads
+  .install-manifest.json
+  skills/gbs-components/
+    SKILL.md                         always in the agent's context
+    references/
+      install.md                     CLI flags, folder names, shared/
+      forms.md                       text and choice fields
+      pickers.md                     Select, MultiSelect, DatePicker, FileUploader
+      overlays.md                    Modal, dialog, Popover, Menu, Tooltip
+      toaster.md                     toast() and Toaster
+      data-grid.md                   columns, imperative API, export
+      data-display.md                Card, Tabs, Accordion, Badge, Avatar, Progress
+      styling.md                     --gbs-* tokens, layers, slots, data-*
+      accessibility.md               what is supplied, what you must add
+
+.claude/skills/gbs-components/       Claude Code
+.agents/rules/gbs-components.md      Antigravity
+AGENTS.md                            Codex — a marked block, nothing else touched
+```
+
+Only `SKILL.md` is loaded up front. It is an index: the import rule, the handful of rules that are most often got wrong, a one-line inventory of every component, one complete example, and a list of things not to do. The agent opens a reference file only when the task needs that depth, so a small change does not drag eleven thousand characters of DataGrid documentation into the conversation.
+
+## What it teaches
+
+The rules that earn their place are the ones a reasonable agent gets wrong by default.
+
+**Imports.** That there is no package to import from; that components come from `component-lib/<folder>` plus that folder's `styles.css`; that the folder is the lowercased name except for `data-grid`, `date-picker`, `file-uploader`, `number-input` and `radio-group`; and that anything deeper than the barrel is internal.
+
+**Change handler names.** This is the single most common mistake, because nothing in the naming predicts which one a component uses:
+
+| Handler | Components |
+| --- | --- |
+| `onValueChange` | Input, OtpInput, Textarea, NumberInput, CheckboxGroup, RadioGroup, Tabs, Accordion, MenuRadioGroup |
+| `onCheckedChange` | Checkbox, Switch, MenuCheckboxItem |
+| `onChange` | Select, MultiSelect, DatePicker, DateRangePicker, FileUploader |
+| `onOpenChange` | Modal, Popover, Menu |
+
+**Fields own their own markup.** `label`, `description` and `error` are props. `error` also sets `aria-invalid` and appends the message to `aria-describedby`. An agent that hand-rolls a `<label htmlFor>` around the control is fighting wiring that is already there.
+
+**Styling goes through the library's seams** — `--gbs-*` on `:root` for the palette, `classNames` slot maps for inner parts, `data-*` attributes for state — rather than `!important` or selectors written against internal class names.
+
+**The two things that must be mounted once:** `<Toaster />` and `<DialogHost />`. Without them `toast()` and `dialog.confirm()` do nothing, silently.
+
+**Composition rules**, such as `Tab` and `TabPanel` throwing outside `<Tabs>`, `AccordionItem` outside `<Accordion>`, and `MenuItem` outside `<Menu>`.
+
+## Keeping it current
+
+Re-run the same command to update:
+
+```bash
+npx gbs-add-block@latest -skill
+```
+
+The installer records a sha256 of every file it writes — across all four locations — in `.gbs/.install-manifest.json`. On the next run it compares, and it will not replace a file you have edited:
+
+```
+✗ These skill files have local changes:
+  - .claude/skills/gbs-components/references/forms.md
+
+  Updating the skill would replace them. Re-run with --force to do that,
+  or move your own guidance into a separate skill folder first.
+```
+
+`--force` overwrites anyway. Files an older version installed and that you have not touched are cleaned up on update.
+
+<Notice message="Put your own house rules in a separate folder, such as .gbs/skills/our-conventions/, rather than editing this one. The installer merges into .gbs/ and leaves folders it did not write alone, so your skills and this one update independently." />
+
+## Which agents read it
+
+No agent reads all of these locations, so the CLI writes one copy per agent from the same source. They differ only in where they sit and what their front matter is called.
+
+| Agent | Location | Attaches by |
+| --- | --- | --- |
+| GBS SE Agent | `.gbs/skills/gbs-components/` | `autoAttach` globs |
+| Claude Code | `.claude/skills/gbs-components/` | `description`, plus `paths` globs |
+| Antigravity | `.agents/rules/gbs-components.md` | a glob set on the rule in the IDE |
+| Codex | a block in `AGENTS.md` | always in context (it is a pointer, not the skill) |
+
+Narrow it if you only use some:
+
+```bash
+npx gbs-add-block@latest -skill --for claude,codex
+npx gbs-add-block@latest -skill --for none          # only .gbs/
+```
+
+Dropping a target on a later run removes the files it wrote, and empty folders with them. A `.claude` folder that also holds your own settings is left in place.
+
+<Notice message="Antigravity sets a rule's glob on the rule itself rather than in the file, so the generated rule states the globs in its first lines for whoever configures it. Claude Code and the GBS agent both pick their globs up from the file." />
+
+The `description` is the only part always in an agent's context, and for Claude Code it is the main thing that decides whether the skill loads at all. If an agent is not picking the skill up on UI work, that line is what to look at first.
+
+## Codex and AGENTS.md
+
+`AGENTS.md` is always in context and usually maintained by hand, so the skill is not inlined there — 5 KB in every conversation is a poor trade. Instead the CLI writes a pointer inside markers:
+
+```md
+<!-- gbs-add-block:start -->
+...
+<!-- gbs-add-block:end -->
+```
+
+Anything outside those markers is never touched. If the file does not exist it is created; if the block is already there it is replaced in place; if the file exists without the block it is appended. This is also the one part not covered by the edit check, because the project owns the rest of the file.

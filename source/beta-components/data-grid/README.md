@@ -151,8 +151,8 @@ Methods include `toggleSort`, `setSorting`, `setFilter`, `clearFilters`,
 `setGlobalFilter`, `setPageIndex`, `setPageSize`, `toggleRowSelected`,
 `toggleAllRowsSelected`, `getSelectedRows`, `setColumnVisibility`,
 `setColumnWidth`, `pinColumn`, `moveColumn`, `resetColumns`, `scrollToRow`,
-`focusCell`, `startEditing`, `getRows`, `exportCsv`, `exportExcel`, `exportPdf`
-and `copyToClipboard`.
+`focusCell`, `startEditing`, `getRows`, `exportCsv`, `exportExcel`, `exportPdf`,
+`print` and `copyToClipboard`.
 
 ## Export
 
@@ -162,7 +162,8 @@ Export code is split into chunks loaded on first use.
 | --- | --- |
 | CSV | UTF-8 with BOM (opens correctly in Excel). Cells starting with `= + - @` are prefixed with `'` to prevent formula injection. |
 | Excel | Real `.xlsx`: typed numbers, booleans and dates, bold frozen header, auto-filter, column widths. Written without a library. |
-| PDF | Opens the browser print dialog with a print-formatted table; users choose "Save as PDF". Best for up to a few thousand rows. |
+| PDF | Writes a real `.pdf` and downloads it: chosen paper size and orientation, a repeated header row, page numbers and your own header/footer bands. Uses the standard PDF fonts, so text must be Latin-1. |
+| Print | `api.print()` opens the browser's print dialog instead, for paper or for text the standard fonts cannot encode. |
 
 Scopes: `filtered` (default), `all`, `selected`, `page`, or pass `rows`, e.g. a
 full result set fetched from the server.
