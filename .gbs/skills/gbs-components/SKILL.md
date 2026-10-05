@@ -15,11 +15,14 @@ npx gbs-add-block -a Button,Input,Modal --beta
 ```
 
 Writes `component-lib/<folder>/` plus `component-lib/shared/`. Always pass
-`--beta`. Import the folder barrel **and its stylesheet** (or the repo's alias):
+`--beta`. Import the barrel in your component; each stylesheet goes in the
+global CSS **once** (Vite: `src/index.css`), never in a component file:
 
 ```ts
 import { Button } from "component-lib/button";
-import "component-lib/button/styles.css";
+```
+```css
+@import "../component-lib/button/styles.css";
 ```
 
 Folder = lowercased name, except `data-grid`, `date-picker`, `file-uploader`,
@@ -78,7 +81,6 @@ import { Input } from "component-lib/input";
 import { Select } from "component-lib/combobox";
 import { Modal } from "component-lib/modal";
 import { toast } from "component-lib/toaster";
-// plus each styles.css, once
 
 const ROLES = [{ value: "admin", label: "Admin" }, { value: "dev", label: "Dev" }];
 
@@ -121,12 +123,12 @@ export function InviteButton() {
 
 ## Details (in `references/`)
 
-- `install.md` — CLI flags, folders, `shared/`, 1.x vs beta.
-- `forms.md` — text and choice fields, controlled state, form posting.
-- `pickers.md` — Select, MultiSelect, DatePicker, FileUploader.
+- `install.md` — CLI flags, folders, 1.x vs beta.
+- `forms.md` — fields, controlled state, form posting.
+- `pickers.md` — Select, MultiSelect, DatePicker, Uploader.
 - `overlays.md` — Modal, dialog, Popover, Menu, Tooltip.
 - `toaster.md` — `toast()` and `<Toaster />`.
 - `data-grid.md` — columns, API, export.
-- `data-display.md` — Card, Tabs, Accordion, Badge, Avatar, Progress.
-- `styling.md` — tokens, layers, Tailwind, slots, `data-*`, dark.
+- `data-display.md` — Card, Tabs, Accordion, Badge, Avatar.
+- `styling.md` — tokens, layers, slots, `data-*`, dark.
 - `accessibility.md` — what is supplied, what you add.

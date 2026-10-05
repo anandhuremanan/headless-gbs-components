@@ -12,7 +12,6 @@ shared module-level store; two import paths can create two stores.
 ```tsx
 // once, near the root
 import { Toaster } from "component-lib/toaster";
-import "component-lib/toaster/styles.css";
 <Toaster />
 
 // anywhere

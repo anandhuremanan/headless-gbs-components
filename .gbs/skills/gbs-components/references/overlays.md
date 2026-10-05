@@ -25,7 +25,6 @@ dismiss rules, a close guard, sizes, drawers and animation.
 
 ```tsx
 import { Modal } from "component-lib/modal";
-import "component-lib/modal/styles.css";
 
 const [open, setOpen] = useState(false);
 
@@ -73,7 +72,6 @@ React.
 ```tsx
 // once, e.g. app/layout.tsx or App.tsx
 import { DialogHost } from "component-lib/dialog";
-import "component-lib/dialog/styles.css";
 <DialogHost />
 
 // anywhere
@@ -142,7 +140,6 @@ import {
   Menu, MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem,
   MenuGroup, MenuSeparator, MenuSub,
 } from "component-lib/menu";
-import "component-lib/menu/styles.css";
 
 <Menu trigger={<Button variant="outline">Actions</Button>} label="Row actions">
   <MenuItem icon={<EditIcon />} shortcut="⌘E" onSelect={edit}>Edit</MenuItem>

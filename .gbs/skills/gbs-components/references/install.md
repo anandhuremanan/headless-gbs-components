@@ -151,14 +151,13 @@ is replaced on update. Put your changes in your own module instead.
 
 ## Importing
 
-Import the folder barrel, plus the stylesheet once anywhere in the app:
+Import the barrel in the component that uses it:
 
 ```ts
 import { Input, OtpInput } from "component-lib/input";
-import "component-lib/input/styles.css";
 ```
 
-Or import the CSS from your root stylesheet:
+Put the stylesheet in the project's global CSS, once — never in a component file:
 
 ```css
 @import "../component-lib/input/styles.css";

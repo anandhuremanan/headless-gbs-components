@@ -6,17 +6,19 @@ state attributes.
 
 ## 1. Stylesheets are per component
 
-Each folder has its own `styles.css`. Import the ones you use, once, anywhere:
-
-```ts
-import "component-lib/button/styles.css";
-```
-
-or from a root stylesheet:
+Each folder has its own `styles.css`. Put the ones you use in the project's
+**global** stylesheet — `src/index.css` in Vite, the root layout's CSS in Next —
+once each:
 
 ```css
 @import "../component-lib/button/styles.css";
 ```
+
+**Never import a stylesheet from a component file.** `import
+"component-lib/button/styles.css"` inside a `.tsx` does bundle, but it makes CSS
+order depend on module import order — which decides whether Tailwind utilities
+still beat the component's own rules — and a lazy-loaded component then pulls its
+styles in late, flashing unstyled. One global import per component, nowhere else.
 
 Nothing renders correctly without it — the components emit class names only.
 

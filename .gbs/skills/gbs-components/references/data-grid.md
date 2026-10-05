@@ -5,7 +5,6 @@ A virtualized grid. Import `DataGrid` and `createColumnHelper` from
 
 ```tsx
 import { createColumnHelper, DataGrid } from "component-lib/data-grid";
-import "component-lib/data-grid/styles.css";
 
 interface Employee { id: number; name: string; salary: number; active: boolean }
 
