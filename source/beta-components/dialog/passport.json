@@ -1,0 +1,344 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "Dialog",
+    "folder": "dialog",
+    "exports": [
+      "Dialog",
+      "DialogHost"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/api.ts",
+      "core/dialog.ts",
+      "core/index.ts",
+      "core/store.ts",
+      "core/types.ts",
+      "index.ts",
+      "react/Dialog.tsx",
+      "react/DialogHost.tsx",
+      "react/icons.tsx",
+      "react/locale.ts",
+      "react/props.ts"
+    ],
+    "sourceHash": "sha256:e00d987e25e60854e28ffe00727c2a229f8b88b106c8a88fac1d97a3c86f264a"
+  },
+  "props": [
+    {
+      "name": "cancelLabel",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<DialogSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "confirmLabel",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "defaultValue",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "default": "",
+      "origin": "derived"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "dismissible",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Escape and a backdrop click count as Cancel. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "icon",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "Replaces the intent's icon; `null` hides it.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "inputLabel",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "inputType",
+      "type": "enum",
+      "values": [
+        "email",
+        "number",
+        "password",
+        "tel",
+        "text",
+        "url"
+      ],
+      "typeText": "'number' | 'email' | 'tel' | 'text' | 'url' | 'password' | undefined",
+      "required": false,
+      "default": "text",
+      "origin": "derived"
+    },
+    {
+      "name": "intent",
+      "type": "enum",
+      "values": [
+        "danger",
+        "default",
+        "info",
+        "success",
+        "warning"
+      ],
+      "typeText": "DialogIntent | undefined",
+      "required": false,
+      "default": "default",
+      "origin": "derived",
+      "description": "Sets the icon and the confirm button's color. `danger` also focuses Cancel first.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "kind",
+      "type": "enum",
+      "values": [
+        "alert",
+        "confirm",
+        "prompt"
+      ],
+      "typeText": "DialogKind | undefined",
+      "required": false,
+      "default": "confirm",
+      "origin": "derived",
+      "description": "`alert` has one button, `confirm` two, `prompt` adds a text field. Default `confirm`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "localeText",
+      "type": "other",
+      "typeText": "Partial<DialogLocaleText> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onClose",
+      "type": "function",
+      "signature": "((action: DialogAction, value: string) => void) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "The user answered. Set `open` to false here.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "onConfirm",
+      "type": "function",
+      "signature": "((value: string) => void | Promise<void>) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Runs on Confirm, with the prompt's value. While its promise is pending the\nbuttons show progress; if it throws, the error message is shown and the\ndialog stays open.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "onExited",
+      "type": "function",
+      "signature": "(() => void) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "The exit animation finished.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "typeText": "boolean",
+      "required": true,
+      "origin": "derived"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "size",
+      "type": "enum",
+      "values": [
+        "md",
+        "sm"
+      ],
+      "typeText": "DialogSize | undefined",
+      "required": false,
+      "default": "sm",
+      "origin": "derived"
+    },
+    {
+      "name": "store",
+      "type": "other",
+      "typeText": "DialogStore | undefined",
+      "required": false,
+      "default": "dialogStore",
+      "origin": "derived",
+      "description": "A store from `createDialogStore()`. Defaults to the one behind `dialog`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "title",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": true,
+      "origin": "derived"
+    },
+    {
+      "name": "validate",
+      "type": "function",
+      "signature": "((value: string) => string | null | undefined) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Return a message to block confirming.",
+      "descriptionOrigin": "jsdoc"
+    }
+  ],
+  "inherits": [
+    {
+      "from": "PromptOptions",
+      "omitted": [
+        "onConfirm"
+      ],
+      "passthrough": true
+    }
+  ],
+  "events": [
+    {
+      "name": "onClose",
+      "signature": "((action: DialogAction, value: string) => void) | undefined"
+    },
+    {
+      "name": "onConfirm",
+      "signature": "((value: string) => void | Promise<void>) | undefined"
+    },
+    {
+      "name": "onExited",
+      "signature": "(() => void) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "body",
+    "icon",
+    "title",
+    "description",
+    "input",
+    "actions",
+    "confirm",
+    "cancel"
+  ],
+  "states": [
+    {
+      "attr": "data-autofocus"
+    },
+    {
+      "attr": "data-intent",
+      "values": [
+        "danger",
+        "info",
+        "success",
+        "warning"
+      ]
+    },
+    {
+      "attr": "data-size",
+      "values": [
+        "md"
+      ]
+    },
+    {
+      "attr": "data-state"
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    },
+    {
+      "attr": "data-variant",
+      "values": [
+        "danger",
+        "primary",
+        "secondary"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 25,
+    "propsDescribed": 9,
+    "describedPct": 36,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

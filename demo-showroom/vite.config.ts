@@ -31,6 +31,9 @@ export default defineConfig({
   },
 
   test: {
-    include: ["../source/**/__tests__/**/*.test.ts"],
+    include: [
+      "../source/**/__tests__/**/*.test.ts",
+      "../tools/**/__tests__/**/*.test.ts",
+    ],
   },
 });

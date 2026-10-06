@@ -1,0 +1,518 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "FileUploader",
+    "folder": "file-uploader",
+    "exports": [
+      "DEFAULT_CHUNK_SIZE",
+      "DEFAULT_CONCURRENCY",
+      "DEFAULT_FIELD_NAMES",
+      "DEFAULT_RETRIES",
+      "DEFAULT_RETRY_DELAY",
+      "FileUploader"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/format.ts",
+      "core/index.ts",
+      "core/store.ts",
+      "core/transport.ts",
+      "core/types.ts",
+      "core/validate.ts",
+      "index.ts",
+      "react/FileRow.tsx",
+      "react/FileUploader.tsx",
+      "react/icons.tsx",
+      "react/locale.ts",
+      "react/props.ts",
+      "react/useFileUploader.ts"
+    ],
+    "sourceHash": "sha256:ecb24c34a470f28349767b654824ccf0665505cc7ca82b8877cd970d1ecbba6d"
+  },
+  "props": [
+    {
+      "name": "accept",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Same syntax as `<input accept>`: `.pdf`, `image/*`, `application/json`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "allowDuplicates",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "autoUpload",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Upload as soon as files are added. Default false.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "chunkSize",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Bytes per request. Default 5 MiB.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<UploaderSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "concurrency",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Files uploading at once. Default 3.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "endpoint",
+      "type": "other",
+      "typeText": "string | ((request: import(\"..\").ChunkRequest) => string) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Where chunks are POSTed. Without `endpoint` or `transport`, files are only selected.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "error",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "Message below the drop zone; also marks it invalid.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "existingFiles",
+      "type": "other",
+      "typeText": "readonly ExistingFile[] | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Files already stored, shown above new ones.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "fieldNames",
+      "type": "other",
+      "typeText": "Partial<import(\"..\").ChunkFieldNames> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "getFileId",
+      "type": "function",
+      "signature": "((item: UploadItem) => string | undefined) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "The value posted for an uploaded file. Default: the id found in the server's response.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "headers",
+      "type": "other",
+      "typeText": "Record<string, string> | ((request: import(\"..\").ChunkRequest) => Record<string, string> | Promise<Record<string, string>>) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "label",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "For sizes and percentages.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "localeText",
+      "type": "other",
+      "typeText": "Partial<UploaderLocaleText> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "maxFiles",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Total files, counting ones already selected.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "maxSize",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Bytes per file.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "method",
+      "type": "enum",
+      "values": [
+        "PATCH",
+        "POST",
+        "PUT"
+      ],
+      "typeText": "'POST' | 'PUT' | 'PATCH' | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "minSize",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Bytes per file.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "multiple",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Several files. When false, a new file replaces the current one. Default false.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Form field name. With an endpoint, the stored file ids are posted; without\r\none, the files themselves are, so a plain form or Server Action gets them.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "onChange",
+      "type": "function",
+      "signature": "((files: File[]) => void) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Selected files changed.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "onFileError",
+      "type": "function",
+      "signature": "((item: UploadItem, error: unknown) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onFileSuccess",
+      "type": "function",
+      "signature": "((item: UploadItem) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onRejected",
+      "type": "function",
+      "signature": "((rejections: FileRejection[]) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onRemoveExisting",
+      "type": "function",
+      "signature": "((file: ExistingFile) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onUploadComplete",
+      "type": "function",
+      "signature": "((items: UploadItem[]) => void) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Every file in an upload run has stopped (uploaded, failed, paused or canceled).",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "params",
+      "type": "other",
+      "typeText": "import(\"..\").UploadParams | ((file: File) => import(\"..\").UploadParams) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Extra data sent as JSON with every chunk.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "parseResponse",
+      "type": "function",
+      "signature": "((body: string, xhr: XMLHttpRequest) => unknown) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "preview",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Thumbnails for images. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "ref",
+      "type": "other",
+      "typeText": "Ref<FileUploaderHandle> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "removable",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Show remove buttons. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "retries",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Extra attempts per chunk. Default 3.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "retryDelay",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "First retry delay in ms, doubled each time. Default 1000.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "size",
+      "type": "enum",
+      "values": [
+        "lg",
+        "md",
+        "sm"
+      ],
+      "typeText": "UploaderSize | undefined",
+      "required": false,
+      "default": "md",
+      "origin": "derived"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "transport",
+      "type": "function",
+      "signature": "Transport | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Replaces the built-in HTTP transport, e.g. for presigned URLs or an SDK.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "validate",
+      "type": "function",
+      "signature": "((file: File) => string | null | undefined) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Return a message to reject a file.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "withCredentials",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived"
+    }
+  ],
+  "events": [
+    {
+      "name": "onChange",
+      "signature": "((files: File[]) => void) | undefined"
+    },
+    {
+      "name": "onFileError",
+      "signature": "((item: UploadItem, error: unknown) => void) | undefined"
+    },
+    {
+      "name": "onFileSuccess",
+      "signature": "((item: UploadItem) => void) | undefined"
+    },
+    {
+      "name": "onRejected",
+      "signature": "((rejections: FileRejection[]) => void) | undefined"
+    },
+    {
+      "name": "onRemoveExisting",
+      "signature": "((file: ExistingFile) => void) | undefined"
+    },
+    {
+      "name": "onUploadComplete",
+      "signature": "((items: UploadItem[]) => void) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "label",
+    "dropzone",
+    "rejections",
+    "list",
+    "item",
+    "thumb",
+    "progress",
+    "actions",
+    "footer"
+  ],
+  "states": [
+    {
+      "attr": "data-disabled"
+    },
+    {
+      "attr": "data-dragging"
+    },
+    {
+      "attr": "data-existing"
+    },
+    {
+      "attr": "data-invalid"
+    },
+    {
+      "attr": "data-kind",
+      "values": [
+        "audio",
+        "document",
+        "image",
+        "pdf",
+        "spreadsheet",
+        "video"
+      ]
+    },
+    {
+      "attr": "data-required"
+    },
+    {
+      "attr": "data-size",
+      "values": [
+        "lg",
+        "sm"
+      ]
+    },
+    {
+      "attr": "data-status",
+      "values": [
+        "error",
+        "paused",
+        "success"
+      ]
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    },
+    {
+      "attr": "data-variant",
+      "values": [
+        "primary"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 44,
+    "propsDescribed": 23,
+    "describedPct": 52,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

@@ -1,0 +1,456 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "Select",
+    "folder": "combobox",
+    "exports": [
+      "MultiSelect",
+      "Select"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/filter.ts",
+      "core/index.ts",
+      "core/types.ts",
+      "core/virtual.ts",
+      "index.ts",
+      "react/Listbox.tsx",
+      "react/MultiSelect.tsx",
+      "react/Popover.tsx",
+      "react/Select.tsx",
+      "react/icons.tsx",
+      "react/locale.ts",
+      "react/props.ts",
+      "react/useCombobox.ts"
+    ],
+    "sourceHash": "sha256:30c5029686474f534c0dcec681f587d896c1a8bcc691015512663a3960086e28"
+  },
+  "props": [
+    {
+      "name": "allowCreate",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Offers \"Create …\" when the search matches no option.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "aria-label",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Names the control when there is no visible `label`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<ComboboxSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Show the clear button. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "closeOnSelect",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Keep the list open after choosing. Default false.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "defaultValue",
+      "type": "other",
+      "typeText": "V | null | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "emptyMessage",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "error",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "Message shown below the control; also marks the control invalid.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "filterFn",
+      "type": "function",
+      "signature": "((option: ComboboxOption<NoInfer<V>>, search: string) => boolean) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Replaces the built-in search matching (client mode).\n`NoInfer` keeps the option type coming from `options` and `value` only.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "hasMore",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "More results are available; the list calls `onLoadMore` when scrolled near the end.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "label",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Shows a loading row; keeps current options visible.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "localeText",
+      "type": "other",
+      "typeText": "Partial<ComboboxLocaleText> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Maximum number of selections.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "maxHeight",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": 280,
+      "origin": "derived",
+      "description": "Max height of the option list in pixels. Default 280.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "maxVisibleTags",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": 3,
+      "origin": "derived",
+      "description": "Tags shown before collapsing into \"+N more\". Default 3.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "mode",
+      "type": "enum",
+      "values": [
+        "client",
+        "server"
+      ],
+      "typeText": "'client' | 'server' | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "`client` filters `options` locally; `server` expects `options` to be the current results.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Name for the hidden form input.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "onChange",
+      "type": "function",
+      "signature": "((value: NoInfer<V> | null, option: ComboboxOption<NoInfer<V>> | null) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onCreate",
+      "type": "function",
+      "signature": "((label: string) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onLoadMore",
+      "type": "function",
+      "signature": "(() => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onOpenChange",
+      "type": "function",
+      "signature": "((open: boolean) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onSearchChange",
+      "type": "function",
+      "signature": "((search: string) => void) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Called with the search text (debounced in server mode), and on open.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "options",
+      "type": "other",
+      "typeText": "readonly ComboboxOption<V>[]",
+      "required": true,
+      "origin": "derived"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "default": "Select…",
+      "origin": "derived"
+    },
+    {
+      "name": "ref",
+      "type": "other",
+      "typeText": "Ref<ComboboxHandle<V>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "renderOption",
+      "type": "function",
+      "signature": "((option: ComboboxOption<NoInfer<V>>, state: OptionState) => ReactNode) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "searchable",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Show the search box. Default true. When false, typing jumps to a matching option.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "searchDebounce",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Debounce for `onSearchChange` in server mode. Default 250 ms.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "showSelectAll",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Show \"Select all\" / \"Clear all\" under the list. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "size",
+      "type": "enum",
+      "values": [
+        "lg",
+        "md",
+        "sm"
+      ],
+      "typeText": "ComboboxSize | undefined",
+      "required": false,
+      "default": "md",
+      "origin": "derived"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "value",
+      "type": "other",
+      "typeText": "V | null | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "virtualize",
+      "type": "other",
+      "typeText": "number | boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "`true` / `false` to force, or a count above which virtualization turns on (default 80).",
+      "descriptionOrigin": "jsdoc"
+    }
+  ],
+  "events": [
+    {
+      "name": "onChange",
+      "signature": "((value: NoInfer<V> | null, option: ComboboxOption<NoInfer<V>> | null) => void) | undefined"
+    },
+    {
+      "name": "onCreate",
+      "signature": "((label: string) => void) | undefined"
+    },
+    {
+      "name": "onLoadMore",
+      "signature": "(() => void) | undefined"
+    },
+    {
+      "name": "onOpenChange",
+      "signature": "((open: boolean) => void) | undefined"
+    },
+    {
+      "name": "onSearchChange",
+      "signature": "((search: string) => void) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "label",
+    "control",
+    "value",
+    "tag",
+    "popover",
+    "search",
+    "list",
+    "option",
+    "footer"
+  ],
+  "states": [
+    {
+      "attr": "data-active"
+    },
+    {
+      "attr": "data-autofocus"
+    },
+    {
+      "attr": "data-disabled"
+    },
+    {
+      "attr": "data-invalid"
+    },
+    {
+      "attr": "data-required"
+    },
+    {
+      "attr": "data-selected"
+    },
+    {
+      "attr": "data-size",
+      "values": [
+        "lg",
+        "sm"
+      ]
+    },
+    {
+      "attr": "data-state",
+      "values": [
+        "open"
+      ]
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    },
+    {
+      "attr": "data-virtual"
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 39,
+    "propsDescribed": 18,
+    "describedPct": 46,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

@@ -131,6 +131,7 @@ const MANIFEST_FILE = ".install-manifest.json";
  * component-lib.
  */
 const TESTS_DIR = "__tests__";
+
 const isTestPath = (filePath) => filePath.split(/[\\/]/).includes(TESTS_DIR);
 
 const normalizeComponent = (component, availableComponents) =>
@@ -600,6 +601,82 @@ const parseSkillTargets = (value) => {
   return wanted;
 };
 
+/* ------------------------------------------------------------- passports */
+
+/**
+ * Regenerate or verify passports for the components copied into this project.
+ *
+ * Reads the consumer's own source, so a modified component gets a passport that
+ * describes the modification. `passport.local.json` is read as an overlay and
+ * never written.
+ */
+const runPassport = async ({ check: checkOnly }) => {
+  const dest = DEFAULT_DEST_PATH;
+
+  if (!fs.existsSync(dest)) {
+    console.error(
+      `No ${path.basename(dest)}/ folder here. Install a component first:` +
+        `${NL}  npx gbs-add-block -a Button --beta`,
+    );
+    process.exit(1);
+  }
+
+  let passport;
+  try {
+    passport = require("./tools/passport/index.cjs");
+  } catch {
+    console.error(
+      "Passport tooling is not available in this installation of the CLI.",
+    );
+    process.exit(1);
+  }
+
+  const pkgPath = path.join(process.cwd(), "package.json");
+  const libraryVersion = fs.existsSync(pkgPath)
+    ? readJson(pkgPath, {}).version || "unknown"
+    : "unknown";
+
+  const options = {
+    libRoot: dest,
+    repoRoot: process.cwd(),
+    libraryVersion,
+    includeLocal: true,
+    coverageThreshold: undefined,
+  };
+
+  try {
+    if (checkOnly) {
+      const { report, errors, warnings } = passport.check(options);
+      for (const row of report) {
+        if (row.problems.length === 0) {
+          console.log(`  ${row.component}: OK`);
+          continue;
+        }
+        for (const issue of row.problems) {
+          console.log(`  ${issue.level === "error" ? "✗" : "!"} ${issue.component}: ${issue.message}`);
+        }
+      }
+      console.log(`${NL}${report.length} component(s) · ${errors} error(s) · ${warnings} warning(s)`);
+      if (errors > 0) process.exit(1);
+      return;
+    }
+
+    const { results, written } = passport.generate(options);
+    const errors = results.flatMap((r) => r.issues.filter((i) => i.level === "error"));
+    for (const issue of errors) console.error(`  ✗ ${issue.component}: ${issue.message}`);
+    console.log(
+      `${NL}✓ ${results.length} passport(s) regenerated · ${written.length} changed`,
+    );
+    if (errors.length > 0) process.exit(1);
+  } catch (error) {
+    if (error.code === "ETYPESCRIPT_MISSING" || error.code === "EBADJSON") {
+      console.error(error.message);
+      process.exit(1);
+    }
+    throw error;
+  }
+};
+
 /** `-a skill` is accepted as well as `--skill`, since both read naturally. */
 const isSkillWord = (value) =>
   typeof value === "string" && value.trim().toLowerCase() === "skill";
@@ -637,6 +714,9 @@ const copyComponent = async (component, destPath, beta = false) => {
       );
     }
 
+    // The whole folder travels, which includes passport.json and
+    // passport.manual.json. The passport is part of the component contract,
+    // not an add-on — a contract you opt into is not a contract.
     await fs.copy(componentSrc, componentDest, {
       overwrite: true,
       filter: (source) => !isTestPath(path.relative(componentSrc, source)),
@@ -869,6 +949,7 @@ const main = async () => {
   const args = hideBin(process.argv).map((arg) => {
     if (arg === "-beta") return "--beta";
     if (arg === "-skill") return "--skill";
+    if (arg === "-passport") return "--passport";
     return arg;
   });
   const argv = yargs(args)
@@ -904,6 +985,17 @@ const main = async () => {
         "With --skill: which agents to write adapters for (claude, codex, antigravity, or none)",
       type: "string",
     })
+    .option("passport", {
+      describe:
+        "Regenerate component passports from the source in this project (needs a local typescript)",
+      type: "boolean",
+      default: false,
+    })
+    .option("check", {
+      describe: "With --passport: verify passports match the source; writes nothing",
+      type: "boolean",
+      default: false,
+    })
     .option("force", {
       describe: "Replace files you have edited locally in shared/ or the skill",
       type: "boolean",
@@ -917,6 +1009,8 @@ const main = async () => {
     .example("$0 -skill --for claude", "Only the Claude Code copy")
     .example("$0 -skill --for none", "Only .gbs/, no adapters")
     .example("$0 -a DataGrid -beta -skill", "Install a component and the skill")
+    .example("$0 -passport", "Regenerate passports for your copied components")
+    .example("$0 -passport --check", "Fail if a passport is stale (CI)")
     .example("$0 -i", "Interactive selection mode")
     .help().argv;
 
@@ -962,6 +1056,13 @@ const main = async () => {
 
     // Install selected components
     await installMultipleComponents(selectedComponents, destPath, argv.beta);
+    return;
+  }
+
+  // Passports are regenerated in place against the project's own copied
+  // source, so a fork's passport describes the fork.
+  if (argv.passport) {
+    await runPassport({ check: argv.check });
     return;
   }
 

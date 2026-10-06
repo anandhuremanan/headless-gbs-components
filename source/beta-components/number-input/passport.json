@@ -1,0 +1,541 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "NumberInput",
+    "folder": "number-input",
+    "exports": [
+      "NumberInput"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/format.ts",
+      "core/index.ts",
+      "core/parse.ts",
+      "core/step.ts",
+      "core/types.ts",
+      "index.ts",
+      "react/NumberInput.tsx",
+      "react/icons.tsx",
+      "react/locale.ts",
+      "react/props.ts"
+    ],
+    "sourceHash": "sha256:9d372f804778bd9d0f0508462f233f20b7bce2fd4c38a8c6be5f20c3a736f04e"
+  },
+  "props": [
+    {
+      "name": "aria-describedby",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "aria-label",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "aria-labelledby",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "autoComplete",
+      "type": "other",
+      "typeText": "HTMLInputAutoCompleteAttribute | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "clampBehavior",
+      "type": "enum",
+      "values": [
+        "blur",
+        "none",
+        "strict"
+      ],
+      "typeText": "ClampBehavior | undefined",
+      "required": false,
+      "default": "blur",
+      "origin": "derived",
+      "description": "When a value outside the limits is pulled back. Default `blur`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<NumberInputSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "A button that empties the field.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "currency",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "ISO 4217 code, for `format=\"currency\"`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "decimals",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Fraction digits to show, and to round to. Left out, the number is shown as it is.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "defaultChecked",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "defaultValue",
+      "type": "number",
+      "typeText": "number | null | undefined",
+      "required": false,
+      "default": null,
+      "origin": "derived"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "error",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "form",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "format",
+      "type": "enum",
+      "values": [
+        "currency",
+        "decimal",
+        "percent"
+      ],
+      "typeText": "NumberStyle | undefined",
+      "required": false,
+      "default": "decimal",
+      "origin": "derived",
+      "description": "Default `decimal`. `percent` shows 0.45 as 45%, as `Intl` does.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "hidden",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "inputMode",
+      "type": "enum",
+      "values": [
+        "decimal",
+        "email",
+        "none",
+        "numeric",
+        "search",
+        "tel",
+        "text",
+        "url"
+      ],
+      "typeText": "'none' | 'search' | 'email' | 'tel' | 'text' | 'url' | 'numeric' | 'decimal' | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "label",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "largeStep",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": "step * 10",
+      "origin": "derived",
+      "description": "Step with **Page Up** / **Page Down**. Default ten steps.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "leading",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "Before the number: a currency symbol, a unit.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "locale",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "BCP 47 tag deciding the separators and digits, for both reading and showing.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "localeText",
+      "type": "other",
+      "typeText": "Partial<NumberInputLocaleText> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "max",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "maxLength",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "min",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "minLength",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "onValueChange",
+      "type": "function",
+      "signature": "((value: number | null) => void) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Fires with the parsed number, or `null` when the field is emptied.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "ref",
+      "type": "other",
+      "typeText": "Ref<HTMLInputElement> | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "The `<input>` element.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "selectOnFocus",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Select the whole number when the field is focused, so typing replaces it.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "size",
+      "type": "enum",
+      "values": [
+        "lg",
+        "md",
+        "sm"
+      ],
+      "typeText": "NumberSize | undefined",
+      "required": false,
+      "default": "md",
+      "origin": "derived"
+    },
+    {
+      "name": "snapToStep",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Round every committed value onto the step grid, counting from `min`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "step",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": 1,
+      "origin": "derived",
+      "description": "How much one arrow press or stepper button moves. Default 1.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "stepper",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "The up and down buttons. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "tabIndex",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "trailing",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "After the number: a unit, a suffix.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "useGrouping",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Thousands separators while the field is not being edited. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "value",
+      "type": "number",
+      "typeText": "number | null | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "The number, or `null` for an empty field (controlled).",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "wheel",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Let the wheel change the value while the field has focus. Default **false**:\r\na wheel that edits a focused field turns an ordinary page scroll into a\r\nsilent change to someone's data.",
+      "descriptionOrigin": "jsdoc"
+    }
+  ],
+  "inherits": [
+    {
+      "from": "InputHTMLAttributes<HTMLInputElement>",
+      "omitted": [
+        "defaultValue",
+        "max",
+        "min",
+        "onChange",
+        "role",
+        "size",
+        "step",
+        "type",
+        "value"
+      ],
+      "passthrough": true
+    }
+  ],
+  "events": [
+    {
+      "name": "onValueChange",
+      "signature": "((value: number | null) => void) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "label",
+    "control",
+    "input",
+    "stepper",
+    "description",
+    "error"
+  ],
+  "states": [
+    {
+      "attr": "data-direction",
+      "values": [
+        "down",
+        "up"
+      ]
+    },
+    {
+      "attr": "data-disabled"
+    },
+    {
+      "attr": "data-invalid"
+    },
+    {
+      "attr": "data-readonly"
+    },
+    {
+      "attr": "data-required"
+    },
+    {
+      "attr": "data-side",
+      "values": [
+        "leading",
+        "trailing"
+      ]
+    },
+    {
+      "attr": "data-size",
+      "values": [
+        "lg",
+        "sm"
+      ]
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 50,
+    "propsDescribed": 18,
+    "describedPct": 36,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

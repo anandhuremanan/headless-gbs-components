@@ -1,0 +1,421 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "Switch",
+    "folder": "switch",
+    "exports": [
+      "Switch"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/index.ts",
+      "core/toggle.ts",
+      "core/types.ts",
+      "index.ts",
+      "react/Switch.tsx",
+      "react/locale.ts",
+      "react/props.ts"
+    ],
+    "sourceHash": "sha256:e5f954e1b5157d663c498d2311c6fa07bb74bfb1fa0505dfd77ebbeaf53ebcfd"
+  },
+  "props": [
+    {
+      "name": "aria-describedby",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "aria-label",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "aria-labelledby",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "autoComplete",
+      "type": "other",
+      "typeText": "HTMLInputAutoCompleteAttribute | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "On or off (controlled).",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<SwitchSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "defaultChecked",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "defaultValue",
+      "type": "other",
+      "typeText": "string | number | readonly string[] | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "error",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "form",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "hidden",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "inputMode",
+      "type": "enum",
+      "values": [
+        "decimal",
+        "email",
+        "none",
+        "numeric",
+        "search",
+        "tel",
+        "text",
+        "url"
+      ],
+      "typeText": "'none' | 'search' | 'email' | 'tel' | 'text' | 'url' | 'numeric' | 'decimal' | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "label",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "labelPosition",
+      "type": "enum",
+      "values": [
+        "end",
+        "start"
+      ],
+      "typeText": "SwitchLabelPosition | undefined",
+      "required": false,
+      "default": "end",
+      "origin": "derived",
+      "description": "Default `end`: the label after the track. `start` puts the track on the right, for settings rows.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "loading",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Show the busy state and block presses from outside, e.g. while a form saves.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "localeText",
+      "type": "other",
+      "typeText": "Partial<SwitchLocaleText> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "max",
+      "type": "other",
+      "typeText": "string | number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "maxLength",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "min",
+      "type": "other",
+      "typeText": "string | number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "minLength",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "onChange",
+      "type": "function",
+      "signature": "ChangeEventHandler<HTMLInputElement> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onCheckedChange",
+      "type": "function",
+      "signature": "((checked: boolean) => void | Promise<unknown>) | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Fires with the new state. Return a promise and the switch stays on the new\r\nsetting with a busy indicator until it resolves, then puts itself back if\r\nit rejects — see [Saving](#saving).",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "ref",
+      "type": "other",
+      "typeText": "Ref<HTMLInputElement> | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "The `<input>` element.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "size",
+      "type": "enum",
+      "values": [
+        "lg",
+        "md",
+        "sm"
+      ],
+      "typeText": "SwitchSize | undefined",
+      "required": false,
+      "default": "md",
+      "origin": "derived"
+    },
+    {
+      "name": "step",
+      "type": "other",
+      "typeText": "string | number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "tabIndex",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Posted with the form when the switch is on. Default `\"on\"`, as for a checkbox.",
+      "descriptionOrigin": "jsdoc"
+    }
+  ],
+  "inherits": [
+    {
+      "from": "InputHTMLAttributes<HTMLInputElement>",
+      "omitted": [
+        "checked",
+        "defaultChecked",
+        "onChange",
+        "role",
+        "size",
+        "type"
+      ],
+      "passthrough": true
+    }
+  ],
+  "events": [
+    {
+      "name": "onChange",
+      "signature": "ChangeEventHandler<HTMLInputElement> | undefined"
+    },
+    {
+      "name": "onCheckedChange",
+      "signature": "((checked: boolean) => void | Promise<unknown>) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "control",
+    "input",
+    "track",
+    "thumb",
+    "label",
+    "description",
+    "error"
+  ],
+  "states": [
+    {
+      "attr": "data-disabled"
+    },
+    {
+      "attr": "data-invalid"
+    },
+    {
+      "attr": "data-label-position",
+      "values": [
+        "start"
+      ]
+    },
+    {
+      "attr": "data-readonly"
+    },
+    {
+      "attr": "data-required"
+    },
+    {
+      "attr": "data-saving"
+    },
+    {
+      "attr": "data-size",
+      "values": [
+        "lg",
+        "sm"
+      ]
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 39,
+    "propsDescribed": 6,
+    "describedPct": 15,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

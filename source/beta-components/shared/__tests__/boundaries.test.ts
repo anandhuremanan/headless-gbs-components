@@ -31,9 +31,15 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+/** Comments stripped, so prose about a word in quotes is not read as an import. */
+function withoutComments(source: string): string {
+  return source.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "");
+}
+
 /** Every `from "…"` specifier in a file, with `import()` and `export … from` included. */
 function specifiers(file: string): string[] {
-  return [...readFileSync(file, "utf8").matchAll(/from\s+"([^"]+)"|import\("([^"]+)"\)/g)].map(
+  const source = withoutComments(readFileSync(file, "utf8"));
+  return [...source.matchAll(/from\s+"([^"]+)"|import\("([^"]+)"\)/g)].map(
     (match) => match[1] ?? match[2],
   );
 }

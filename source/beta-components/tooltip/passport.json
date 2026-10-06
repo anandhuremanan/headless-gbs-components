@@ -1,0 +1,170 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "Tooltip",
+    "folder": "tooltip",
+    "exports": [
+      "Tooltip"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/index.ts",
+      "core/types.ts",
+      "core/visibility.ts",
+      "index.ts",
+      "react/Tooltip.tsx",
+      "react/props.ts"
+    ],
+    "sourceHash": "sha256:9077b7d3a29e80e24669437d922b18ff41684b005805060aaaca5f3cd9efe0d1"
+  },
+  "props": [
+    {
+      "name": "align",
+      "type": "enum",
+      "values": [
+        "center",
+        "end",
+        "start"
+      ],
+      "typeText": "TooltipAlign | undefined",
+      "required": false,
+      "default": "center",
+      "origin": "derived",
+      "description": "Default `center`, which is only meaningful with `side` top or bottom.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "children",
+      "type": "other",
+      "typeText": "ReactElement<{ [attribute: string]: unknown; }, string | import(\"react\").JSXElementConstructor<any>>",
+      "required": true,
+      "origin": "derived",
+      "description": "The control it describes: a single element, cloned with a ref, the pointer\r\nand focus handlers, and `aria-describedby`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<TooltipSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "closeDelay",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": 120,
+      "origin": "derived",
+      "description": "Wait before hiding, in ms. Default 120, so crossing a gap does not flicker.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "content",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": true,
+      "origin": "derived",
+      "description": "The short label. Keep it to a few words.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "delay",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": 400,
+      "origin": "derived",
+      "description": "Wait before showing on hover, in ms. Default 400. Focus never waits.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "gap",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": 6,
+      "origin": "derived",
+      "description": "Distance from the control. Default 6.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "side",
+      "type": "enum",
+      "values": [
+        "bottom",
+        "left",
+        "right",
+        "top"
+      ],
+      "typeText": "TooltipSide | undefined",
+      "required": false,
+      "default": "top",
+      "origin": "derived",
+      "description": "Default `top`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    }
+  ],
+  "events": [],
+  "slots": [
+    "root",
+    "content"
+  ],
+  "states": [
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 12,
+    "propsDescribed": 7,
+    "describedPct": 58,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

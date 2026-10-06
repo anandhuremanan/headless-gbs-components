@@ -1,0 +1,34 @@
+name: Component Passport
+
+on:
+  push:
+    paths:
+      - "source/beta-components/**"
+      - "tools/passport/**"
+      - "schema/passport-v1.schema.json"
+      - ".github/workflows/passport.yml"
+  pull_request:
+    paths:
+      - "source/beta-components/**"
+      - "tools/passport/**"
+      - "schema/passport-v1.schema.json"
+
+jobs:
+  drift:
+    name: passports match source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # The generator needs the TypeScript compiler API and React's type
+      # definitions; without the latter, inherited props cannot be resolved.
+      - run: npm ci
+      - run: npm i --no-save @types/react@^19 @types/react-dom@^19
+
+      - name: Check for passport drift
+        run: npm run passport:check

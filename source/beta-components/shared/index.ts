@@ -6,3 +6,6 @@ export { AnchoredPopover, type AnchoredPopoverProps } from "./react/Popover";
 export { placePopover, type Align, type Placement, type Side } from "./core/position";
 export * as icons from "./react/icons";
 export { version as sharedVersion } from "./version";
+
+// Agent runtime: the component-agnostic operation/validation/history layer.
+export * from "./core/agent";

@@ -1,0 +1,238 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "Popover",
+    "folder": "popover",
+    "exports": [
+      "Popover"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/index.ts",
+      "core/types.ts",
+      "index.ts",
+      "react/Popover.tsx",
+      "react/locale.ts",
+      "react/props.ts"
+    ],
+    "sourceHash": "sha256:aae240ed4b0e1b9456592a57b529f313d658f34a832ebce90b15133b811113aa"
+  },
+  "props": [
+    {
+      "name": "align",
+      "type": "enum",
+      "values": [
+        "end",
+        "start"
+      ],
+      "typeText": "PopoverAlign | undefined",
+      "required": false,
+      "default": "start",
+      "origin": "derived",
+      "description": "Default `start`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "aria-label",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Names the panel when there is no `title`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Move focus into the panel when it opens. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "children",
+      "type": "other",
+      "typeText": "ReactNode | ((props: PopoverRenderProps) => ReactNode)",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<PopoverSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "defaultOpen",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "gap",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "default": 6,
+      "origin": "derived",
+      "description": "Distance from the trigger, in pixels. Default 6.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "localeText",
+      "type": "other",
+      "typeText": "Partial<PopoverLocaleText> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onOpenChange",
+      "type": "function",
+      "signature": "((open: boolean, reason?: PopoverCloseReason) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "open",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "ref",
+      "type": "other",
+      "typeText": "Ref<PopoverHandle> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "scrollable",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Cap the panel to the space available and let it scroll. Default false.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "side",
+      "type": "enum",
+      "values": [
+        "bottom",
+        "left",
+        "right",
+        "top"
+      ],
+      "typeText": "PopoverSide | undefined",
+      "required": false,
+      "default": "bottom",
+      "origin": "derived",
+      "description": "Side of the trigger to open on, before flipping for space. Default `bottom`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "title",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "Heading inside the panel, which also names it.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "trigger",
+      "type": "other",
+      "typeText": "ReactElement<{ [attribute: string]: unknown; ref?: Ref<HTMLElement>; }, string | import(\"react\").JSXElementConstructor<any>>",
+      "required": true,
+      "origin": "derived",
+      "description": "The element that opens it. It is cloned with a ref and the ARIA attributes\r\nthat tie it to the panel, so pass a single element that forwards both — any\r\nbutton in this library does.",
+      "descriptionOrigin": "jsdoc"
+    }
+  ],
+  "events": [
+    {
+      "name": "onOpenChange",
+      "signature": "((open: boolean, reason?: PopoverCloseReason) => void) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "panel",
+    "header",
+    "title",
+    "description",
+    "body",
+    "arrow"
+  ],
+  "states": [
+    {
+      "attr": "data-side",
+      "values": [
+        "left",
+        "right",
+        "top"
+      ]
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 19,
+    "propsDescribed": 8,
+    "describedPct": 42,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "Accordion",
+    "folder": "accordion",
+    "exports": [
+      "Accordion",
+      "AccordionContext",
+      "AccordionItem"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/index.ts",
+      "core/open.ts",
+      "core/types.ts",
+      "index.ts",
+      "react/Accordion.tsx",
+      "react/AccordionItem.tsx",
+      "react/context.ts",
+      "react/props.ts"
+    ],
+    "sourceHash": "sha256:70cd43d921445e44819d7503061b84e9243a7739768deed4737091c6450a9a03"
+  },
+  "props": [
+    {
+      "name": "children",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<'root', string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "collapsible",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": true,
+      "origin": "derived",
+      "description": "Allow the open panel to be closed again. Default true.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "defaultValue",
+      "type": "other",
+      "typeText": "string[] | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "A second line under the title.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "icon",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "Replaces the chevron.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "iconPosition",
+      "type": "enum",
+      "values": [
+        "end",
+        "start"
+      ],
+      "typeText": "AccordionIconPosition | undefined",
+      "required": false,
+      "default": "end",
+      "origin": "derived",
+      "description": "Which side the chevron sits on. Default `end`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "items",
+      "type": "other",
+      "typeText": "readonly AccordionItemData[] | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Render these panels, or pass `<AccordionItem>` children.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "meta",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived",
+      "description": "Something at the end of the header: a badge, a count.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "multiple",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Allow more than one panel open at a time. Default false.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "onValueChange",
+      "type": "function",
+      "signature": "((value: string[]) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "ref",
+      "type": "other",
+      "typeText": "Ref<HTMLDivElement> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "size",
+      "type": "enum",
+      "values": [
+        "lg",
+        "md",
+        "sm"
+      ],
+      "typeText": "AccordionSize | undefined",
+      "required": false,
+      "default": "md",
+      "origin": "derived",
+      "description": "Default `md`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "title",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": true,
+      "origin": "derived"
+    },
+    {
+      "name": "value",
+      "type": "other",
+      "typeText": "string[] | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Open panels, by value (controlled).",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "variant",
+      "type": "enum",
+      "values": [
+        "contained",
+        "plain",
+        "separated"
+      ],
+      "typeText": "AccordionVariant | undefined",
+      "required": false,
+      "default": "separated",
+      "origin": "derived",
+      "description": "Default `separated`.",
+      "descriptionOrigin": "jsdoc"
+    }
+  ],
+  "events": [
+    {
+      "name": "onValueChange",
+      "signature": "((value: string[]) => void) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "header",
+    "title",
+    "description",
+    "icon",
+    "content",
+    "body"
+  ],
+  "states": [
+    {
+      "attr": "data-disabled"
+    },
+    {
+      "attr": "data-size",
+      "values": [
+        "lg",
+        "sm"
+      ]
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    },
+    {
+      "attr": "data-variant",
+      "values": [
+        "contained",
+        "plain"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 19,
+    "propsDescribed": 10,
+    "describedPct": 53,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}

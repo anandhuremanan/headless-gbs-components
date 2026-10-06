@@ -1,0 +1,47 @@
+name: Agent runtime
+
+on:
+  push:
+    paths:
+      - "source/beta-components/data-grid/**"
+      - "source/beta-components/shared/core/agent/**"
+      - "eval/**"
+      - "tools/eval/**"
+      - ".github/workflows/agent-runtime.yml"
+  pull_request:
+    paths:
+      - "source/beta-components/data-grid/**"
+      - "source/beta-components/shared/core/agent/**"
+      - "eval/**"
+      - "tools/eval/**"
+
+jobs:
+  tests:
+    name: contract, validator and corpus
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: demo-showroom
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: demo-showroom/pnpm-lock.yaml
+
+      # The library lives outside this package; the showroom is where its
+      # toolchain (vitest, React types) is installed.
+      - run: pnpm install --frozen-lockfile
+
+      - name: Typecheck the library
+        run: pnpm exec tsc -p tsconfig.app.json --noEmit
+
+      - name: Unit, contract and corpus tests
+        run: pnpm exec vitest run
+
+      - name: Corpus coverage report
+        working-directory: .
+        run: node tools/eval/report.cjs

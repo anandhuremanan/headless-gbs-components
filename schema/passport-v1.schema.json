@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gramprokit.dev/schema/passport/1.json",
+  "title": "GramproKit Component Passport v1",
+  "description": "Machine-readable contract for one component. Generated from TypeScript source and merged with authored semantics. Published so external tooling can validate without depending on the generator.",
+  "type": "object",
+  "required": ["passportVersion", "identity", "source", "props", "events", "slots", "states", "coverage"],
+  "additionalProperties": false,
+  "properties": {
+    "passportVersion": { "const": "1.0.0" },
+
+    "identity": {
+      "type": "object",
+      "required": ["component", "folder", "exports"],
+      "additionalProperties": false,
+      "properties": {
+        "component": { "type": "string", "description": "Primary exported component name." },
+        "folder": { "type": "string", "description": "Install folder under component-lib/." },
+        "exports": { "type": "array", "items": { "type": "string" } },
+        "since": { "type": "string" }
+      }
+    },
+
+    "source": {
+      "type": "object",
+      "required": ["libraryVersion", "files", "sourceHash"],
+      "additionalProperties": false,
+      "description": "Provenance. sourceHash covers file contents only — no timestamps — so regeneration is byte-stable and CI comparison is meaningful.",
+      "properties": {
+        "libraryVersion": { "type": "string" },
+        "files": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "sourceHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+
+    "purpose": { "type": "string", "description": "Authored. What the component is for." },
+
+    "props": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "required", "origin"],
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "enum": ["string", "number", "boolean", "enum", "function", "other"] },
+          "values": { "type": "array", "items": { "type": "string" }, "description": "Present when type is enum." },
+          "signature": { "type": "string", "description": "Present when type is function." },
+          "typeText": { "type": "string", "description": "The TypeScript type as written." },
+          "required": { "type": "boolean" },
+          "default": { "description": "Derived from the component's destructuring default, when present." },
+          "origin": {
+            "enum": ["derived", "inherited", "manual", "local"],
+            "description": "derived = this project's source; inherited = a library type (React DOM) confirmed by the TypeChecker; manual/local = added by an overlay."
+          },
+          "description": { "type": "string" },
+          "descriptionOrigin": { "enum": ["jsdoc", "readme", "manual", "local"] },
+          "note": { "type": "string", "description": "Authored annotation from propNotes." },
+          "deprecated": { "type": ["boolean", "string"] }
+        },
+        "allOf": [
+          { "if": { "properties": { "type": { "const": "enum" } }, "required": ["type"] },
+            "then": { "required": ["values"] } },
+          { "if": { "required": ["description"] },
+            "then": { "required": ["descriptionOrigin"] } }
+        ]
+      }
+    },
+
+    "inherits": {
+      "type": "array",
+      "description": "External (library) base types. Deliberately NOT flattened: resolving ButtonHTMLAttributes yields hundreds of DOM props and buries the real API. A policy allowlist surfaces the useful ones inline with origin=inherited.",
+      "items": {
+        "type": "object",
+        "required": ["from"],
+        "additionalProperties": false,
+        "properties": {
+          "from": { "type": "string" },
+          "omitted": { "type": "array", "items": { "type": "string" } },
+          "passthrough": { "type": "boolean" }
+        }
+      }
+    },
+
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "signature": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+
+    "slots": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "classNames slot keys, in declaration order."
+    },
+
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attr"],
+        "additionalProperties": false,
+        "properties": {
+          "attr": { "type": "string", "pattern": "^data-" },
+          "values": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+
+    "accessibility": {
+      "type": "object",
+      "description": "Authored. What the component supplies versus what the consumer must still provide.",
+      "additionalProperties": false,
+      "properties": {
+        "supplied": { "type": "array", "items": { "type": "string" } },
+        "required": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "composition": {
+      "type": "object",
+      "description": "Authored. Structural rules a generator or agent must respect.",
+      "properties": {
+        "requiresAncestor": { "type": ["string", "null"] },
+        "allowedChildren": { "type": "array", "items": { "type": "string" } },
+        "mustNotContain": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "operations": {
+      "type": "object",
+      "description": "Authoritative, validator-compatible. Only declared where the component genuinely exposes a deterministic operation surface. An operation is never claimed because an AI use case sounds plausible.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["summary", "apiMethod"],
+        "properties": {
+          "summary": { "type": "string" },
+          "apiMethod": { "type": "string", "description": "Method on the component's imperative API." },
+          "input": { "type": "object", "description": "JSON Schema fragment for the operation's arguments." },
+          "effects": { "type": "array", "items": { "type": "string" } },
+          "reversible": { "type": "boolean" },
+          "requiresConfirmation": { "type": "boolean" }
+        }
+      }
+    },
+
+    "intentDomains": {
+      "type": "array",
+      "description": "Advisory routing hints only. Never a substitute for operations, and carrying no execution semantics.",
+      "items": {
+        "enum": ["Query", "Extraction", "TemporalInterpretation", "ActionIntent", "Summarization", "Classification", "Recommendation"]
+      }
+    },
+
+    "safeMutations": {
+      "type": "object",
+      "description": "Authored. Which props an agent may change without altering behaviour.",
+      "additionalProperties": false,
+      "properties": {
+        "allowed": { "type": "array", "items": { "type": "string" } },
+        "forbidden": { "type": "array", "items": { "type": "string" } },
+        "rationale": { "type": "string" }
+      }
+    },
+
+    "examples": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "type": "string" },
+          {
+            "type": "object",
+            "required": ["title", "file"],
+            "properties": {
+              "title": { "type": "string" },
+              "file": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        ]
+      }
+    },
+
+    "coverage": {
+      "type": "object",
+      "required": ["propsTotal", "propsDescribed", "describedPct"],
+      "additionalProperties": false,
+      "properties": {
+        "propsTotal": { "type": "integer", "minimum": 0 },
+        "propsDescribed": { "type": "integer", "minimum": 0 },
+        "describedPct": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "authoredSections": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

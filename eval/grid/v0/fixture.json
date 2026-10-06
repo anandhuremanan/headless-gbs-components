@@ -1,0 +1,105 @@
+{
+  "$comment": "The grid every case in cases.jsonl is written against. Columns, authored semantics, policy and a small deterministic dataset, so a case can be checked end to end without a browser. Today is pinned to 2026-10-06 for relative-date cases.",
+  "today": "2026-10-06",
+  "locale": "en-IN",
+  "getRowId": "id",
+  "columns": [
+    { "field": "id", "type": "number", "header": "ID" },
+    { "field": "name", "header": "Customer" },
+    { "field": "email", "header": "Email", "searchable": false },
+    { "field": "region", "header": "Region" },
+    { "field": "city", "header": "City" },
+    {
+      "field": "tier",
+      "header": "Tier",
+      "options": [
+        { "label": "Platinum", "value": "platinum" },
+        { "label": "Gold", "value": "gold" },
+        { "label": "Silver", "value": "silver" },
+        { "label": "Bronze", "value": "bronze" }
+      ]
+    },
+    { "field": "revenue", "type": "number", "header": "Revenue" },
+    { "field": "growth", "type": "number", "header": "Growth" },
+    { "field": "churnRisk", "type": "number", "header": "Churn risk" },
+    { "field": "signedUp", "type": "date", "header": "Signed up" },
+    { "field": "active", "type": "boolean", "header": "Active" },
+    { "field": "owner", "header": "Account manager" }
+  ],
+  "semantics": {
+    "name": { "description": "Registered company name.", "synonyms": ["customer", "company", "client", "account"] },
+    "email": { "description": "Primary billing contact.", "pii": true },
+    "region": { "description": "Indian state the customer bills from.", "synonyms": ["state"] },
+    "city": { "description": "City the customer bills from.", "synonyms": ["location", "branch"] },
+    "tier": { "description": "Commercial tier agreed in the contract.", "synonyms": ["plan", "segment"] },
+    "revenue": {
+      "description": "Annual recurring revenue for the current contract year.",
+      "unit": "INR",
+      "higherIsBetter": true,
+      "synonyms": ["arr", "sales", "turnover", "billing", "spend"]
+    },
+    "growth": {
+      "description": "Year-on-year revenue growth, stored as a whole percentage.",
+      "unit": "%",
+      "percentBasis": "whole",
+      "higherIsBetter": true,
+      "synonyms": ["yoy", "growth rate"]
+    },
+    "churnRisk": {
+      "description": "Modelled probability the customer leaves within a year, stored as a fraction.",
+      "percentBasis": "fraction",
+      "higherIsBetter": false,
+      "synonyms": ["risk", "churn", "attrition"]
+    },
+    "signedUp": { "description": "Date the first contract was signed.", "synonyms": ["joined", "start date", "onboarded"] },
+    "active": { "description": "Whether the contract is currently live.", "synonyms": ["live", "status"] },
+    "owner": { "description": "Account manager responsible.", "synonyms": ["manager", "rep", "ae"] }
+  },
+  "policy": {
+    "maxExportRows": 10000,
+    "confirmExportRows": 25,
+    "maxSelectRows": 20
+  },
+  "rows": [
+    { "id": 1, "name": "Backwater Logistics", "email": "ops@backwater.in", "region": "Kerala", "city": "Kochi", "tier": "platinum", "revenue": 42500000, "growth": 18, "churnRisk": 0.07, "signedUp": "2023-02-14", "active": true, "owner": "Anjali Nair" },
+    { "id": 2, "name": "Spice Route Exports", "email": "finance@spiceroute.in", "region": "Kerala", "city": "Kochi", "tier": "gold", "revenue": 18200000, "growth": 9, "churnRisk": 0.12, "signedUp": "2023-05-02", "active": true, "owner": "Anjali Nair" },
+    { "id": 3, "name": "Nila Textiles", "email": "accounts@nila.co.in", "region": "Kerala", "city": "Thrissur", "tier": "silver", "revenue": 6400000, "growth": -4, "churnRisk": 0.41, "signedUp": "2022-11-19", "active": true, "owner": "Rahul Menon" },
+    { "id": 4, "name": "Periyar Chemicals", "email": "billing@periyar.in", "region": "Kerala", "city": "Kochi", "tier": "gold", "revenue": 23750000, "growth": 22, "churnRisk": 0.09, "signedUp": "2024-01-08", "active": true, "owner": "Anjali Nair" },
+    { "id": 5, "name": "Calicut Marine", "email": "hello@calicutmarine.in", "region": "Kerala", "city": "Kozhikode", "tier": "bronze", "revenue": 2150000, "growth": 3, "churnRisk": 0.55, "signedUp": "2021-08-30", "active": false, "owner": "Rahul Menon" },
+    { "id": 6, "name": "Malabar Spice House", "email": "info@malabarspice.in", "region": "Kerala", "city": "Kozhikode", "tier": "silver", "revenue": 8900000, "growth": 11, "churnRisk": 0.18, "signedUp": "2024-06-21", "active": true, "owner": "Rahul Menon" },
+    { "id": 7, "name": "Anamudi Rubber", "email": "sales@anamudi.in", "region": "Kerala", "city": "Thrissur", "tier": "bronze", "revenue": 1450000, "growth": -12, "churnRisk": 0.72, "signedUp": "2022-03-11", "active": false, "owner": "Divya Pillai" },
+    { "id": 8, "name": "Vembanad Resorts", "email": "stay@vembanad.in", "region": "Kerala", "city": "Kochi", "tier": "gold", "revenue": 15600000, "growth": 31, "churnRisk": 0.06, "signedUp": "2025-02-27", "active": true, "owner": "Divya Pillai" },
+    { "id": 9, "name": "Kuttanad Agro", "email": "contact@kuttanad.in", "region": "Kerala", "city": "Thiruvananthapuram", "tier": "silver", "revenue": 7300000, "growth": 6, "churnRisk": 0.24, "signedUp": "2023-09-15", "active": true, "owner": "Divya Pillai" },
+    { "id": 10, "name": "Trivandrum Techworks", "email": "admin@tvmtech.in", "region": "Kerala", "city": "Thiruvananthapuram", "tier": "platinum", "revenue": 38400000, "growth": 27, "churnRisk": 0.05, "signedUp": "2024-11-04", "active": true, "owner": "Anjali Nair" },
+    { "id": 11, "name": "Ashtamudi Seafood", "email": "export@ashtamudi.in", "region": "Kerala", "city": "Kochi", "tier": "silver", "revenue": 9850000, "growth": 2, "churnRisk": 0.33, "signedUp": "2022-07-07", "active": true, "owner": "Rahul Menon" },
+    { "id": 12, "name": "Wayanad Coffee Co", "email": "beans@wayanadcoffee.in", "region": "Kerala", "city": "Kozhikode", "tier": "bronze", "revenue": 3200000, "growth": 14, "churnRisk": 0.29, "signedUp": "2025-06-18", "active": true, "owner": "Divya Pillai" },
+    { "id": 13, "name": "Bekal Hospitality", "email": "front@bekalhotels.in", "region": "Kerala", "city": "Kozhikode", "tier": "bronze", "revenue": 1890000, "growth": -8, "churnRisk": 0.64, "signedUp": "2021-12-02", "active": false, "owner": "Rahul Menon" },
+    { "id": 14, "name": "Attingal Plastics", "email": "po@attingalplastics.in", "region": "Kerala", "city": "Thiruvananthapuram", "tier": "silver", "revenue": 5600000, "growth": 1, "churnRisk": 0.38, "signedUp": "2023-04-26", "active": true, "owner": "Divya Pillai" },
+    { "id": 15, "name": "Aluva Metalworks", "email": "works@aluvametal.in", "region": "Kerala", "city": "Kochi", "tier": "gold", "revenue": 20100000, "growth": 16, "churnRisk": 0.11, "signedUp": "2024-08-13", "active": true, "owner": "Anjali Nair" },
+    { "id": 16, "name": "Guruvayur Prints", "email": "press@guruvayurprints.in", "region": "Kerala", "city": "Thrissur", "tier": "bronze", "revenue": 980000, "growth": -2, "churnRisk": 0.47, "signedUp": "2022-01-20", "active": true, "owner": "Rahul Menon" },
+    { "id": 17, "name": "Varkala Wellness", "email": "spa@varkalawellness.in", "region": "Kerala", "city": "Thiruvananthapuram", "tier": "silver", "revenue": 4750000, "growth": 24, "churnRisk": 0.15, "signedUp": "2026-09-09", "active": true, "owner": "Divya Pillai" },
+    { "id": 18, "name": "Munnar Estates", "email": "estate@munnarestates.in", "region": "Kerala", "city": "Thrissur", "tier": "gold", "revenue": 13400000, "growth": 7, "churnRisk": 0.2, "signedUp": "2023-10-30", "active": true, "owner": "Anjali Nair" },
+    { "id": 19, "name": "Cubbon Analytics", "email": "data@cubbon.io", "region": "Karnataka", "city": "Bengaluru", "tier": "platinum", "revenue": 45000000, "growth": 34, "churnRisk": 0.04, "signedUp": "2024-03-19", "active": true, "owner": "Karthik Rao" },
+    { "id": 20, "name": "Jayanagar Foods", "email": "orders@jayanagarfoods.in", "region": "Karnataka", "city": "Bengaluru", "tier": "silver", "revenue": 8100000, "growth": 5, "churnRisk": 0.26, "signedUp": "2022-09-05", "active": true, "owner": "Karthik Rao" },
+    { "id": 21, "name": "Mysore Silks Ltd", "email": "weave@mysoresilks.in", "region": "Karnataka", "city": "Bengaluru", "tier": "gold", "revenue": 16750000, "growth": 12, "churnRisk": 0.14, "signedUp": "2023-07-24", "active": true, "owner": "Karthik Rao" },
+    { "id": 22, "name": "Hubli Transport", "email": "fleet@hublitransport.in", "region": "Karnataka", "city": "Bengaluru", "tier": "bronze", "revenue": 2650000, "growth": -6, "churnRisk": 0.58, "signedUp": "2021-05-17", "active": false, "owner": "Karthik Rao" },
+    { "id": 23, "name": "Whitefield Devices", "email": "hw@whitefielddevices.in", "region": "Karnataka", "city": "Bengaluru", "tier": "gold", "revenue": 22300000, "growth": 19, "churnRisk": 0.08, "signedUp": "2025-01-14", "active": true, "owner": "Karthik Rao" },
+    { "id": 24, "name": "Coorg Plantations", "email": "crop@coorgplantations.in", "region": "Karnataka", "city": "Bengaluru", "tier": "silver", "revenue": 6950000, "growth": 4, "churnRisk": 0.31, "signedUp": "2022-12-28", "active": true, "owner": "Sneha Iyer" },
+    { "id": 25, "name": "Udupi Logistics", "email": "ship@udupilogistics.in", "region": "Karnataka", "city": "Bengaluru", "tier": "bronze", "revenue": 1720000, "growth": -15, "churnRisk": 0.77, "signedUp": "2021-02-09", "active": false, "owner": "Sneha Iyer" },
+    { "id": 26, "name": "Shivamogga Steel", "email": "mill@shivamoggasteel.in", "region": "Karnataka", "city": "Bengaluru", "tier": "silver", "revenue": 9400000, "growth": 8, "churnRisk": 0.22, "signedUp": "2024-05-06", "active": true, "owner": "Sneha Iyer" },
+    { "id": 27, "name": "Electronic City Labs", "email": "lab@eclabs.in", "region": "Karnataka", "city": "Bengaluru", "tier": "platinum", "revenue": 31200000, "growth": 29, "churnRisk": 0.06, "signedUp": "2025-04-22", "active": true, "owner": "Sneha Iyer" },
+    { "id": 28, "name": "Marina Shipping", "email": "dock@marinashipping.in", "region": "Tamil Nadu", "city": "Chennai", "tier": "gold", "revenue": 19800000, "growth": 13, "churnRisk": 0.13, "signedUp": "2023-01-31", "active": true, "owner": "Sneha Iyer" },
+    { "id": 29, "name": "Coimbatore Pumps", "email": "sales@cbepumps.in", "region": "Tamil Nadu", "city": "Chennai", "tier": "silver", "revenue": 7850000, "growth": 0, "churnRisk": 0.35, "signedUp": "2022-06-13", "active": true, "owner": "Karthik Rao" },
+    { "id": 30, "name": "Madurai Mills", "email": "yarn@maduraimills.in", "region": "Tamil Nadu", "city": "Chennai", "tier": "bronze", "revenue": 3050000, "growth": -9, "churnRisk": 0.61, "signedUp": "2021-10-25", "active": false, "owner": "Sneha Iyer" },
+    { "id": 31, "name": "Tiruppur Knitwear", "email": "export@tiruppurknit.in", "region": "Tamil Nadu", "city": "Chennai", "tier": "gold", "revenue": 14900000, "growth": 21, "churnRisk": 0.1, "signedUp": "2024-09-11", "active": true, "owner": "Karthik Rao" },
+    { "id": 32, "name": "Salem Alloys", "email": "forge@salemalloys.in", "region": "Tamil Nadu", "city": "Chennai", "tier": "silver", "revenue": 5200000, "growth": 2, "churnRisk": 0.39, "signedUp": "2023-03-07", "active": true, "owner": "Divya Pillai" },
+    { "id": 33, "name": "Puducherry Press", "email": "print@pondypress.in", "region": "Tamil Nadu", "city": "Chennai", "tier": "bronze", "revenue": 870000, "growth": -3, "churnRisk": 0.52, "signedUp": "2026-10-05", "active": true, "owner": "Divya Pillai" },
+    { "id": 34, "name": "Velachery Softworks", "email": "dev@velacherysoft.in", "region": "Tamil Nadu", "city": "Chennai", "tier": "platinum", "revenue": 27600000, "growth": 25, "churnRisk": 0.07, "signedUp": "2026-07-29", "active": true, "owner": "Anjali Nair" },
+    { "id": 35, "name": "Dadar Traders", "email": "trade@dadartraders.in", "region": "Maharashtra", "city": "Mumbai", "tier": "gold", "revenue": 17300000, "growth": 10, "churnRisk": 0.16, "signedUp": "2023-08-03", "active": true, "owner": "Sneha Iyer" },
+    { "id": 36, "name": "Pune Precision", "email": "cnc@puneprecision.in", "region": "Maharashtra", "city": "Pune", "tier": "silver", "revenue": 8650000, "growth": 15, "churnRisk": 0.19, "signedUp": "2024-02-16", "active": true, "owner": "Karthik Rao" },
+    { "id": 37, "name": "Nashik Vintners", "email": "cellar@nashikvint.in", "region": "Maharashtra", "city": "Pune", "tier": "bronze", "revenue": 2480000, "growth": -1, "churnRisk": 0.44, "signedUp": "2022-10-12", "active": true, "owner": "Anjali Nair" },
+    { "id": 38, "name": "Worli Capital", "email": "desk@worlicapital.in", "region": "Maharashtra", "city": "Mumbai", "tier": "platinum", "revenue": 39500000, "growth": 23, "churnRisk": 0.05, "signedUp": "2026-05-20", "active": true, "owner": "Sneha Iyer" },
+    { "id": 39, "name": "Kolhapur Dairy", "email": "milk@kolhapurdairy.in", "region": "Maharashtra", "city": "Pune", "tier": "bronze", "revenue": 1960000, "growth": -11, "churnRisk": 0.68, "signedUp": "2021-06-23", "active": false, "owner": "Rahul Menon" },
+    { "id": 40, "name": "Thane Packaging", "email": "box@thanepack.in", "region": "Maharashtra", "city": "Mumbai", "tier": "silver", "revenue": 6150000, "growth": 6, "churnRisk": 0.27, "signedUp": "2026-10-06", "active": true, "owner": "Rahul Menon" }
+  ]
+}

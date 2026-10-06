@@ -1,12 +1,15 @@
 {
   "name": "gbs-add-block",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "React Component Library",
   "type": "module",
   "files": [
     "index.cjs",
     "source",
-    ".gbs"
+    ".gbs",
+    "tools",
+    "schema",
+    "!tools/eval"
   ],
   "engines": {
     "node": ">=17"
@@ -15,20 +18,24 @@
     "gbs-add-block": "index.cjs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "pnpm -C demo-showroom test",
+    "passport": "node tools/passport/cli.cjs",
+    "passport:check": "node tools/passport/cli.cjs --check",
+    "eval:grid": "node tools/eval/report.cjs"
   },
   "keywords": [],
   "author": "Anandhu Remanan",
   "license": "ISC",
   "dependencies": {
+    "@grampro/headless-helpers": "^1.0.21",
     "fs-extra": "^11.0.4",
     "path": "^0.12.7",
-    "yargs": "^17.7.2",
-    "@grampro/headless-helpers": "^1.0.21",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4"
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "react": "^19.0.0",

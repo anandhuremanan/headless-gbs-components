@@ -1,0 +1,477 @@
+{
+  "passportVersion": "1.0.0",
+  "identity": {
+    "component": "Radio",
+    "folder": "radio-group",
+    "exports": [
+      "Radio",
+      "RadioGroup",
+      "RadioGroupContext"
+    ]
+  },
+  "source": {
+    "libraryVersion": "2.2.0",
+    "files": [
+      "core/group.ts",
+      "core/index.ts",
+      "core/types.ts",
+      "index.ts",
+      "react/Radio.tsx",
+      "react/RadioGroup.tsx",
+      "react/context.ts",
+      "react/locale.ts",
+      "react/props.ts"
+    ],
+    "sourceHash": "sha256:33e51ead897aabed3d057e08a8bbcd40eb51249f66ee64c17358d6cf218dbde9"
+  },
+  "props": [
+    {
+      "name": "aria-describedby",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "aria-label",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "aria-labelledby",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "autoComplete",
+      "type": "other",
+      "typeText": "HTMLInputAutoCompleteAttribute | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "autoFocus",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "checked",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Selected (controlled). Inside a RadioGroup the group decides instead.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "children",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "className",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "classNames",
+      "type": "other",
+      "typeText": "Partial<Record<RadioSlot, string>> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "clearable",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Offer a button that empties the group. Radios cannot be unselected by\r\nclicking or by keyboard — that is the control's nature, not an oversight —\r\nso an optional choice needs either this or a \"None\" option of its own.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "defaultChecked",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "defaultValue",
+      "type": "string",
+      "typeText": "string | null | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "description",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "disabled",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "error",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "form",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "hidden",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "id",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "inputMode",
+      "type": "enum",
+      "values": [
+        "decimal",
+        "email",
+        "none",
+        "numeric",
+        "search",
+        "tel",
+        "text",
+        "url"
+      ],
+      "typeText": "'none' | 'search' | 'email' | 'tel' | 'text' | 'url' | 'numeric' | 'decimal' | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "label",
+      "type": "other",
+      "typeText": "ReactNode",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "localeText",
+      "type": "other",
+      "typeText": "Partial<RadioGroupLocaleText> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "max",
+      "type": "other",
+      "typeText": "string | number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "maxLength",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "min",
+      "type": "other",
+      "typeText": "string | number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "minLength",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Form field name shared by every radio. One is generated when it is left out.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "onChange",
+      "type": "function",
+      "signature": "ChangeEventHandler<HTMLInputElement> | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onCheckedChange",
+      "type": "function",
+      "signature": "((checked: boolean) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "onValueChange",
+      "type": "function",
+      "signature": "((value: string | null) => void) | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "options",
+      "type": "other",
+      "typeText": "readonly (string | RadioOption)[] | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Render these choices, or pass `<Radio value=\"…\">` children. Plain strings work too.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "orientation",
+      "type": "enum",
+      "values": [
+        "horizontal",
+        "vertical"
+      ],
+      "typeText": "RadioOrientation | undefined",
+      "required": false,
+      "default": "vertical",
+      "origin": "derived",
+      "description": "Default `vertical`.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "pattern",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "placeholder",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "readOnly",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "ref",
+      "type": "other",
+      "typeText": "Ref<HTMLInputElement> | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "The `<input>` element.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived"
+    },
+    {
+      "name": "role",
+      "type": "other",
+      "typeText": "AriaRole | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "size",
+      "type": "enum",
+      "values": [
+        "lg",
+        "md",
+        "sm"
+      ],
+      "typeText": "RadioSize | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "step",
+      "type": "other",
+      "typeText": "string | number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "style",
+      "type": "other",
+      "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "tabIndex",
+      "type": "number",
+      "typeText": "number | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "title",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "inherited"
+    },
+    {
+      "name": "value",
+      "type": "string",
+      "typeText": "string",
+      "required": true,
+      "origin": "derived",
+      "description": "The value this choice contributes to its group.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "variant",
+      "type": "enum",
+      "values": [
+        "card",
+        "default"
+      ],
+      "typeText": "RadioVariant | undefined",
+      "required": false,
+      "default": "default",
+      "origin": "derived",
+      "description": "Default `default`. `card` draws each choice as a tile.",
+      "descriptionOrigin": "jsdoc"
+    }
+  ],
+  "inherits": [
+    {
+      "from": "InputHTMLAttributes<HTMLInputElement>",
+      "omitted": [
+        "checked",
+        "defaultChecked",
+        "onChange",
+        "size",
+        "type"
+      ],
+      "passthrough": true
+    }
+  ],
+  "events": [
+    {
+      "name": "onChange",
+      "signature": "ChangeEventHandler<HTMLInputElement> | undefined"
+    },
+    {
+      "name": "onCheckedChange",
+      "signature": "((checked: boolean) => void) | undefined"
+    },
+    {
+      "name": "onValueChange",
+      "signature": "((value: string | null) => void) | undefined"
+    }
+  ],
+  "slots": [
+    "root",
+    "control",
+    "input",
+    "label",
+    "description",
+    "error",
+    "legend",
+    "items",
+    "clear"
+  ],
+  "states": [
+    {
+      "attr": "data-checked"
+    },
+    {
+      "attr": "data-disabled"
+    },
+    {
+      "attr": "data-invalid"
+    },
+    {
+      "attr": "data-orientation",
+      "values": [
+        "horizontal"
+      ]
+    },
+    {
+      "attr": "data-required"
+    },
+    {
+      "attr": "data-size",
+      "values": [
+        "lg",
+        "sm"
+      ]
+    },
+    {
+      "attr": "data-theme",
+      "values": [
+        "dark",
+        "light"
+      ]
+    },
+    {
+      "attr": "data-variant",
+      "values": [
+        "card"
+      ]
+    }
+  ],
+  "accessibility": {
+    "supplied": [],
+    "required": []
+  },
+  "composition": {},
+  "operations": {},
+  "intentDomains": [],
+  "safeMutations": {},
+  "examples": [],
+  "coverage": {
+    "propsTotal": 44,
+    "propsDescribed": 8,
+    "describedPct": 18,
+    "authoredSections": [
+      "accessibility"
+    ]
+  }
+}
