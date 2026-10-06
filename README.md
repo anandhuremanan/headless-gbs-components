@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v2.0.3)
+# GBS Building Blocks 2.0 (v2.0.4)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -33,13 +33,13 @@ Pick a subset with `--for claude,codex`, or `--for none` for just `.gbs/`.
 Commit the result so everyone's agent picks it up. Re-run to update; a file you
 have edited is never replaced without `--force`.
 
-## What's New 🎉 (Ver 2.0.3)
+## What's New 🎉 (Ver 2.0.4)
 
-- Agent skill: stylesheets are now documented as a single import in the
-  project's global CSS. The previous wording showed the stylesheet import
-  beside the component import, which led coding agents to repeat it in every
-  component file they wrote — making CSS order depend on module import order,
-  and arriving late on lazy-loaded routes.
+- Agent skill: added guidance for projects that load an unlayered CSS reset
+  such as Bootstrap or Normalize. Component rules live in the `components`
+  cascade layer, and an unlayered reset outranks every layered rule whatever
+  its selectors look like, so Bootstrap's Reboot was restyling the Button.
+  Importing the reset into its own layer fixes it; the skill now says so.
 
 ## Authors
 

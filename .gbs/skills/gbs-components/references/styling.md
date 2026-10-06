@@ -134,7 +134,26 @@ Do not use `!important`, and do not write selectors against internal class names
 (`.bt-root`, `.dg-cell`) in app CSS — they are implementation detail. Use the
 variables or the slots.
 
-## 5. State attributes
+## 5. Unlayered resets (Bootstrap, Normalize)
+
+Component rules sit in `@layer components`. Any stylesheet that ships
+**unlayered** beats every layered rule regardless of specificity — the cascade
+settles layers before specificity. So Bootstrap's Reboot (`button { border-radius: 0 }`,
+`button, input, textarea { font-size: inherit }`) overrides our classes, and
+import order does not help.
+
+Fix it in the project's global CSS by giving the reset its own layer, declared
+before `components`:
+
+```css
+@layer bootstrap, theme, base, components, utilities;
+@import url("bootstrap/dist/css/bootstrap.min.css") layer(bootstrap);
+```
+
+Only components whose root is a native form element are affected (Button,
+Textarea). Class names never collide — ours are two-letter prefixed.
+
+## 6. State attributes
 
 Components expose their state as `data-*` attributes, so you can style states
 without tracking them in React.
@@ -155,7 +174,7 @@ without tracking them in React.
 .cb-option[data-active] { outline: 2px solid var(--gbs-focus); }
 ```
 
-## 6. Dark mode
+## 7. Dark mode
 
 Colours are `light-dark()` pairs driven by the page's `color-scheme`, so the
 default is whatever the device prefers. To pin it, set `color-scheme` — the
@@ -174,7 +193,7 @@ Do not maintain a second palette for dark mode. Override the `--gbs-*` variables
 with `light-dark()` pairs, or set them inside your own `[data-theme="dark"]`
 block, and every component follows.
 
-## 7. Right-to-left
+## 8. Right-to-left
 
 The components use logical properties and read `dir` from the document, so RTL
 works without configuration. Arrow keys in Menu, Switch and Tabs mirror
