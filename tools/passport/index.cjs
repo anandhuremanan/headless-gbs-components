@@ -12,7 +12,9 @@ const {
   PASSPORT_VERSION, loadTypeScript, createProgram, extractComponent, posix,
 } = require("./extract.cjs");
 const { mergePassport } = require("./merge.cjs");
-const { validateStructure, validateReferences, coverageIssues } = require("./validate.cjs");
+const {
+  validateStructure, validateReferences, coverageIssues, textIssues,
+} = require("./validate.cjs");
 
 const MANUAL_FILE = "passport.manual.json";
 const LOCAL_FILE = "passport.local.json";
@@ -116,6 +118,7 @@ function buildAll(opts) {
               "resolved. Install @types/react to get the full prop surface.",
           }]
         : validateReferences(effective, { manual, local, component: name, api })),
+      ...textIssues(effective, name),
       ...coverageIssues(effective, name, coverageThreshold),
     ];
 

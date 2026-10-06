@@ -25,12 +25,23 @@ const AUTHORED = new Set([
   "purpose",
 ]);
 
+/*
+ * Keys that mean something to JavaScript's object model rather than to a
+ * passport. `JSON.parse` hands `__proto__` back as an ordinary own property,
+ * but `out[k] = v` would run Object.prototype's setter and reparent the
+ * merged object. No passport field needs these names, so an overlay carrying
+ * one has it dropped here and flagged as an error by `validateReferences` —
+ * dropped silently would be the worse half of that pair.
+ */
+const UNSAFE_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 
 function deepMerge(base, overlay) {
   if (!isObject(base) || !isObject(overlay)) return overlay === undefined ? base : overlay;
   const out = { ...base };
   for (const [k, v] of Object.entries(overlay)) {
+    if (UNSAFE_KEYS.has(k)) continue;
     out[k] = isObject(v) && isObject(base[k]) ? deepMerge(base[k], v) : v;
   }
   return out;
@@ -47,6 +58,7 @@ function mergeProps(derived, overlayProps, origin) {
 
   for (const entry of overlayProps) {
     if (!entry || typeof entry.name !== "string") continue;
+    if (UNSAFE_KEYS.has(entry.name)) continue;
     const existing = byName.get(entry.name);
     if (existing) {
       // Annotate only. Type/required/origin stay source-derived.
@@ -78,6 +90,7 @@ function mergePassport(derived, manual = {}, local = {}) {
 
     for (const [key, value] of Object.entries(overlay)) {
       if (key.startsWith("$") || key === "component") continue;
+      if (UNSAFE_KEYS.has(key)) continue; // validator reports it
       if (SOURCE_OWNED.has(key)) continue; // silently ignored; validator reports it
 
       if (key === "props") {
@@ -115,4 +128,4 @@ function mergePassport(derived, manual = {}, local = {}) {
   return out;
 }
 
-module.exports = { mergePassport, deepMerge, mergeProps, SOURCE_OWNED, AUTHORED };
+module.exports = { mergePassport, deepMerge, mergeProps, SOURCE_OWNED, AUTHORED, UNSAFE_KEYS };

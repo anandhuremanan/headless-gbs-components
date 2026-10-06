@@ -590,6 +590,39 @@ The proposed ten phases, amended:
 - **Phase 4.5 — telemetry.** Production utterances are how the eval set grows past
   its first 200 hand-written rows. Opt-in, local-first.
 
+**Decided: the Agent Skill does not read passports, and should not.** Three
+reasons, in order of weight.
+
+*They do different jobs.* The skill carries judgement — which component to
+reach for, what not to do, how things compose. The passport carries precision —
+the exact prop surface. A coding agent writing a form needs the first; a
+validator or generator needs the second. Merging them makes both worse.
+
+*The context economics are backwards.* DataGrid's passport is 19 kB, most of it
+inherited DOM properties. `references/data-grid.md` is a fraction of that and
+is the curated version. Pointing an agent at the passport would spend more
+tokens for less signal.
+
+*Trust asymmetry.* The skill is ours, installed from our CLI. A passport travels
+with a component, can be overridden by `passport.local.json`, and can arrive
+from npm. A link would make the skill a pipe for text we did not write. Not
+creating the pipe beats filtering it — see *Trust* in
+`docs/component-passport.md` for what the filter does and does not catch.
+
+**The counter-argument, and its answer.** This document says hand-maintained
+documentation rots, and the skill is hand-maintained documentation. Measured
+2026-10-06: 1,005 backticked identifiers across `references/` check out against
+the passports, with no drift. The 100 that do not resolve are TypeScript
+keywords, ARIA roles, `GridApi` methods and helper names — all legitimate.
+
+If that changes, the fix is a **drift test** — assert that prop and method names
+mentioned in `references/*.md` still exist in the passports — not a runtime
+link. Same protection, no coupling, nothing untrusted reaching an agent.
+
+A skill **generated from** passports inside this repo, reviewed and
+drift-checked like any other artifact, remains defensible later. That is a
+different thing from a skill that *reads* passports, which is ruled out.
+
 **The sequencing risk:** phases 1–3 produce real value with no AI. Phases 5–8 are
 where it could stall. Keep the non-AI value shippable on its own so the AI work
 can take as long as it needs.

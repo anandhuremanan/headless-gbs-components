@@ -179,6 +179,15 @@ input before the coercion layer saw it, and coercion is where `"1 lakh"` becomes
 Generation is deterministic: the same contract always produces byte-identical
 JSON.
 
+**One caveat if you validate against a passport instead.** `checkSchema` turns
+a schema's `pattern` into a `RegExp`, and a hostile pattern is a denial of
+service. The intent schema above is generated from the live contract and never
+carries one. A passport's `operations[].input` is authored text that may travel
+with an installed component — so if you are tempted to write
+`checkSchema(intent, passport.operations.filter.input)`, strip `pattern` first,
+or use the generated schema, which is the one the validator uses anyway. See
+the *Trust* section of `docs/component-passport.md`.
+
 ## The five layers
 
 | Layer | Asks | Example refusal |

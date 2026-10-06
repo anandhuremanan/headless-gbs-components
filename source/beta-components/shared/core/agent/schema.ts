@@ -128,6 +128,13 @@ function checkInto(out: SchemaIssue[], value: unknown, schema: JsonSchema, path:
       add("min-length", `must be at least ${schema.minLength} characters`);
     if (schema.maxLength !== undefined && value.length > schema.maxLength)
       add("max-length", `must be at most ${schema.maxLength} characters`);
+    /*
+     * `pattern` compiles to a RegExp, so a catastrophic one is a denial of
+     * service. Every schema this library generates comes from a live runtime
+     * contract and carries no pattern at all. If you validate against a schema
+     * that travelled with an installed component — a passport's
+     * `operations[].input`, say — strip `pattern` first.
+     */
     if (schema.pattern !== undefined && !new RegExp(schema.pattern).test(value))
       add("pattern", `must match ${schema.pattern}`);
   }

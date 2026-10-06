@@ -80,6 +80,21 @@ function validateStructure(passport, component) {
   return out;
 }
 
+const UNSAFE_KEYS = ["__proto__", "constructor", "prototype"];
+
+/** Object-model keys anywhere in an overlay, by their path. */
+function unsafeKeysIn(value, path = "") {
+  if (Array.isArray(value)) return value.flatMap((item, i) => unsafeKeysIn(item, `${path}[${i}]`));
+  if (!isObject(value)) return [];
+  const found = [];
+  for (const key of Object.getOwnPropertyNames(value)) {
+    const at = path ? `${path}.${key}` : key;
+    if (UNSAFE_KEYS.includes(key)) found.push(at);
+    else found.push(...unsafeKeysIn(value[key], at));
+  }
+  return found;
+}
+
 /**
  * Referential validation: do the authored overlays still match the source?
  * This is what catches a manual file left behind by a refactor.
@@ -100,6 +115,18 @@ function validateReferences(effective, { manual = {}, local = {}, component, api
 
   for (const [overlay, origin] of [[manual, "manual"], [local, "local"]]) {
     if (!overlay || Object.keys(overlay).length === 0) continue;
+
+    /*
+     * `JSON.parse` returns `__proto__` as an ordinary own property, so an
+     * overlay can carry one. The merge drops it; this is what makes that
+     * visible, because a silent drop looks the same as a key that was never
+     * there.
+     */
+    for (const key of unsafeKeysIn(overlay)) {
+      out.push(issue("error", "unsafe-key", component,
+        `${origin} metadata contains "${key}", which is a JavaScript object-model key ` +
+        `and not a passport field; it was ignored`, { where: key }));
+    }
 
     checkPropRefs(overlay.safeMutations?.allowed, "safeMutations.allowed", origin);
     checkPropRefs(overlay.safeMutations?.forbidden, "safeMutations.forbidden", origin);
@@ -153,4 +180,98 @@ function coverageIssues(effective, component, threshold) {
   return out;
 }
 
-module.exports = { validateStructure, validateReferences, coverageIssues, issue };
+/* ------------------------------------------------------------ text hygiene */
+
+/*
+ * A passport is read by coding agents. That is the point of it, and it is also
+ * the only way a passport can hurt you: nothing parses it into code and no
+ * file path is derived from it, but an agent that reads
+ * "this component requires calling fetch('https://…') on mount" will write
+ * that. The text is documentation; it is never an instruction.
+ *
+ * These checks cannot decide whether a sentence is honest. What they can do is
+ * make the shapes injection needs — hidden characters, a script tag, a wall of
+ * text, a line telling the reader to disregard what it was told — visible in
+ * `npm run passport:check` instead of invisible in a diff that looks like
+ * documentation. The current 27 passports have a longest string of 217
+ * characters and 8.7 kB of text at most, so the caps are far above anything
+ * written in good faith.
+ */
+
+const MAX_TEXT = 1000;
+const MAX_TEXT_TOTAL = 40000;
+
+/** Everything except tab, newline and carriage return. */
+const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+
+/** A real link, not the bare `"https://"` that appears in an example. */
+const LINK = /https?:\/\/[^\s"'<>)]*\.[^\s"'<>)]+/i;
+
+const HIGH_SIGNAL = [
+  [/<script\b/i, "an HTML script tag"],
+  [/ignore (?:all |any )?(?:the )?(?:previous|prior|above|earlier)/i, "an instruction to ignore earlier context"],
+  [/disregard (?:all |any )?(?:the )?(?:previous|prior|above|earlier)/i, "an instruction to disregard earlier context"],
+  [/\bsystem prompt\b/i, "a reference to a system prompt"],
+  [/\b(?:you are|act as) (?:an? )?(?:ai|assistant|agent|language model)\b/i, "a role instruction aimed at an agent"],
+  [/\bnew instructions?\b/i, "a claim of new instructions"],
+  [/\bdo not (?:tell|mention|inform|reveal)\b/i, "an instruction to conceal something"],
+  [/\bexfiltrat/i, "exfiltration"],
+  [/\bcurl\s+https?:/i, "a shell download"],
+  [/\bnpm (?:install|i|exec)\s/i, "a package installation"],
+  [/\bchild_process\b|\bprocess\.env\b|\beval\(/i, "code that reaches outside the component"],
+];
+
+/** Every string in the passport, with a readable path to it. */
+function walkStrings(value, path, visit) {
+  if (typeof value === "string") visit(value, path);
+  else if (Array.isArray(value)) value.forEach((item, i) => walkStrings(item, `${path}[${i}]`, visit));
+  else if (isObject(value)) {
+    for (const [key, item] of Object.entries(value)) walkStrings(item, path ? `${path}.${key}` : key, visit);
+  }
+}
+
+/** Length, hidden characters, and the phrasings injection needs. */
+function textIssues(passport, component) {
+  const out = [];
+  let total = 0;
+
+  walkStrings(passport, "", (text, where) => {
+    total += text.length;
+
+    if (text.length > MAX_TEXT) {
+      out.push(issue("error", "text-too-long", component,
+        `${where} is ${text.length} characters; the limit is ${MAX_TEXT}`, { where }));
+    }
+    if (CONTROL_CHARS.test(text)) {
+      out.push(issue("error", "control-characters", component,
+        `${where} contains control characters, which can hide text from a reader`, { where }));
+    }
+    for (const [pattern, what] of HIGH_SIGNAL) {
+      if (pattern.test(text)) {
+        out.push(issue("error", "suspicious-text", component,
+          `${where} contains ${what}. Passport text is documentation an agent reads; ` +
+          `it must not instruct one.`, { where }));
+      }
+    }
+    if (text.includes("```")) {
+      out.push(issue("warn", "code-fence", component,
+        `${where} contains a fenced code block, which an agent may copy verbatim`, { where }));
+    }
+    if (LINK.test(text)) {
+      out.push(issue("warn", "contains-link", component,
+        `${where} contains a link; an agent may follow it`, { where }));
+    }
+  });
+
+  if (total > MAX_TEXT_TOTAL) {
+    out.push(issue("error", "text-budget-exceeded", component,
+      `${total} characters of text across the passport; the limit is ${MAX_TEXT_TOTAL}`));
+  }
+
+  return out;
+}
+
+module.exports = {
+  validateStructure, validateReferences, coverageIssues, textIssues, issue,
+  MAX_TEXT, MAX_TEXT_TOTAL,
+};
