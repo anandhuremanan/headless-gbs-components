@@ -1,15 +1,14 @@
 /*
- * DataGrid styles. Everything lives in the `components` layer, so utility
- * classes (e.g. Tailwind) passed through `classNames` override it. Declaring
- * the layer order keeps that true whichever stylesheet loads first.
+ * DataGrid styles. Rules live in the `gbs` layer; declare where it sits in
+ * your global CSS, e.g. `@layer reset, gbs, app, utilities;`, and anything in
+ * a later layer overrides them.
  *
- * Theme: override the --dg-* variables on .dg-root or any ancestor.
- * Colors follow the page's `color-scheme`; `.dark` / `[data-theme]` ancestors
- * or `data-theme` on the grid force a scheme.
+ * Theme: override the --dg-* variables on .dg-root or any ancestor. Colors
+ * follow the page's `color-scheme`; `.dark` / `[data-theme]` ancestors or
+ * `data-theme` on the grid force a scheme.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .dg-root {
     --dg-font-size: var(--gbs-font-size, 13px);
     --dg-bg: var(--gbs-bg, light-dark(#ffffff, #0b0b0e));

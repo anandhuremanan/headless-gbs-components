@@ -1,4 +1,4 @@
-# GBS Building Blocks 2.0 (v2.0.4)
+# GBS Building Blocks 2.0 (v2.1.0)
 
 Latest and upgraded version of GBS building blocks with headless UI and removed dependencies.
 
@@ -33,13 +33,28 @@ Pick a subset with `--for claude,codex`, or `--for none` for just `.gbs/`.
 Commit the result so everyone's agent picks it up. Re-run to update; a file you
 have edited is never replaced without `--force`.
 
-## What's New 🎉 (Ver 2.0.4)
+## What's New 🎉 (Ver 2.1.0)
 
-- Agent skill: added guidance for projects that load an unlayered CSS reset
-  such as Bootstrap or Normalize. Component rules live in the `components`
-  cascade layer, and an unlayered reset outranks every layered rule whatever
-  its selectors look like, so Bootstrap's Reboot was restyling the Button.
-  Importing the reset into its own layer fixes it; the skill now says so.
+**The application now owns CSS cascade order.** Component rules moved out of the
+`components` layer into a layer of their own, `gbs`, and the stylesheets no
+longer declare a global layer order.
+
+Previously every `styles.css` opened with
+`@layer theme, base, components, utilities;` — a leaf file asserting the order
+of the whole document. Whichever stylesheet the bundler emitted first silently
+won that argument. It also meant a Tailwind v3 build failed outright, and
+Bootstrap's Reboot could not be put in front of the components.
+
+- Tailwind **v3** projects now build. Utilities override components there too,
+  with no setup.
+- Tailwind **v4** projects add one line to their global CSS:
+  `@layer gbs, utilities;` — **without it, utilities no longer override
+  component styles.** This is the migration step.
+- Bootstrap, Normalize or any unlayered reset can now be placed before the
+  components: `@layer bootstrap, gbs, app, utilities;`
+- Projects with no CSS framework need no change.
+
+See the Theming page, "Cascade layers", for the full model.
 
 ## Authors
 

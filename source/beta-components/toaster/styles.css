@@ -6,9 +6,8 @@
  * the same default palette otherwise. Rules live in the `components`
  * layer, so utility classes passed through `className` / `classNames` win.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .ts-region {
     --ts-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
     --ts-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));

@@ -5,12 +5,12 @@
  * `appearance: none`, drawn as a track and a thumb, so it keeps native
  * behavior and posts with forms. Tokens read the shared --gbs-* variables when
  * they are set on an ancestor (set them on :root to theme every component at
- * once). Rules live in the `components` layer, so utility classes passed
- * through `className` / `classNames` override them.
+ * once). Rules live in the `gbs` layer. Declare where that sits in your global
+ * CSS — e.g. `@layer reset, gbs, app, utilities;` — and anything in a later
+ * layer, Tailwind utilities included, overrides them.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .sw-root {
     --sw-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
     --sw-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));

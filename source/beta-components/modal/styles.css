@@ -3,12 +3,13 @@
  *
  * Tokens read the shared --gbs-* variables when they are set on an ancestor
  * (set them on :root to theme every component at once) and fall back to the
- * same default palette otherwise. Rules live in the `components` layer, so utility classes passed
- * through `className` / `classNames` override them.
+ * same default palette otherwise. Rules live in the `gbs` layer. Declare
+ * where that sits in your global CSS — e.g. `@layer reset, gbs, app,
+ * utilities;` — and anything in a later layer, Tailwind utilities included,
+ * overrides them.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .md-root {
     --md-bg: var(--gbs-bg, var(--dg-bg, light-dark(#ffffff, #0b0b0e)));
     --md-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));

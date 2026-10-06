@@ -9,9 +9,8 @@
  * layer, so utility classes passed through `className` / `classNames` override
  * them.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .av-root,
   .av-group,
   .av-overflow {

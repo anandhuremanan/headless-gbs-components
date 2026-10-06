@@ -1,3 +1,7 @@
+/* The app owns cascade order: component rules sit before Tailwind's
+   utilities, so a utility passed through className still wins. */
+@layer gbs, utilities;
+
 @import "tailwindcss";
 @import "../../source/beta-components/data-grid/styles.css";
 @import "../../source/beta-components/combobox/styles.css";

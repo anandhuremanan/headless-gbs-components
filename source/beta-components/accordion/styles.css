@@ -4,13 +4,13 @@
  * Each section is a native <details>, so the marker has to be taken off (two
  * ways: `list-item` display in Firefox, the WebKit pseudo-element elsewhere)
  * before a chevron of our own goes on. Tokens read the shared --gbs-*
- * variables when they are set on an ancestor (set them on :root to theme every
- * component at once). Rules live in the `components` layer, so utility classes
- * passed through `className` / `classNames` override them.
+ * variables when they are set on an ancestor (set them on :root to theme
+ * every component at once). Rules live in the `gbs` layer; declare where it
+ * sits in your global CSS, e.g. `@layer reset, gbs, app, utilities;`, and
+ * anything in a later layer overrides them.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .ac-root {
     --ac-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));
     --ac-muted: var(--gbs-muted, var(--dg-muted, light-dark(#71717a, #a1a1aa)));

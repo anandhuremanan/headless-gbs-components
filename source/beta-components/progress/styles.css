@@ -8,9 +8,8 @@
  * layer, so utility classes passed through `className` / `classNames` override
  * them.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .pr-root,
   .pr-circle {
     --pr-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));

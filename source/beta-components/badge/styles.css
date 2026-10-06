@@ -1,15 +1,15 @@
 /*
  * Badge and Tag styles.
  *
- * One tinted pill in six variants and three appearances; the variant only ever
- * sets --bd-accent, so adding one is a single rule. Tokens read the shared
- * --gbs-* variables when they are set on an ancestor (set them on :root to
- * theme every component at once). Rules live in the `components` layer, so
- * utility classes passed through `className` / `classNames` override them.
+ * One tinted pill in six variants and three appearances; the variant only
+ * ever sets --bd-accent, so adding one is a single rule. Tokens read the
+ * shared --gbs-* variables when they are set on an ancestor (set them on
+ * :root to theme every component at once). Rules live in the `gbs` layer;
+ * declare where it sits in your global CSS, e.g. `@layer reset, gbs, app,
+ * utilities;`, and anything in a later layer overrides them.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .bd-root,
   .bd-tag {
     --bd-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));

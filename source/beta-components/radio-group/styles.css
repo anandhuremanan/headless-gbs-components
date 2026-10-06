@@ -1,16 +1,16 @@
 /*
  * Radio and RadioGroup styles.
  *
- * The button is the native <input type="radio"> with `appearance: none`, so it
- * keeps native behavior: arrow keys roam the group, one tab stop, and the whole
- * group validates as one required field. Tokens read the shared --gbs-*
- * variables when they are set on an ancestor (set them on :root to theme every
- * component at once). Rules live in the `components` layer, so utility classes
- * passed through `className` / `classNames` override them.
+ * The button is the native <input type="radio"> with `appearance: none`, so
+ * it keeps native behavior: arrow keys roam the group, one tab stop, and the
+ * whole group validates as one required field. Tokens read the shared --gbs-*
+ * variables when they are set on an ancestor (set them on :root to theme
+ * every component at once). Rules live in the `gbs` layer; declare where it
+ * sits in your global CSS, e.g. `@layer reset, gbs, app, utilities;`, and
+ * anything in a later layer overrides them.
  */
-@layer theme, base, components, utilities;
 
-@layer components {
+@layer gbs {
   .rd-root,
   .rd-group {
     --rd-fg: var(--gbs-fg, var(--dg-fg, light-dark(#18181b, #f4f4f5)));

@@ -113,18 +113,25 @@ exist is silently ignored, so check the list.
 Classes are joined with `cx` from `shared/core/cx.ts`, which drops falsy values
 — a conditional that evaluates to `undefined` contributes nothing.
 
-## 4. Tailwind
+## 4. Cascade layers and Tailwind
 
-Every `styles.css` declares:
+Every `styles.css` ships its rules in one layer and declares nothing else:
 
 ```css
-@layer theme, base, components, utilities;
-@layer components { /* the component's rules */ }
+@layer gbs { /* the component's rules */ }
 ```
 
-Component rules live in the `components` layer, so **Tailwind utilities passed
-through `className` / `classNames` win** without `!important`. That is the
-supported way to adjust spacing, typography and layout.
+Where `gbs` sits is the app's call. Declare the order once in the global CSS;
+anything in a later layer beats the components:
+
+```css
+@layer reset, gbs, app, utilities;
+```
+
+With Tailwind v4, naming `gbs` before `utilities` means **a utility passed
+through `className` / `classNames` wins** without `!important`. Tailwind v3
+needs no line — it emits utilities unlayered, which already outrank a layer.
+A project with no CSS framework needs no line either.
 
 ```tsx
 <Button className="w-full sm:w-auto" classNames={{ content: "gap-3" }}>Save</Button>
@@ -136,17 +143,16 @@ variables or the slots.
 
 ## 5. Unlayered resets (Bootstrap, Normalize)
 
-Component rules sit in `@layer components`. Any stylesheet that ships
-**unlayered** beats every layered rule regardless of specificity — the cascade
-settles layers before specificity. So Bootstrap's Reboot (`button { border-radius: 0 }`,
-`button, input, textarea { font-size: inherit }`) overrides our classes, and
-import order does not help.
+Any stylesheet that ships **unlayered** beats every layered rule regardless of
+specificity — the cascade settles layers before specificity. So Bootstrap's
+Reboot (`button { border-radius: 0 }`, `button, input, textarea { font-size:
+inherit }`) overrides our classes, and import order does not help.
 
-Fix it in the project's global CSS by giving the reset its own layer, declared
-before `components`:
+Fix it in the project's global CSS by giving the reset its own layer, named
+before `gbs`:
 
 ```css
-@layer bootstrap, theme, base, components, utilities;
+@layer bootstrap, gbs, app, utilities;
 @import url("bootstrap/dist/css/bootstrap.min.css") layer(bootstrap);
 ```
 
