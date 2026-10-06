@@ -7,6 +7,7 @@ on:
       - "source/beta-components/shared/core/agent/**"
       - "eval/**"
       - "tools/eval/**"
+      - "tools/ts-require.cjs"
       - ".github/workflows/agent-runtime.yml"
   pull_request:
     paths:
@@ -45,3 +46,15 @@ jobs:
       - name: Corpus coverage report
         working-directory: .
         run: node tools/eval/report.cjs
+
+      # The oracle replays the corpus's own answers. Below 100% the harness is
+      # broken, and every model number it has ever produced is meaningless.
+      - name: Evaluation harness self-test
+        working-directory: .
+        run: node tools/eval/grid/cli.cjs --model=oracle --no-write
+
+      # Not a quality gate — the floor is supposed to be low. This proves the
+      # whole pipeline runs without credentials.
+      - name: Baseline tier
+        working-directory: .
+        run: node tools/eval/grid/cli.cjs --model=baseline --no-write

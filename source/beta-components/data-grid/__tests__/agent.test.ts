@@ -413,7 +413,9 @@ describe("validation", () => {
 describe("coercion", () => {
   const warningsOf = (agent: GridAgent<Account>, intent: unknown) => {
     const result = agent.validate(intent);
-    if (result.status === "rejected") throw new Error(result.reason);
+    if (result.status !== "done" && result.status !== "needs-confirmation") {
+      throw new Error(`expected a command, got ${result.status}`);
+    }
     return result;
   };
 
@@ -514,7 +516,9 @@ describe("plausibility", () => {
   it("counts the rows a filter would leave, without running it", () => {
     const { agent, api } = mountAgent();
     const result = agent.validate({ action: "filter", column: "region", operator: "equals", value: "Kerala" });
-    if (result.status === "rejected") throw new Error(result.reason);
+    if (result.status !== "done" && result.status !== "needs-confirmation") {
+      throw new Error(`expected a command, got ${result.status}`);
+    }
 
     expect(result.commands[0].explain).toMatchObject({
       summary: "Filter Region is Kerala",
@@ -527,14 +531,18 @@ describe("plausibility", () => {
   it("warns when nothing would be left", () => {
     const { agent } = mountAgent();
     const result = agent.validate({ action: "filter", column: "revenue", operator: "gt", value: "10 crore" });
-    if (result.status === "rejected") throw new Error(result.reason);
+    if (result.status !== "done" && result.status !== "needs-confirmation") {
+      throw new Error(`expected a command, got ${result.status}`);
+    }
     expect(result.warnings.map((w) => w.code)).toContain("empty-result");
   });
 
   it("warns when a filter changes nothing", () => {
     const { agent } = mountAgent();
     const result = agent.validate({ action: "filter", column: "revenue", operator: "gt", value: 1 });
-    if (result.status === "rejected") throw new Error(result.reason);
+    if (result.status !== "done" && result.status !== "needs-confirmation") {
+      throw new Error(`expected a command, got ${result.status}`);
+    }
     expect(result.warnings.map((w) => w.code)).toContain("no-op");
   });
 
@@ -558,7 +566,9 @@ describe("plausibility", () => {
       { action: "filter", column: "region", operator: "equals", value: "Kerala" },
       { action: "filter", column: "revenue", operator: "gt", value: "10 lakh" },
     ]);
-    if (result.status === "rejected") throw new Error(result.reason);
+    if (result.status !== "done" && result.status !== "needs-confirmation") {
+      throw new Error(`expected a command, got ${result.status}`);
+    }
     expect(result.commands).toHaveLength(2);
     expect(result.commands[0].explain.affectedRows).toBe(1);
   });

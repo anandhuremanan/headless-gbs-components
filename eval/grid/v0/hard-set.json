@@ -1,0 +1,63 @@
+{
+  "$comment": "A frozen regression gate, drawn from the things that actually surprised us while building the runtime — not from cases a model later got wrong. Never add or remove an id in response to a benchmark result: a hard set edited after seeing scores is a hard set that measures nothing. If a genuinely new class of difficulty turns up, open v1 rather than editing this.",
+  "version": "grid-hard-v0",
+  "frozen": "2026-10-06",
+  "groups": {
+    "option-columns": {
+      "why": "A column with fixed options is filtered by membership only. `equals` is illegal on it, which surprises everyone including the person who wrote the architecture doc.",
+      "ids": ["grid-011", "grid-012", "grid-184", "grid-185", "grid-219"]
+    },
+    "no-notIn": {
+      "why": "There is no exclusion operator, so 'everything except bronze' must enumerate the complement.",
+      "ids": ["grid-013"]
+    },
+    "duplicate-column-filter": {
+      "why": "One column holds one filter. 'Mumbai or Pune' cannot be said, and a batch that tries silently kept the last one until the validator learned to refuse it.",
+      "ids": ["grid-046", "grid-194"]
+    },
+    "no-top-n": {
+      "why": "There is no limit operation; 'top 10' has no honest single reading.",
+      "ids": ["grid-190"]
+    },
+    "ambiguity": {
+      "why": "Three columns declare a direction of goodness, so 'worst performing' is a question, not an answer.",
+      "ids": ["grid-188", "grid-189", "grid-193", "grid-196"]
+    },
+    "currency": {
+      "why": "Indian digit grouping, scale words, and a currency that is not the column's — none of which the model should convert itself.",
+      "ids": ["grid-166", "grid-167", "grid-168", "grid-172"]
+    },
+    "percentage": {
+      "why": "One percent column stores whole numbers and another stores fractions. Getting this wrong is a factor of 100, silently.",
+      "ids": ["grid-177", "grid-179", "grid-174"]
+    },
+    "relative-dates": {
+      "why": "A span used with `before`, an unknown phrase that must fail loudly, and phrases the model must pass through rather than resolve.",
+      "ids": ["grid-146", "grid-159", "grid-160"]
+    },
+    "zero-result": {
+      "why": "A filter that leaves nothing, and an export of nothing.",
+      "ids": ["grid-228"]
+    },
+    "unsupported": {
+      "why": "Grouping, aggregation, pivoting, charting, row editing and frozen rows do not exist. Declining is the correct answer.",
+      "ids": ["grid-198", "grid-199", "grid-200", "grid-201", "grid-204", "grid-207", "grid-209"]
+    },
+    "wrong-operator": {
+      "why": "Operator/type pairs the generated schema makes unrepresentable.",
+      "ids": ["grid-216", "grid-217", "grid-218", "grid-220", "grid-221"]
+    },
+    "policy": {
+      "why": "A column closed by policy rather than by the grid, and limits the host set.",
+      "ids": ["grid-223", "grid-224", "grid-225"]
+    },
+    "bounds-and-history": {
+      "why": "A page index beyond this instance's page count, and history that moves one step at a time.",
+      "ids": ["grid-131", "grid-123"]
+    },
+    "synonyms": {
+      "why": "'state' is a declared synonym for `region` but is not a column id.",
+      "ids": ["grid-214"]
+    }
+  }
+}

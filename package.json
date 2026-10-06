@@ -21,7 +21,7 @@
     "test": "pnpm -C demo-showroom test",
     "passport": "node tools/passport/cli.cjs",
     "passport:check": "node tools/passport/cli.cjs --check",
-    "eval:grid": "node tools/eval/report.cjs"
+    "eval:grid": "node tools/eval/grid/cli.cjs"
   },
   "keywords": [],
   "author": "Anandhu Remanan",

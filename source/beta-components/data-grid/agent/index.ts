@@ -31,9 +31,11 @@ export {
 
 export {
   buildIntentSchema,
+  buildResponseSchema,
   COLUMN_REQUIREMENT,
   type GeneratedIntentSchema,
   type GridIntent,
+  type GridResponse,
 } from "./intent";
 
 export {

@@ -60,7 +60,7 @@
       "react/keyboard.ts",
       "react/locale.ts"
     ],
-    "sourceHash": "sha256:3b3edcdca98b1f27f1a38da9e8eab686d9a1554696d9953caf097129120af514"
+    "sourceHash": "sha256:380a81fe6563f80c757eafe030d1bf2865814a0546d3acd7adc3a1852ca31411"
   },
   "purpose": "Display and operate on tabular data. Virtualized; holds its own sort, filter, search, selection, column and pagination state in an external store exposed through GridApi.",
   "props": [

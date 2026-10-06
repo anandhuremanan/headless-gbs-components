@@ -13,6 +13,12 @@ Shipped since this was written:
   abstraction, snapshot history, saved views, and a 230-case utterance corpus.
   No model, by design.
 
+- **Phase 5 (in progress) — the evaluation harness.**
+  `docs/grid-agent-evaluation.md`. One versioned prompt, four tiers, scoring on
+  the post-coercion command. Oracle self-test at 100%; keyword baseline at 47.0%
+  end-to-end. The frontier ceiling has not been run — it needs a key — so no
+  conclusion about local models or fine-tuning is available yet.
+
 Where this document and the implementation disagree, the implementation is right
 and the disagreement is noted in section 10.
 
@@ -568,7 +574,7 @@ The proposed ten phases, amended:
 | 2 | DataGrid contract + validator | **Done — and the "DatePicker first" amendment above was wrong.** That argument was about which semantics a *model* finds easier, and phase 2 has no model. Ordered by non-AI payoff instead, DataGrid wins outright: `DatePickerHandle` exposes `open/close/toggle/focus/clear/getValue` and no way to set a value, while the grid has 31 methods and a serialisable `GridState`. See `docs/controlled-component-adapter.md`. |
 | 3 | Command engine + undo/redo | **Done, folded into phase 2.** `GridState` made it a snapshot stack, as predicted. Shipped as a non-AI feature: saved views, shareable URLs, audit log, undo. |
 | 4 | Semantic eval dataset | **Done for the grid, and moving it earlier was right.** 230 cases written against a fixed fixture *while* the contract was being built; they found `notIn`, multi-value filters on a plain string column, and top-N, all of which would otherwise have been discovered after freezing. |
-| 5 | Benchmark candidate models | Keep. |
+| 5 | Benchmark candidate models | **Harness built, floor measured, ceiling pending.** The corpus turned out to be an instrument that needed calibrating: the oracle tier caught a scorer bug worth eleven cases, and the baseline exposed three corpus cases that scored a *correct* answer as a false accept. Both fixed before any model ran. |
 | 6 | Fine-tune a Grampro SLM | **Conditional.** BFCL shows ~3× gains from specialisation at 1B, but our domain is much narrower than BFCL. Measure stock models against the eval set first; fine-tune only if they miss the bar. |
 | 7 | Browser inference adapters | Keep. Both candidates already support constrained decoding. |
 | 8 | "Ask this Grid" | Keep. |

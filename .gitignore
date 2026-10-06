@@ -25,3 +25,11 @@ dist-ssr
 
 # Types
 types
+
+# Credentials for the evaluation harness. Never commit these.
+.env
+.env.*
+!.env.example
+
+# Benchmark output
+eval/results/

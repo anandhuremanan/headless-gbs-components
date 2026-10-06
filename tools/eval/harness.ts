@@ -8,8 +8,8 @@
  * what makes the case checkable rather than a matter of opinion.
  */
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { computeLayout, resolveColumns } from "../../source/beta-components/data-grid/core/columns";
 import { filterRows } from "../../source/beta-components/data-grid/core/filtering";
 import { createGridEngine, type GridApi, type GridModel } from "../../source/beta-components/data-grid/core/grid";
@@ -36,10 +36,29 @@ export interface Fixture {
   rows: Row[];
 }
 
-const here = (relative: string) => fileURLToPath(new URL(relative, import.meta.url));
+/*
+ * Walk up for the directory that holds both the library and the corpus. The
+ * harness runs from two places with different working directories — vitest
+ * rooted in demo-showroom, and the evaluation CLI rooted at the repository —
+ * and `import.meta` is unavailable in the second, because the CLI loads this
+ * file through the CommonJS TypeScript hook.
+ */
+function repoRoot(): string {
+  let dir = resolve(process.cwd());
+  for (let i = 0; i < 8; i++) {
+    if (existsSync(join(dir, "source", "beta-components")) && existsSync(join(dir, "eval", "grid"))) {
+      return dir;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  throw new Error("Could not locate the repository root from " + process.cwd());
+}
 
-export const FIXTURE_PATH = here("../../eval/grid/v0/fixture.json");
-export const CASES_PATH = here("../../eval/grid/v0/cases.jsonl");
+export const ROOT = repoRoot();
+export const FIXTURE_PATH = join(ROOT, "eval", "grid", "v0", "fixture.json");
+export const CASES_PATH = join(ROOT, "eval", "grid", "v0", "cases.jsonl");
 
 export const loadFixture = (): Fixture =>
   JSON.parse(readFileSync(FIXTURE_PATH, "utf8")) as Fixture;
@@ -76,8 +95,22 @@ export function loadCases(): EvalCase[] {
     });
 }
 
+export interface MountOptions {
+  /**
+   * Wrap the imperative API before the agent is built. The evaluation harness
+   * uses this to record `export`, `print` and `copy` instead of performing
+   * them — those reach for `document` and a download, neither of which exists
+   * in Node. Nothing else is substituted: the contract, the validator, the
+   * coercion and every state-changing executor are the production ones.
+   */
+  wrapApi?(api: GridApi<Row>): GridApi<Row>;
+}
+
 /** A live grid plus its agent, in the state the fixture describes. */
-export function mount(fixture: Fixture = loadFixture()): { agent: GridAgent<Row>; api: GridApi<Row> } {
+export function mount(
+  fixture: Fixture = loadFixture(),
+  mountOptions: MountOptions = {},
+): { agent: GridAgent<Row>; api: GridApi<Row> } {
   const options: GridOptions<Row> = {
     data: fixture.rows,
     columns: fixture.columns,
@@ -109,9 +142,11 @@ export function mount(fixture: Fixture = loadFixture()): { agent: GridAgent<Row>
   sync();
   engine.store.subscribe(sync);
 
+  const api = mountOptions.wrapApi ? mountOptions.wrapApi(engine.api) : engine.api;
+
   const [year, month, day] = fixture.today.split("-").map(Number);
   const agent = createGridAgent<Row>({
-    api: engine.api,
+    api,
     options,
     semantics: fixture.semantics,
     policy: fixture.policy,
@@ -119,5 +154,5 @@ export function mount(fixture: Fixture = loadFixture()): { agent: GridAgent<Row>
     now: () => new Date(year, month - 1, day),
   });
 
-  return { agent, api: engine.api };
+  return { agent, api };
 }

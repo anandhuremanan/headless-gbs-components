@@ -15,7 +15,16 @@
  * `sorting` or `filters` through the `state` prop, it owns undoing them too.
  */
 
-import { createSnapshotHistory, type SnapshotEntry, type ValidationIssue, type ConfirmRequest, type JsonSchema, type RegisteredExecutor, type ValidationLayer } from "../../shared/core/agent";
+import {
+  checkSchema,
+  createSnapshotHistory,
+  type ConfirmRequest,
+  type JsonSchema,
+  type RegisteredExecutor,
+  type SnapshotEntry,
+  type ValidationIssue,
+  type ValidationLayer,
+} from "../../shared/core/agent";
 import type { GridApi } from "../core/grid";
 import type { GridOptions, GridState } from "../core/types";
 import {
@@ -25,7 +34,12 @@ import {
   type GridRuntimeContract,
 } from "./contract";
 import { createDataset, type GridDataset } from "./dataset";
-import { buildIntentSchema, type GeneratedIntentSchema } from "./intent";
+import {
+  buildIntentSchema,
+  buildResponseSchema,
+  type GeneratedIntentSchema,
+  type GridResponse,
+} from "./intent";
 import { createGridExecutors } from "./executors";
 import { GRID_OPERATIONS, type GridOperationDefinition, type GridOperationName } from "./operations";
 import { validateBatch, validateIntent, type GridCommand, type GridExplanation } from "./validate";
@@ -53,7 +67,11 @@ export type GridExecution =
       layer: ValidationLayer;
       suggestion?: string;
       issues: ValidationIssue[];
-    };
+    }
+  /* The producer asked a question instead of answering. Nothing runs. */
+  | { status: "clarify"; question: string; options?: string[] }
+  /* The producer refused. Nothing runs, and that is a correct outcome. */
+  | { status: "declined"; reason: string };
 
 export interface GridAgentOptions<T> {
   api: GridApi<T>;
@@ -82,6 +100,17 @@ export interface GridAgent<T> {
   contract(): GridRuntimeContract;
   /** The generated JSON Schema for one intent on this instance. */
   schema(): JsonSchema;
+  /**
+   * The schema a producer of intents is held to: a command, a question, or a
+   * refusal. This is the one to hand a constrained decoder.
+   */
+  responseSchema(): JsonSchema;
+  /**
+   * Validate a whole response envelope. Clarifying and declining are checked
+   * against the schema like anything else, so a `clarify` with no question is
+   * malformed output rather than a clarification.
+   */
+  respond(response: unknown): GridExecution;
   /** The static operation definitions this instance offers. */
   operations(): GridOperationDefinition[];
   /** Validate without changing anything. */
@@ -191,6 +220,86 @@ export function createGridAgent<T>(input: GridAgentOptions<T>): GridAgent<T> {
 
   const asList = (intent: unknown): unknown[] => (Array.isArray(intent) ? intent : [intent]);
 
+  /**
+   * Validate a full response envelope: a command, a question, or a refusal.
+   *
+   * Clarifying is not a way around the validator: `{ result: "clarify" }` with
+   * no question comes back rejected, because a label is not a question.
+   *
+   * A command's *intents* are deliberately not checked against the response
+   * schema here. They go to `check`, which triages the column first and can
+   * therefore say "Email cannot be filtered" where the schema could only say
+   * "matched no branch" — same verdict, but one of them tells you what to do.
+   * The full response schema remains what a constrained decoder is given.
+   */
+  function respond(response: unknown): GridExecution {
+    // A bare list of intents is the batch form that `validate` already takes.
+    if (Array.isArray(response)) return check(response);
+
+    if (response === null || typeof response !== "object") {
+      return {
+        status: "rejected",
+        reason: "A response must be a JSON object, or a list of intents.",
+        code: "not-an-object",
+        layer: "schema",
+        issues: [],
+      };
+    }
+
+    const envelope = response as Record<string, unknown>;
+    // No envelope at all: treat it as a bare intent, which is what the direct
+    // callers of `validate` send.
+    if (envelope.result === undefined) return check(response);
+
+    const branch = (buildResponseSchema(contract()).oneOf ?? []).find(
+      (entry) => entry.properties?.result?.const === envelope.result,
+    );
+    if (!branch) {
+      return {
+        status: "rejected",
+        reason: `"${String(envelope.result)}" is not one of command, clarify or declined.`,
+        code: "unknown-result",
+        layer: "schema",
+        issues: [],
+      };
+    }
+
+    // For a command, the schema's job here is the envelope only; `check` owns
+    // the intents and gives better reasons than a union miss would.
+    const shape =
+      envelope.result === "command"
+        ? { ...branch, properties: { ...branch.properties, intents: { type: "array" as const, minItems: 1 } } }
+        : branch;
+
+    const problems = checkSchema(response, shape);
+    if (problems.length > 0) {
+      const first = problems[0];
+      return {
+        status: "rejected",
+        reason: `${first.path || "response"}: ${first.message}`,
+        code: first.code,
+        layer: "schema",
+        issues: problems.map((p) => ({
+          layer: "schema" as const,
+          code: p.code,
+          message: `${p.path || "response"}: ${p.message}`,
+          ...(p.path ? { path: p.path } : {}),
+        })),
+      };
+    }
+
+    const valid = response as GridResponse;
+    if (valid.result === "clarify") {
+      return {
+        status: "clarify",
+        question: valid.question,
+        ...(valid.options ? { options: valid.options } : {}),
+      };
+    }
+    if (valid.result === "declined") return { status: "declined", reason: valid.reason };
+    return check(valid.intents);
+  }
+
   function check(intent: unknown): GridExecution {
     const list = asList(intent);
     const current = contract();
@@ -244,8 +353,10 @@ export function createGridAgent<T>(input: GridAgentOptions<T>): GridAgent<T> {
   }
 
   async function execute(intent: unknown, runOptions: { confirm?: boolean } = {}): Promise<GridExecution> {
-    const checked = check(intent);
-    if (checked.status === "rejected") return checked;
+    const checked = respond(intent);
+    if (checked.status === "rejected" || checked.status === "clarify" || checked.status === "declined") {
+      return checked;
+    }
     if (checked.status === "needs-confirmation" && runOptions.confirm !== true) return checked;
 
     const commands = checked.commands;
@@ -284,6 +395,8 @@ export function createGridAgent<T>(input: GridAgentOptions<T>): GridAgent<T> {
   return {
     contract,
     schema: () => generated().schema,
+    responseSchema: () => buildResponseSchema(contract()),
+    respond,
     operations: () => contract().operations.map((name) => GRID_OPERATIONS[name]),
     validate: check,
     preview: check,

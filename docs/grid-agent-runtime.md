@@ -436,7 +436,33 @@ tools/eval/        harness.ts, report.cjs, __tests__/corpus.test.ts
 Nothing under `agent/` imports React, so a command can be validated on a server
 before it is ever sent to a browser.
 
+## Answering as something other than a command
+
+A producer of intents — a model, a form, a macro — answers with one of three
+things, and all three are schema-checked:
+
+```jsonc
+{ "result": "command",  "intents": [ … ] }
+{ "result": "clarify",  "question": "Which measure of performance did you mean?" }
+{ "result": "declined", "reason": "This grid cannot group." }
+```
+
+`agent.respond(response)` validates the envelope; `agent.responseSchema()` is
+what a constrained decoder should be given. Clarifying is not a way around the
+validator — a `clarify` with no question comes back rejected, because a label
+is not a question — and neither a clarification nor a refusal executes
+anything.
+
+This exists because a producer that can only emit a command has to guess when a
+request is ambiguous, and a confident wrong filter is the failure the whole
+pipeline is built to prevent. Asking is a correct answer.
+
 ## What is next
+
+`docs/grid-agent-evaluation.md` — the benchmark harness over this runtime: one
+versioned prompt, four model tiers, scoring on the post-coercion command rather
+than the model's JSON, and a self-test that must hit 100% before any model
+number counts.
 
 `docs/controlled-component-adapter.md` — DatePicker and Combobox have no
 imperative write API, and inventing one just to fit this architecture would be

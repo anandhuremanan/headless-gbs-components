@@ -1,0 +1,7 @@
+{
+  "$comment": "Provisional shipping bar for a grid intent model. These numbers were set before any model had been measured, so expect to move them once there is evidence — that is the point of keeping them in one file instead of in the code. What should NOT move is the ordering: a false accept is worse than a refusal. A model that says 'I need clarification' wastes a few seconds; a model that confidently applies the wrong filter puts a wrong number in front of someone who will act on it.",
+  "overallEndToEndAccuracy": 0.95,
+  "hardSetAccuracy": 0.9,
+  "falseAcceptRate": 0.01,
+  "correctRejectionRate": 0.95
+}

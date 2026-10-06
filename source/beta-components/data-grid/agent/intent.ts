@@ -255,3 +255,70 @@ export function buildIntentSchema(contract: GridRuntimeContract): GeneratedInten
     byAction,
   };
 }
+
+/* ------------------------------------------------------------- the envelope */
+
+/**
+ * What a producer of intents — a model, a form, a macro recorder — is allowed
+ * to answer with.
+ *
+ * Three outcomes, not one. A producer that can only return a command has no
+ * way to say "that is ambiguous" or "this grid cannot do that", so it will
+ * guess, and a confident wrong filter is the failure mode the whole validator
+ * exists to prevent. Making refusal and clarification *first-class answers*
+ * rather than error paths is what lets them be measured — and rewarded.
+ */
+export type GridResponse =
+  | { result: "command"; intents: GridIntent[] }
+  | { result: "clarify"; question: string; options?: string[] }
+  | { result: "declined"; reason: string };
+
+/**
+ * The schema a producer is held to, including the two non-command answers.
+ *
+ * Clarifying and declining are validated like anything else: a `clarify` with
+ * no question is not a clarification, it is malformed output wearing a label.
+ */
+export function buildResponseSchema(contract: GridRuntimeContract): JsonSchema {
+  const { schema: intent } = buildIntentSchema(contract);
+  return {
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: `GridResponse (${contract.instanceId})`,
+    description:
+      "Answer with a command when the request maps onto this grid, clarify when more " +
+      "than one reading is defensible, and decline when this grid cannot do it.",
+    oneOf: [
+      {
+        type: "object",
+        additionalProperties: false,
+        required: ["result", "intents"],
+        description: "One or more operations to apply, in order.",
+        properties: {
+          result: { const: "command" },
+          intents: { type: "array", minItems: 1, maxItems: 8, items: intent },
+        },
+      },
+      {
+        type: "object",
+        additionalProperties: false,
+        required: ["result", "question"],
+        description: "The request has more than one defensible reading on this grid.",
+        properties: {
+          result: { const: "clarify" },
+          question: { type: "string", minLength: 8, maxLength: 300 },
+          options: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
+        },
+      },
+      {
+        type: "object",
+        additionalProperties: false,
+        required: ["result", "reason"],
+        description: "This grid cannot do what was asked.",
+        properties: {
+          result: { const: "declined" },
+          reason: { type: "string", minLength: 4, maxLength: 300 },
+        },
+      },
+    ],
+  };
+}

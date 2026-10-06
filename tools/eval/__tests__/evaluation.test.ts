@@ -1,0 +1,629 @@
+/*
+ * Tests for the evaluation harness itself.
+ *
+ * A benchmark is an instrument, and an instrument nobody calibrated produces
+ * numbers nobody should act on. The load-bearing test is the last one: the
+ * oracle adapter replays the corpus's own answers and must score 100%.
+ * Anything less means the harness is wrong — as it was, the first time it ran,
+ * because the scorer validated each answer against a pristine grid instead of
+ * the one the case's setup had left behind.
+ *
+ * Nothing here mocks the validator. Every score goes through the same
+ * contract, coercion and executors the production runtime uses.
+ */
+
+import { createRequire } from "node:module";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const require = createRequire(import.meta.url);
+
+const { buildPrompt, PROMPT_VERSION } = require("../grid/prompt.cjs");
+const scorer = require("../grid/scorer.cjs");
+const metrics = require("../grid/metrics.cjs");
+const runner = require("../grid/runner.cjs");
+const adapters = require("../grid/adapters/index.cjs");
+const baseline = require("../grid/adapters/baseline.cjs");
+const harness = require("../harness.ts");
+const { GRID_OPERATIONS } = require("../../../source/beta-components/data-grid/agent/index.ts");
+
+const fixture = harness.loadFixture();
+const mounter = scorer.createMounter(harness, fixture);
+const agent = () => mounter().agent;
+
+const promptFor = (utterance: string) => {
+  const live = agent();
+  return buildPrompt({
+    contract: live.contract(),
+    responseSchema: live.responseSchema(),
+    operations: GRID_OPERATIONS,
+    utterance,
+  });
+};
+
+/* ------------------------------------------------------------------ prompt */
+
+describe("prompt", () => {
+  it("serialises identically for the same contract", () => {
+    expect(promptFor("Show Kerala").system).toBe(promptFor("Show Kerala").system);
+  });
+
+  it("carries no clock, so a run today matches a run tomorrow", () => {
+    // Relative dates are passed through as phrases and resolved downstream, so
+    // the prompt never needs to know what day it is.
+    expect(promptFor("anything").system).not.toMatch(/20\d\d-\d\d-\d\dT/);
+  });
+
+  it("is versioned, and the version travels with the result", () => {
+    expect(PROMPT_VERSION).toBe("grid-intent-v1");
+    expect(promptFor("x").promptVersion).toBe(PROMPT_VERSION);
+  });
+
+  it("injects the generated schema, not a hand-written one", () => {
+    const live = agent();
+    const { system } = buildPrompt({
+      contract: live.contract(),
+      responseSchema: live.responseSchema(),
+      operations: GRID_OPERATIONS,
+      utterance: "x",
+    });
+    expect(system).toContain(JSON.stringify(live.responseSchema()));
+  });
+
+  it("states the per-column operator sets the instance really has", () => {
+    const { system } = promptFor("x");
+    expect(system).toContain("tier (Tier)");
+    expect(system).toMatch(/filter: in isEmpty isNotEmpty/);
+    expect(system).toContain("RESTRICTED: cannot be filtered or sorted.");
+  });
+
+  it("tells the model not to do the arithmetic the coercion layer does", () => {
+    const { system } = promptFor("x");
+    expect(system).toMatch(/Do NOT convert units, scales, percentages or currency/);
+    expect(system).toContain("last quarter");
+  });
+
+  it("offers all three answers", () => {
+    const { system } = promptFor("x");
+    for (const result of ["command", "clarify", "declined"]) expect(system).toContain(`"${result}"`);
+  });
+});
+
+/* ------------------------------------------------------------ no row data */
+
+describe("the no-row guarantee", () => {
+  const forbidden = () => runner.identifyingValues(agent().contract(), fixture);
+
+  it("treats per-row text as forbidden and shared categories as not", () => {
+    const values = forbidden();
+    expect(values).toContain("Backwater Logistics"); // a name: one row, one value
+    expect(values).toContain("ops@backwater.in"); // restricted entirely
+    expect(values).not.toContain("Kerala"); // a category the contract may list
+    expect(values).not.toContain("Platinum"); // an option from the column definition
+  });
+
+  it("holds for every utterance in the corpus", () => {
+    const values = forbidden();
+    for (const entry of harness.loadCases()) {
+      expect(() => runner.assertNoRows(promptFor(entry.utterance).system, values, entry.id)).not.toThrow();
+    }
+  });
+
+  it("fails loudly if row data ever appears", () => {
+    expect(() => runner.assertNoRows("… Backwater Logistics …", forbidden(), "probe")).toThrow(
+      /contains row data/,
+    );
+  });
+});
+
+/* ------------------------------------------------------------------ clarify */
+
+describe("clarify is validated, not waved through", () => {
+  it("accepts a real question", () => {
+    expect(agent().respond({ result: "clarify", question: "Which column did you mean?" })).toMatchObject({
+      status: "clarify",
+    });
+  });
+
+  it("refuses a label with no question behind it", () => {
+    expect(agent().respond({ result: "clarify" })).toMatchObject({ status: "rejected", layer: "schema" });
+    expect(agent().respond({ result: "clarify", question: "eh" })).toMatchObject({ status: "rejected" });
+  });
+
+  it("refuses a declined with no reason", () => {
+    expect(agent().respond({ result: "declined" })).toMatchObject({ status: "rejected" });
+  });
+
+  it("never runs anything for a clarify or a declined", async () => {
+    const live = agent();
+    const before = live.contract().state;
+    await live.execute({ result: "clarify", question: "Which column did you mean?" });
+    await live.execute({ result: "declined", reason: "This grid cannot group." });
+    expect(live.contract().state).toEqual(before);
+  });
+});
+
+/* ------------------------------------------------------------------ scoring */
+
+const score = (entry: Record<string, unknown>, response: unknown, latencyMs = 1) =>
+  scorer.scoreCase({ entry, responseText: JSON.stringify(response), latencyMs, mounter });
+
+const KERALA = { action: "filter", column: "region", operator: "equals", value: "Kerala" };
+const acceptCase = {
+  id: "t-1",
+  category: "test",
+  utterance: "Show customers from Kerala",
+  expect: "accept",
+  intents: [KERALA],
+};
+
+describe("scoring is post-coercion", () => {
+  it("accepts a written quantity and its converted form alike", async () => {
+    const entry = {
+      id: "t-scale",
+      category: "test",
+      utterance: "Revenue above 1 lakh",
+      expect: "accept",
+      intents: [{ action: "filter", column: "revenue", operator: "gt", value: "1 lakh" }],
+    };
+
+    const written = await score(entry, {
+      result: "command",
+      intents: [{ action: "filter", column: "revenue", operator: "gt", value: "1 lakh" }],
+    });
+    const converted = await score(entry, {
+      result: "command",
+      intents: [{ action: "filter", column: "revenue", operator: "gt", value: 100000 }],
+    });
+
+    expect(written.correct).toBe(true);
+    expect(converted.correct).toBe(true);
+    expect(converted.outcome).toBe("semantic_correct");
+  });
+
+  it("accepts a different case for a value the data really has", async () => {
+    const result = await score(acceptCase, {
+      result: "command",
+      intents: [{ action: "filter", column: "region", operator: "equals", value: "kerala" }],
+    });
+    expect(result.correct).toBe(true);
+  });
+
+  it("ignores the order of filters on different columns", async () => {
+    const entry = {
+      id: "t-order",
+      category: "test",
+      utterance: "Active Kerala customers",
+      expect: "accept",
+      intents: [KERALA, { action: "filter", column: "active", operator: "equals", value: true }],
+    };
+    const result = await score(entry, {
+      result: "command",
+      intents: [{ action: "filter", column: "active", operator: "equals", value: true }, KERALA],
+    });
+    expect(result.correct).toBe(true);
+    expect(result.exactMatch).toBe(false);
+  });
+
+  it("is no more permissive than the executor", async () => {
+    const result = await score(acceptCase, {
+      result: "command",
+      intents: [{ action: "filter", column: "region", operator: "equals", value: "Karnataka" }],
+    });
+    expect(result.correct).toBe(false);
+    expect(result.failure).toBe("wrong_value");
+  });
+});
+
+describe("canonicalisation", () => {
+  it("sorts keys and treats an `in` list as a set", () => {
+    expect(scorer.canonicalIntent({ operator: "in", action: "filter", value: ["b", "a"] })).toEqual({
+      action: "filter",
+      operator: "in",
+      value: ["a", "b"],
+    });
+  });
+
+  it("drops undefined rather than comparing it", () => {
+    expect(scorer.stable({ a: 1, b: undefined })).toBe(scorer.stable({ a: 1 }));
+  });
+});
+
+describe("failure categorisation", () => {
+  const cases: [string, Record<string, unknown>, string][] = [
+    ["wrong_operation", { action: "search", text: "Kerala" }, "wrong_operation"],
+    ["wrong_column", { action: "filter", column: "city", operator: "equals", value: "Kochi" }, "wrong_column"],
+    ["wrong_operator", { action: "filter", column: "region", operator: "contains", value: "Kerala" }, "wrong_operator"],
+    ["wrong_value", { action: "filter", column: "region", operator: "equals", value: "Karnataka" }, "wrong_value"],
+  ];
+
+  it.each(cases)("names %s", async (_label, intent, expected) => {
+    const result = await score(acceptCase, { result: "command", intents: [intent] });
+    expect(result.correct).toBe(false);
+    expect(result.failure).toBe(expected);
+  });
+
+  it("names a wrong direction", async () => {
+    const entry = {
+      id: "t-sort",
+      category: "test",
+      utterance: "Highest revenue first",
+      expect: "accept",
+      intents: [{ action: "sort", column: "revenue", direction: "desc" }],
+    };
+    const result = await score(entry, {
+      result: "command",
+      intents: [{ action: "sort", column: "revenue", direction: "asc" }],
+    });
+    expect(result.failure).toBe("wrong_direction");
+  });
+
+  it("separates a validator refusal from a wrong answer", async () => {
+    const result = await score(acceptCase, {
+      result: "command",
+      intents: [{ action: "filter", column: "email", operator: "contains", value: "x" }],
+    });
+    expect(result.outcome).toBe("incorrect_rejection");
+    expect(result.failure).toBe("validator_failure");
+    expect(result.rejectionLayer).toBe("policy");
+  });
+
+  it("blames the corpus when the corpus's own answer would also be refused", async () => {
+    const result = await score(
+      {
+        id: "t-broken",
+        category: "test",
+        utterance: "…",
+        expect: "accept",
+        intents: [{ action: "filter", column: "email", operator: "contains", value: "x" }],
+      },
+      { result: "command", intents: [{ action: "filter", column: "email", operator: "contains", value: "x" }] },
+    );
+    expect(result.failure).toBe("corpus_or_contract_failure");
+    expect(result.architectureSuspect).toBe(true);
+  });
+});
+
+describe("rejections and clarifications", () => {
+  const rejectCase = {
+    id: "t-reject",
+    category: "test",
+    utterance: "Group by region",
+    expect: "reject",
+    code: "unknown-operation",
+    intents: [{ action: "group", column: "region" }],
+  };
+
+  it("counts an explicit refusal as correct", async () => {
+    const result = await score(rejectCase, { result: "declined", reason: "This grid cannot group." });
+    expect(result).toMatchObject({ outcome: "correct_rejection", correct: true });
+  });
+
+  it("counts a refusal the validator produced as correct, and records the code", async () => {
+    const result = await score(rejectCase, { result: "command", intents: [{ action: "group", column: "region" }] });
+    expect(result).toMatchObject({
+      outcome: "correct_rejection",
+      correct: true,
+      rejectionCode: "unknown-operation",
+      rejectionCodeMatch: true,
+    });
+  });
+
+  it("counts something that ran as a false accept, the worst outcome there is", async () => {
+    const result = await score(rejectCase, { result: "command", intents: [KERALA] });
+    expect(result).toMatchObject({ outcome: "false_accept", correct: false });
+  });
+
+  it("credits a reading the case lists as also correct", async () => {
+    const result = await score(
+      {
+        id: "t-also",
+        category: "test",
+        utterance: "Tier equals gold",
+        expect: "reject",
+        code: "enum",
+        intents: [{ action: "filter", column: "tier", operator: "equals", value: "gold" }],
+        alsoAccept: [[{ action: "filter", column: "tier", operator: "in", value: ["gold"] }]],
+      },
+      { result: "command", intents: [{ action: "filter", column: "tier", operator: "in", value: ["gold"] }] },
+    );
+    expect(result).toMatchObject({ outcome: "acceptable_reading", correct: true });
+  });
+
+  it("credits a question on an ambiguous case, and penalises one elsewhere", async () => {
+    const question = { result: "clarify", question: "Which measure of performance did you mean?" };
+
+    const onAmbiguous = await score(
+      { id: "t-amb", category: "test", utterance: "worst customers", expect: "ambiguous", intents: [KERALA] },
+      question,
+    );
+    expect(onAmbiguous).toMatchObject({ outcome: "correct_clarification", correct: true });
+
+    const onClear = await score(acceptCase, question);
+    expect(onClear).toMatchObject({ outcome: "unnecessary_clarification", correct: false });
+    // Asking is wrong here, but it is not the same kind of wrong as acting wrongly.
+    expect(onClear.outcome).not.toBe("false_accept");
+  });
+
+  it("credits a question where the case says asking is reasonable", async () => {
+    const result = await score(
+      {
+        id: "t-clarifyok",
+        category: "test",
+        utterance: "Churn risk between 0.2",
+        expect: "reject",
+        code: "missing-value2",
+        intents: [{ action: "filter", column: "churnRisk", operator: "between", value: 0.2 }],
+        clarifyOk: true,
+      },
+      { result: "clarify", question: "Between 0.2 and what upper bound?" },
+    );
+    expect(result).toMatchObject({ outcome: "correct_clarification", correct: true });
+  });
+
+  it("treats unparseable output on a reject case as a refusal, but records how", async () => {
+    const result = await scorer.scoreCase({
+      entry: rejectCase,
+      responseText: "I think you want to group by region!",
+      latencyMs: 1,
+      mounter,
+    });
+    expect(result).toMatchObject({ correct: true, viaSchemaFailure: true, schemaValid: false });
+  });
+
+  it("unwraps a fenced block rather than calling it malformed", async () => {
+    const result = await scorer.scoreCase({
+      entry: acceptCase,
+      responseText: "```json\n" + JSON.stringify({ result: "command", intents: [KERALA] }) + "\n```",
+      latencyMs: 1,
+      mounter,
+    });
+    expect(result.correct).toBe(true);
+  });
+});
+
+/* ------------------------------------------------------------------ adapters */
+
+describe("adapters", () => {
+  it("resolve by id, alias, provider and local tag", () => {
+    expect(adapters.resolve("baseline").id).toBe("baseline");
+    expect(adapters.resolve("frontier").provider).toBe("anthropic");
+    expect(adapters.resolve("qwen2.5-coder-3b").modelId).toBe("qwen2.5-coder:3b");
+    expect(adapters.resolve("groq").provider).toBe("groq");
+    expect(() => adapters.resolve("nope")).toThrow(/Unknown model/);
+  });
+
+  it("let a provider:model pair name the exact model recorded", () => {
+    const adapter = adapters.resolve("huggingface:meta-llama/Llama-3.3-70B-Instruct");
+    expect(adapter.provider).toBe("huggingface");
+    expect(adapter.modelId).toBe("meta-llama/Llama-3.3-70B-Instruct");
+    expect(adapter.baseUrl).toBe("https://router.huggingface.co/v1");
+  });
+
+  it("point the ceiling at a free provider, because an unrun ceiling helps nobody", () => {
+    const ceiling = adapters.resolve("ceiling");
+    expect(ceiling.provider).toBe("gemini");
+    expect(ceiling.note).toMatch(/free/);
+    expect(adapters.BENCHMARK_ORDER).toContain("ceiling");
+  });
+
+  it("say what is missing instead of failing obscurely", async () => {
+    for (const [id, variable] of [
+      ["frontier", "ANTHROPIC_API_KEY"],
+      ["ceiling", "GOOGLE_API_KEY"],
+      ["groq", "GROQ_API_KEY"],
+      ["huggingface", "HF_TOKEN"],
+    ] as const) {
+      const key = process.env[variable];
+      delete process.env[variable];
+      try {
+        expect(await adapters.resolve(id).unavailable()).toMatch(new RegExp(`${variable} is not set`));
+      } finally {
+        if (key !== undefined) process.env[variable] = key;
+      }
+    }
+  });
+
+  it("read a key from .env, but let a real environment variable win", () => {
+    const { parse } = require("../../env.cjs");
+    expect(
+      parse(['# a comment', 'GOOGLE_API_KEY="abc"', "export GROQ_API_KEY=def", "", "broken"].join("\n")),
+    ).toEqual({ GOOGLE_API_KEY: "abc", GROQ_API_KEY: "def" });
+
+    const dir = mkdtempSync(join(tmpdir(), "gbs-env-"));
+    try {
+      writeFileSync(join(dir, ".env"), ["GBS_FROM_FILE=file", "GBS_ALREADY_SET=file"].join("\n"));
+      process.env.GBS_ALREADY_SET = "environment";
+
+      const loaded = require("../../env.cjs").load(dir);
+      expect(loaded).toEqual(["GBS_FROM_FILE"]);
+      expect(process.env.GBS_FROM_FILE).toBe("file");
+      // CI sets secrets in the environment; a stale local file must not shadow them.
+      expect(process.env.GBS_ALREADY_SET).toBe("environment");
+    } finally {
+      delete process.env.GBS_FROM_FILE;
+      delete process.env.GBS_ALREADY_SET;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("space requests so a free tier's per-minute cap is respected", async () => {
+    const throttle = runner.createThrottle(600); // 100ms apart
+    const started = Date.now();
+    await Promise.all([throttle(), throttle(), throttle()]);
+    // Shared across callers: three requests cost two gaps, not zero.
+    expect(Date.now() - started).toBeGreaterThanOrEqual(150);
+    await expect(runner.createThrottle(0)()).resolves.toBeUndefined();
+  });
+
+  it("refuse to claim constrained decoding they do not have", async () => {
+    expect(adapters.resolve("baseline").supportsConstrained).toBe(false);
+    await expect(runner.run({ model: "baseline", decoding: "constrained", write: false })).rejects.toThrow(
+      /would be a lie in the result file/,
+    );
+  });
+
+  it("keep the baseline simple enough to be a floor", async () => {
+    const contract = agent().contract();
+    const ask = async (utterance: string) =>
+      JSON.parse((await baseline.complete({ user: utterance, contract })).text);
+
+    expect(await ask("Clear all filters")).toEqual({
+      result: "command",
+      intents: [{ action: "clearFilters" }],
+    });
+    expect(await ask("Show customers from Kerala")).toMatchObject({
+      intents: [{ action: "filter", column: "region", operator: "equals", value: "Kerala" }],
+    });
+    // It has no idea what this means, and says so rather than guessing.
+    expect(await ask("Show me the worst performing customers in the south")).toMatchObject({
+      result: "command",
+    });
+    expect(await ask("qwerty asdfgh")).toMatchObject({ result: "declined" });
+  });
+});
+
+/* ------------------------------------------------------------------- metrics */
+
+describe("metrics", () => {
+  const records = [
+    { id: "a", category: "x", expect: "accept", outcome: "semantic_correct", correct: true, schemaValid: true, validated: true, latencyMs: 10 },
+    { id: "b", category: "x", expect: "accept", outcome: "incorrect_accept", correct: false, failure: "wrong_column", schemaValid: true, validated: true, latencyMs: 20 },
+    { id: "c", category: "y", expect: "reject", outcome: "false_accept", correct: false, failure: "unsupported_operation", schemaValid: true, validated: true, latencyMs: 30 },
+    { id: "d", category: "y", expect: "reject", outcome: "correct_rejection", correct: true, schemaValid: true, validated: false, latencyMs: 40 },
+    { id: "e", category: "z", expect: "ambiguous", outcome: "correct_clarification", correct: true, schemaValid: true, validated: false, latencyMs: 50 },
+  ];
+  const summary = metrics.summarise(records, { hardSet: ["c", "d"] });
+
+  it("reports the headline and the dangerous rate separately", () => {
+    expect(summary.primary.endToEndAccuracy).toBe(0.6);
+    expect(summary.secondary.falseAcceptRate).toBe(0.5);
+    expect(summary.secondary.correctRejectionRate).toBe(0.5);
+    expect(summary.secondary.correctClarificationRate).toBe(1);
+  });
+
+  it("breaks accuracy down by category and by hard set", () => {
+    expect(summary.byCategory.x).toMatchObject({ total: 2, correct: 1, accuracy: 0.5 });
+    expect(summary.hardSet).toEqual({ total: 2, accuracy: 0.5 });
+  });
+
+  it("counts failures by cause", () => {
+    expect(summary.failures).toEqual({ wrong_column: 1, unsupported_operation: 1 });
+  });
+
+  it("reports latency percentiles", () => {
+    expect(summary.latencyMs).toEqual({ p50: 30, p95: 50 });
+  });
+
+  it("weighs the policy against the summary", () => {
+    const policy = metrics.checkPolicy(summary, runner.loadPolicy());
+    expect(policy.pass).toBe(false);
+    expect(policy.results.find((r: { name: string }) => r.name === "falseAcceptRate")?.pass).toBe(false);
+  });
+});
+
+/* --------------------------------------------------------------- the gate */
+
+describe("a run is reproducible", () => {
+  it("records everything needed to re-derive it", async () => {
+    const result = await runner.run({ model: "baseline", write: false, limit: 5 });
+    expect(result.meta).toMatchObject({
+      model: "baseline",
+      provider: "local",
+      decodingMode: "unconstrained",
+      promptVersion: "grid-intent-v1",
+      corpusVersion: "grid-v0",
+      contractVersion: "1.0.0",
+      temperature: 0,
+    });
+    expect(result.meta.timestamp).toMatch(/^\d{4}-\d\d-\d\dT/);
+    expect(result.meta.runtime).toContain("node");
+    expect(result.meta.hardSetVersion).toBe("grid-hard-v0");
+    expect(result.meta.libraryVersion).toEqual(expect.any(String));
+  });
+
+  it("writes a result file and a readable summary", () => {
+    const dir = mkdtempSync(join(tmpdir(), "gbs-eval-"));
+    try {
+      const run = {
+        meta: {
+          timestamp: "2026-10-06T00:00:00.000Z",
+          model: "probe",
+          modelId: "probe",
+          provider: "test",
+          decodingMode: "unconstrained",
+          temperature: 0,
+          promptVersion: "grid-intent-v1",
+          corpusVersion: "grid-v0",
+          contractVersion: "1.0.0",
+          passportVersion: "1.0.0",
+          runtime: "node",
+          platform: "test",
+        },
+        summary: metrics.summarise(records(), { hardSet: [] }),
+        policy: null,
+        records: records(),
+      };
+      const markdown = metrics.renderMarkdown(run);
+      expect(markdown).toContain("# Grid intent evaluation — probe");
+      expect(markdown).toContain("End-to-end accuracy");
+      expect(JSON.parse(JSON.stringify(run)).meta.promptVersion).toBe("grid-intent-v1");
+      expect(existsSync(dir)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  function records() {
+    return [
+      { id: "a", category: "x", expect: "accept", outcome: "semantic_correct", correct: true, schemaValid: true, validated: true, latencyMs: 1 },
+    ];
+  }
+});
+
+describe("the oracle scores 100%, or the harness is wrong", () => {
+  it("replays every expected answer and loses nothing", async () => {
+    const result = await runner.run({ model: "oracle", write: false, concurrency: 8 });
+
+    const wrong = result.records.filter((record: { correct: boolean }) => !record.correct);
+    expect(
+      wrong.map((r: { id: string; outcome: string; detail?: string }) => `${r.id} ${r.outcome} ${r.detail ?? ""}`),
+    ).toEqual([]);
+    expect(result.summary.primary.endToEndAccuracy).toBe(1);
+    expect(result.summary.hardSet?.accuracy).toBe(1);
+    expect(result.meta.benchmark).toBe(false);
+  });
+
+  it("holds the hard set frozen", () => {
+    const hard = runner.loadHardSet();
+    const ids = new Set(harness.loadCases().map((entry: { id: string }) => entry.id));
+    expect(hard.length).toBeGreaterThanOrEqual(30);
+    for (const id of hard) expect(ids.has(id), id).toBe(true);
+  });
+
+  it("keeps the committed policy readable and ordered the right way round", () => {
+    const policy = runner.loadPolicy();
+    expect(policy.falseAcceptRate).toBeLessThan(1 - policy.overallEndToEndAccuracy);
+    expect(policy.hardSetAccuracy).toBeGreaterThan(0.5);
+  });
+});
+
+/* --------------------------------------------------------------- the corpus */
+
+describe("the corpus's extra answers are real answers", () => {
+  it("validates every alsoAccept reading", async () => {
+    for (const entry of harness.loadCases()) {
+      for (const reading of (entry as { alsoAccept?: unknown[][] }).alsoAccept ?? []) {
+        const applied = await scorer.applyIntents(mounter, entry.setup, reading);
+        expect(applied.ok, `${entry.id}: ${JSON.stringify(reading)}`).toBe(true);
+      }
+    }
+  });
+
+  it("keeps the corpus file parseable as a whole", () => {
+    const text = readFileSync(harness.CASES_PATH, "utf8");
+    expect(text.split("\n").filter((line) => line.trim().startsWith("{")).length).toBeGreaterThanOrEqual(230);
+  });
+});
