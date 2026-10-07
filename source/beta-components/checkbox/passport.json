@@ -10,7 +10,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/group.ts",
       "core/index.ts",
@@ -22,7 +22,7 @@
       "react/locale.ts",
       "react/props.ts"
     ],
-    "sourceHash": "sha256:55640162a3c388257bc450f6af791a011fe8f2cda06e7974ba0f354cffd29597"
+    "sourceHash": "sha256:0ec1ccf6a017cdb54577937e7d34e6908c7d79e443b688fb56744426d581078a"
   },
   "props": [
     {

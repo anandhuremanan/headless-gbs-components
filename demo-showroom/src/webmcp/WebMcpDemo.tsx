@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createGridAgent, DataGrid, type GridAgent, type GridApi } from "@/components/data-grid";
+import {
+  createGridAgent,
+  DataGrid,
+  GRID_TOOL_NAME,
+  registerGridTool,
+  type GridAgent,
+  type GridApi,
+  type RegistrationResult,
+} from "@/components/data-grid";
 import fixture from "../../../eval/grid/v0/fixture.json";
-import { registerGridTool, TOOL_NAME, type RegistrationResult } from "./registerGridTool";
 
 /*
  * The grid the WebMCP proof drives.
@@ -64,7 +71,7 @@ export function WebMcpDemo() {
     const result = registerGridTool(built as GridAgent<unknown>, {
       onCall: (entry) => {
         setCalls((previous) => [
-          { at: new Date().toISOString(), ...(entry as Omit<CallLog, "at">) },
+          { at: new Date().toISOString(), input: entry.input, result: entry.result },
           ...previous,
         ]);
         // Read the contract again after the command ran, so the counter on
@@ -79,7 +86,7 @@ export function WebMcpDemo() {
     (window as unknown as Record<string, unknown>).__GBS_WEBMCP = {
       agent: built,
       registration: result,
-      toolName: TOOL_NAME,
+      toolName: GRID_TOOL_NAME,
     };
   }, [options]);
 
@@ -107,7 +114,7 @@ export function WebMcpDemo() {
         }}
       >
         <div>
-          tool <strong>{TOOL_NAME}</strong> —{" "}
+          tool <strong>{GRID_TOOL_NAME}</strong> —{" "}
           {registration === null
             ? "registering…"
             : registration.registered

@@ -1,0 +1,33 @@
+/*
+ * The same barrel `gbs-add-block` writes into a host project, pointed at
+ * the source tree instead of an installed copy. The showroom imports it
+ * exactly the way the README tells a Tailwind v4 project to.
+ */
+@import "../../source/beta-components/accordion/styles.css";
+@import "../../source/beta-components/alert/styles.css";
+@import "../../source/beta-components/avatar/styles.css";
+@import "../../source/beta-components/badge/styles.css";
+@import "../../source/beta-components/breadcrumb/styles.css";
+@import "../../source/beta-components/button/styles.css";
+@import "../../source/beta-components/card/styles.css";
+@import "../../source/beta-components/checkbox/styles.css";
+@import "../../source/beta-components/combobox/styles.css";
+@import "../../source/beta-components/data-grid/styles.css";
+@import "../../source/beta-components/date-picker/styles.css";
+@import "../../source/beta-components/dialog/styles.css";
+@import "../../source/beta-components/file-uploader/styles.css";
+@import "../../source/beta-components/input/styles.css";
+@import "../../source/beta-components/menu/styles.css";
+@import "../../source/beta-components/modal/styles.css";
+@import "../../source/beta-components/number-input/styles.css";
+@import "../../source/beta-components/popover/styles.css";
+@import "../../source/beta-components/progress/styles.css";
+@import "../../source/beta-components/radio-group/styles.css";
+@import "../../source/beta-components/shared/styles.css";
+@import "../../source/beta-components/skeleton/styles.css";
+@import "../../source/beta-components/spinner/styles.css";
+@import "../../source/beta-components/switch/styles.css";
+@import "../../source/beta-components/tabs/styles.css";
+@import "../../source/beta-components/textarea/styles.css";
+@import "../../source/beta-components/toaster/styles.css";
+@import "../../source/beta-components/tooltip/styles.css";

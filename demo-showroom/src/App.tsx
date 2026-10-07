@@ -2,7 +2,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 
 import { Tab, TabList, TabPanel, Tabs } from "@/components/tabs";
 
-const DOCS = "https://gramprokit.vercel.app";
+const DOCS = "https://kit.gramproindia.com";
 const REPO = "https://github.com/anandhuremanan/headless-gbs-components";
 
 /** Where index.html stores an explicit choice. Absent means "follow the device". */
@@ -74,6 +74,12 @@ const FormControlsDemo = lazy(() =>
   })),
 );
 
+const AgentDemo = lazy(() =>
+  import("./demo/AgentDemo").then((module) => ({
+    default: module.AgentDemo,
+  })),
+);
+
 const DisplayDemo = lazy(() =>
   import("./demo/DisplayDemo").then((module) => ({
     default: module.DisplayDemo,
@@ -85,6 +91,12 @@ const DisplayDemo = lazy(() =>
  * at the page on the documentation site that covers the same components.
  */
 const TABS = [
+  {
+    id: "agent",
+    label: "Agent · WebMCP",
+    docs: "/datagrid",
+    Panel: AgentDemo,
+  },
   {
     id: "client",
     label: "Client · 100k rows",
@@ -310,7 +322,7 @@ function App() {
         </p>
 
         <div className="mt-8">
-          <Tabs defaultValue="client">
+          <Tabs defaultValue="agent">
             <TabList aria-label="Demos">
               {TABS.map(({ id, label }) => (
                 <Tab key={id} value={id}>

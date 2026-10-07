@@ -9,7 +9,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/api.ts",
       "core/dialog.ts",
@@ -23,7 +23,7 @@
       "react/locale.ts",
       "react/props.ts"
     ],
-    "sourceHash": "sha256:e00d987e25e60854e28ffe00727c2a229f8b88b106c8a88fac1d97a3c86f264a"
+    "sourceHash": "sha256:6d15e7984f5dd17938748764c249f8009db3c8a14076a663275b141d57e04d41"
   },
   "props": [
     {

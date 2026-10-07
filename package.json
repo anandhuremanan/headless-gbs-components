@@ -1,6 +1,6 @@
 {
   "name": "gbs-add-block",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "GramproKit — an agent-native UI runtime for React. Components you own, with a machine-readable contract.",
   "type": "module",
   "files": [
@@ -9,7 +9,11 @@
     ".gbs",
     "tools",
     "schema",
-    "!tools/eval"
+    "!tools/eval",
+    "!source/**/__tests__",
+    "!**/*.test.ts",
+    "!**/*.test.tsx",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=17"
@@ -37,7 +41,6 @@
   "dependencies": {
     "@grampro/headless-helpers": "^1.0.21",
     "fs-extra": "^11.0.4",
-    "path": "^0.12.7",
     "tailwind-merge": "^3.6.0",
     "yargs": "^17.7.2"
   },
@@ -50,5 +53,16 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
+  },
+  "overrides": {
+    "dompurify": "^3.4.16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anandhuremanan/headless-gbs-components.git"
+  },
+  "homepage": "https://kit.gramproindia.com",
+  "bugs": {
+    "url": "https://github.com/anandhuremanan/headless-gbs-components/issues"
   }
 }

@@ -9,7 +9,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/index.ts",
       "core/lines.ts",
@@ -19,7 +19,7 @@
       "react/Skeleton.tsx",
       "react/props.ts"
     ],
-    "sourceHash": "sha256:c851d86505f16b2edc202dfc4307f8f296d2469d7cf5a51b975e58f4264d5e57"
+    "sourceHash": "sha256:f94d1d6763336652599c4423a1ddfc11d8b67e31670e0b019003eed8c71eec2b"
   },
   "props": [
     {

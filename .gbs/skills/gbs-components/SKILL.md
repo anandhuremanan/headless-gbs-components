@@ -15,15 +15,30 @@ npx gbs-add-block -a Button,Input,Modal --beta
 ```
 
 Writes `component-lib/<folder>/` plus `component-lib/shared/`. Always pass
-`--beta`. Import the barrel in your component; each stylesheet goes in the
-global CSS **once** (Vite: `src/index.css`), never in a component file:
+`--beta`. Import the barrel in your component:
 
 ```ts
 import { Button } from "component-lib/button";
 ```
+
+Styles are **one line** in the global CSS (Vite: `src/index.css`), never in a
+component file. The CLI generates `component-lib/gbs.css` listing every
+stylesheet you installed, and rewrites it on each install:
+
 ```css
-@import "../component-lib/button/styles.css";
+@import "./component-lib/gbs.css";
 ```
+
+With **Tailwind v4 only**, import it after the framework and into Tailwind's
+components layer, or utilities stop overriding component rules:
+
+```css
+@import "tailwindcss";
+@import "./component-lib/gbs.css" layer(components);
+```
+
+The installer prints whichever line applies. Component CSS is unlayered, so
+Tailwind v3, Bootstrap and no-framework projects need nothing extra.
 
 Folder = lowercased name, except `data-grid`, `date-picker`, `file-uploader`,
 `number-input`, `radio-group`.
@@ -63,7 +78,9 @@ MenuItem, MenuCheckboxItem, MenuRadioGroup, MenuRadioItem, MenuGroup,
 MenuSeparator, MenuSub; Tooltip (`content`); `toast` + Toaster.
 
 **Data** — DataGrid (`data`, `columns`) + createColumnHelper: virtualized;
-sort, filter, edit, CSV/Excel/PDF export.
+sort, filter, edit, CSV/Excel/PDF export. Optional agent surface: `ai` renders a
+natural-language box, and `registerGridTool` exposes the grid to a browser agent
+over WebMCP (see "Agent surface").
 
 **Display** — Tabs/TabList/Tab (`value`)/TabPanel (`value`); Accordion +
 AccordionItem (`value`); Card/CardHeader/CardBody/CardFooter/Stat; Alert; Badge
@@ -109,6 +126,45 @@ export function InviteButton() {
   );
 }
 ```
+
+## Agent surface (DataGrid, optional)
+
+Entirely opt-in. Without it, nothing changes and nothing is downloaded.
+
+**A person typing.** `ai` renders a box above the grid. It needs a provider
+supplying an adapter; with no provider it renders nothing at all.
+
+```tsx
+import { GramproAIProvider } from "component-lib/shared";
+import { DataGrid } from "component-lib/data-grid";
+
+<GramproAIProvider adapter={myAdapter}>
+  <DataGrid data={rows} columns={cols} ai semantics={SEMANTICS} />
+</GramproAIProvider>
+```
+
+`adapter` is one function — `(utterance, contract, responseSchema) => envelope`.
+No model is bundled, downloaded or named; the app brings its own, and the key
+belongs on the app's server, never in client JavaScript.
+
+**A browser agent.** `registerGridTool(agent)` registers one WebMCP tool,
+`operate_grid`, whose schema is generated from the live grid. Requires no model
+at all.
+
+**Both go through the same validator**, which refuses an unknown column, an
+operator the type lacks, a policy-denied column, or an irreversible operation
+with no confirmation — and returns the reason. A producer proposes; it never
+acts. Do not add repair, retries or a second execution path.
+
+**Data leaves the page with a remote adapter.** The contract carries real
+values from low-cardinality columns, so the model can map "Kerala" to `region`.
+Mark personal columns `semantics: { email: { pii: true } }` — a PII column is
+denied *and* never summarised — or pass `stats: false` to summarise nothing.
+`policy.denyFilter` does **not** stop a column being described.
+
+**`semantics` is where most quality comes from**: per column, give `synonyms`,
+`description`, `unit`, `higherIsBetter`, `pii`. Reach for it before reaching for
+a bigger model.
 
 ## Don't
 

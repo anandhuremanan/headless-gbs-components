@@ -25,3 +25,22 @@ export {
   type SnapshotHistoryOptions,
 } from "./history";
 export { parseQuantity, type ParseQuantityOptions, type Quantity } from "./numbers";
+export {
+  buildToolInputSchema,
+  registerAgentTool,
+  webmcpAvailable,
+  type ModelContext,
+  type ProjectableAgent,
+  type ProjectedCommand,
+  type ProjectedOutcome,
+  type RegisterAgentToolOptions,
+  type RegistrationResult,
+  type ToolCallLog,
+  type ToolResultPayload,
+} from "./webmcp";
+export type {
+  AgentAdapter,
+  AgentProposalRequest,
+  AskOutcome,
+  AskPhase,
+} from "./adapter";

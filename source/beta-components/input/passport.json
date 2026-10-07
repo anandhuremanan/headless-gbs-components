@@ -9,7 +9,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/count.ts",
       "core/index.ts",
@@ -23,7 +23,7 @@
       "react/locale.ts",
       "react/props.ts"
     ],
-    "sourceHash": "sha256:51fc4c47cc964e8a6eea66bb824127ccf89b70a00164a8e7637b0a5e8fb5d68d"
+    "sourceHash": "sha256:cd1f71eaa81136bf659261ba01429db332a009a049654264f09f8e6f94734445"
   },
   "props": [
     {

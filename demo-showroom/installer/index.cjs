@@ -67,7 +67,7 @@ const CONFIG = {
   dependencies: {
     FormRenderer: ["Select", "MultiSelect", "Input", "DatePicker"],
   },
-  docs: "https://gramprokit.vercel.app/",
+  docs: "https://kit.gramproindia.com/",
 };
 
 const SOURCE_PATH = path.join(__dirname, "source", "components");

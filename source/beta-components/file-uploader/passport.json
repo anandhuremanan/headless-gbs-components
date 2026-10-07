@@ -13,7 +13,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/format.ts",
       "core/index.ts",
@@ -29,7 +29,7 @@
       "react/props.ts",
       "react/useFileUploader.ts"
     ],
-    "sourceHash": "sha256:ecb24c34a470f28349767b654824ccf0665505cc7ca82b8877cd970d1ecbba6d"
+    "sourceHash": "sha256:9fc7663657982ad58e5d50221e4e96816a30d6f7add8f9af4f956a48f8611832"
   },
   "props": [
     {

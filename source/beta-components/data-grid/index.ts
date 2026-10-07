@@ -10,3 +10,5 @@ export * from "./core";
 // snapshot history. Framework-free and opt-in — importing the grid does not
 // pull it in.
 export * from "./agent";
+
+export { AskGrid, type AskGridProps } from "./react/AskGrid";

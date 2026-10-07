@@ -8,7 +8,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/dismiss.ts",
       "core/index.ts",
@@ -19,7 +19,7 @@
       "react/locale.ts",
       "react/props.ts"
     ],
-    "sourceHash": "sha256:31179cb3052b894c3539468bb3f5260f6287bbedc1d760f460dccca4fe85ab9b"
+    "sourceHash": "sha256:1597ff0901ec82b7d0aa149caaad87aae1fe8f15e81c62109d5b5a1cab28ce67"
   },
   "props": [
     {

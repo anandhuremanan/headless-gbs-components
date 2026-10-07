@@ -25,6 +25,9 @@ import { defaultLocaleText, type LocaleText } from "./locale";
 import { Pagination } from "./Pagination";
 import { Popover } from "./Popover";
 import { Toolbar, type ToolbarOptions } from "./Toolbar";
+import { AskGrid } from "./AskGrid";
+import { createGridAgent, type GridAgent } from "../agent/engine";
+import type { GridAgentPolicy, GridColumnSemantics } from "../agent/contract";
 import { GridViewport } from "./Viewport";
 
 export interface DataGridProps<T> extends GridOptions<T> {
@@ -48,6 +51,18 @@ export interface DataGridProps<T> extends GridOptions<T> {
   locale?: string;
   localeText?: Partial<LocaleText>;
   "aria-label"?: string;
+  /**
+   * Render a natural-language box above the grid.
+   *
+   * Needs a `<GramproAIProvider>` above it supplying an adapter; without one
+   * this renders nothing and the grid is unchanged. No model is bundled or
+   * downloaded — the application brings its own.
+   */
+  ai?: boolean;
+  /** What a machine cannot read off a column definition: units, synonyms, PII. */
+  semantics?: Readonly<Record<string, GridColumnSemantics>>;
+  /** Columns and operations withheld from whatever is driving the grid. */
+  agentPolicy?: GridAgentPolicy;
 }
 
 const ROW_HEIGHTS: Record<Density, number> = { compact: 32, standard: 40, comfortable: 52 };
@@ -96,10 +111,32 @@ export function DataGrid<T>(props: DataGridProps<T>) {
     style,
     locale,
     localeText: localeOverrides,
+    ai = false,
+    semantics,
+    agentPolicy,
   } = props;
 
   const [engine] = useState(() => createGridEngine<T>(props));
   useImperativeHandle(ref, () => engine.api, [engine]);
+
+  /*
+   * The agent is built once, from the same engine the grid renders, so the
+   * contract it advertises is this instance's real state rather than a copy.
+   * Only when `ai` is on: an agent walks the data to derive column stats and
+   * enum values, which a grid nobody is going to ask questions of should not
+   * pay for.
+   */
+  const [agent] = useState<GridAgent<T> | null>(() =>
+    ai
+      ? createGridAgent<T>({
+          api: engine.api,
+          options: props,
+          semantics,
+          policy: agentPolicy,
+          locale,
+        })
+      : null,
+  );
 
   // Selection and UI state are deliberately not selected here: changing them
   // re-renders only the rows and cells that subscribe to them.
@@ -243,6 +280,8 @@ export function DataGrid<T>(props: DataGridProps<T>) {
         data-density={density}
         data-stale={stale || undefined}
       >
+        {ai && <AskGrid agent={agent} aria-label={props['aria-label']} />}
+
         {toolbarOptions && (
           <Toolbar
             options={toolbarOptions}

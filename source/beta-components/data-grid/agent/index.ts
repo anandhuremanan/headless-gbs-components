@@ -67,3 +67,13 @@ export {
   type GridExecution,
   type GridView,
 } from "./engine";
+
+export {
+  GRID_TOOL_NAME,
+  registerGridTool,
+  type ModelContext,
+  type RegisterGridToolOptions,
+  type RegistrationResult,
+  type ToolCallLog,
+  type ToolResultPayload,
+} from "./webmcp";

@@ -14,11 +14,12 @@
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
-  buildToolInputSchema,
+  GRID_TOOL_NAME,
   registerGridTool,
-  TOOL_NAME,
-} from "../registerGridTool";
-import type { GridAgent } from "@/components/data-grid";
+  type GridAgent,
+} from "@/components/data-grid";
+// Generic to any component's agent, so it lives in the shared agent core.
+import { buildToolInputSchema } from "@/components/shared";
 /*
  * The browser-safe mount, not `tools/eval/harness` — the harness reads the
  * fixture with `node:fs`, and importing it here would pull Node types into
@@ -83,7 +84,7 @@ describe("registration and schema", () => {
     const result = registerGridTool(agent);
     expect(result).toMatchObject({ registered: true, toolName: "operate_grid" });
     expect(tools).toHaveLength(1);
-    expect(tools[0].name).toBe(TOOL_NAME);
+    expect(tools[0].name).toBe(GRID_TOOL_NAME);
   });
 
   it("derives the input schema from the live contract, not from a copy", () => {

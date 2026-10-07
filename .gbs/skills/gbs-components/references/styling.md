@@ -115,23 +115,40 @@ Classes are joined with `cx` from `shared/core/cx.ts`, which drops falsy values
 
 ## 4. Cascade layers and Tailwind
 
-Every `styles.css` ships its rules in one layer and declares nothing else:
+Every `styles.css` ships **unlayered** — no `@layer` wrapper anywhere:
 
 ```css
-@layer gbs { /* the component's rules */ }
+.bt-root { /* the component's rules */ }
 ```
 
-Where `gbs` sits is the app's call. Declare the order once in the global CSS;
-anything in a later layer beats the components:
+That is deliberate. An unlayered rule beats every layered rule regardless of
+specificity, so a layered library loses to any unlayered reset: Tailwind v3's
+preflight and Bootstrap's Reboot both strip borders, padding and radii off
+layered component rules. Unlayered, a class selector beats `*` on ordinary
+specificity and both work with no setup.
+
+The app imports the generated barrel once:
 
 ```css
-@layer reset, gbs, app, utilities;
+@import "./component-lib/gbs.css";
 ```
 
-With Tailwind v4, naming `gbs` before `utilities` means **a utility passed
-through `className` / `classNames` wins** without `!important`. Tailwind v3
-needs no line — it emits utilities unlayered, which already outrank a layer.
-A project with no CSS framework needs no line either.
+With **Tailwind v4** — and only v4, which layers its own utilities — import it
+after the framework and into Tailwind's components layer, so utilities still
+win:
+
+```css
+@import "tailwindcss";
+@import "./component-lib/gbs.css" layer(components);
+```
+
+Both the order and the `layer()` matter. Imported before the framework, the
+`components` layer registers first and Tailwind's preflight lands after it,
+which strips the component rules. Imported without `layer()`, the unlayered
+rules outrank the utilities and `className` stops overriding them.
+
+Tailwind **v3** needs neither: it emits utilities unlayered, after our CSS, so
+source order already decides. A project with no CSS framework needs neither.
 
 ```tsx
 <Button className="w-full sm:w-auto" classNames={{ content: "gap-3" }}>Save</Button>
@@ -140,6 +157,28 @@ A project with no CSS framework needs no line either.
 Do not use `!important`, and do not write selectors against internal class names
 (`.bt-root`, `.dg-cell`) in app CSS — they are implementation detail. Use the
 variables or the slots.
+
+## 4b. Scrollbars
+
+Every scrolling surface in the kit is thin by default, using the standard
+`scrollbar-width` / `scrollbar-color` properties (Baseline since December 2024)
+rather than `::-webkit-scrollbar`. Four tokens control all of them:
+
+```css
+:root {
+  --gbs-scrollbar-width: thin;        /* auto | thin | none */
+  --gbs-scrollbar-thumb: ...;         /* derived from --gbs-accent */
+  --gbs-scrollbar-thumb-hover: ...;
+  --gbs-scrollbar-track: transparent;
+}
+```
+
+Set them on `:root` to restyle every scrollbar, or on one element for one.
+`scrollbar-width` takes no length — only `auto | thin | none`.
+
+For your own scrolling areas, add `class="gbs-scroll"` to match. The kit never
+touches scrollbars it was not asked to: an unrelated scroll container keeps the
+browser default.
 
 ## 5. Unlayered resets (Bootstrap, Normalize)
 

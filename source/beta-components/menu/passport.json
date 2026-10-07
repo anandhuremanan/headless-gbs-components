@@ -16,7 +16,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/index.ts",
       "core/navigation.ts",
@@ -29,7 +29,7 @@
       "react/props.ts",
       "react/useMenuKeys.ts"
     ],
-    "sourceHash": "sha256:cf4d3b0258796a3dc14574e4495d1eda3c41472dcf2f9a7d66c7b347be4e0ac2"
+    "sourceHash": "sha256:a0f06be6f8e2b60344c2e3c578119cd0e934c86abcc7eedad2c83f226e2fb9e6"
   },
   "props": [
     {

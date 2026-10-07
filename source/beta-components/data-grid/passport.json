@@ -4,15 +4,17 @@
     "component": "DataGrid",
     "folder": "data-grid",
     "exports": [
+      "AskGrid",
       "COLUMN_REQUIREMENT",
       "DataGrid",
       "GRID_CONTRACT_VERSION",
       "GRID_OPERATIONS",
-      "GRID_OPERATION_NAMES"
+      "GRID_OPERATION_NAMES",
+      "GRID_TOOL_NAME"
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "agent/coerce.ts",
       "agent/contract.ts",
@@ -23,6 +25,7 @@
       "agent/intent.ts",
       "agent/operations.ts",
       "agent/validate.ts",
+      "agent/webmcp.ts",
       "core/columnHelper.ts",
       "core/columns.ts",
       "core/filtering.ts",
@@ -44,6 +47,7 @@
       "export/xlsx.ts",
       "export/zip.ts",
       "index.ts",
+      "react/AskGrid.tsx",
       "react/Cell.tsx",
       "react/ColumnMenu.tsx",
       "react/DataGrid.tsx",
@@ -60,10 +64,36 @@
       "react/keyboard.ts",
       "react/locale.ts"
     ],
-    "sourceHash": "sha256:fe02c338d9b15d5b0e6a6cd335e4ad521611718898506340714507414c52fad6"
+    "sourceHash": "sha256:7f14a5352d469fc0a345b87886162fcc237efe6d305c0a7d67e5801e6aabea6c"
   },
   "purpose": "Display and operate on tabular data. Virtualized; holds its own sort, filter, search, selection, column and pagination state in an external store exposed through GridApi.",
   "props": [
+    {
+      "name": "agent",
+      "type": "other",
+      "typeText": "GridAgent<T> | null",
+      "required": true,
+      "origin": "derived"
+    },
+    {
+      "name": "agentPolicy",
+      "type": "other",
+      "typeText": "GridAgentPolicy | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "Columns and operations withheld from whatever is driving the grid.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
+      "name": "ai",
+      "type": "boolean",
+      "typeText": "boolean | undefined",
+      "required": false,
+      "default": false,
+      "origin": "derived",
+      "description": "Render a natural-language box above the grid.\r\n\r\nNeeds a `<GramproAIProvider>` above it supplying an adapter; without one\r\nthis renders nothing and the grid is unchanged. No model is bundled or\r\ndownloaded — the application brings its own.",
+      "descriptionOrigin": "jsdoc"
+    },
     {
       "name": "aria-label",
       "type": "string",
@@ -322,6 +352,13 @@
       "origin": "derived"
     },
     {
+      "name": "placeholder",
+      "type": "string",
+      "typeText": "string | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
       "name": "ref",
       "type": "other",
       "typeText": "Ref<GridApi<T>> | undefined",
@@ -359,6 +396,15 @@
       "origin": "derived"
     },
     {
+      "name": "semantics",
+      "type": "other",
+      "typeText": "Readonly<Record<string, GridColumnSemantics>> | undefined",
+      "required": false,
+      "origin": "derived",
+      "description": "What a machine cannot read off a column definition: units, synonyms, PII.",
+      "descriptionOrigin": "jsdoc"
+    },
+    {
       "name": "state",
       "type": "other",
       "typeText": "Partial<GridState> | undefined",
@@ -370,6 +416,13 @@
       "name": "style",
       "type": "other",
       "typeText": "CSSProperties | undefined",
+      "required": false,
+      "origin": "derived"
+    },
+    {
+      "name": "suggestions",
+      "type": "other",
+      "typeText": "readonly string[] | undefined",
       "required": false,
       "origin": "derived"
     },
@@ -976,9 +1029,9 @@
   },
   "examples": [],
   "coverage": {
-    "propsTotal": 39,
-    "propsDescribed": 9,
-    "describedPct": 23,
+    "propsTotal": 45,
+    "propsDescribed": 12,
+    "describedPct": 27,
     "authoredSections": [
       "accessibility",
       "composition",

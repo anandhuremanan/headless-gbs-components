@@ -8,7 +8,7 @@
     ]
   },
   "source": {
-    "libraryVersion": "2.2.0",
+    "libraryVersion": "2.3.0",
     "files": [
       "core/index.ts",
       "core/types.ts",
@@ -17,7 +17,7 @@
       "react/Tooltip.tsx",
       "react/props.ts"
     ],
-    "sourceHash": "sha256:9077b7d3a29e80e24669437d922b18ff41684b005805060aaaca5f3cd9efe0d1"
+    "sourceHash": "sha256:8e0de012f56b518fd5c68d2ee98a73f4d1435cb9d61e59f277cc377d609dd17f"
   },
   "props": [
     {

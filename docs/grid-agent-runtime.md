@@ -417,7 +417,8 @@ source/beta-components/shared/core/agent/     component-agnostic
 ├── types.ts       OperationDefinition, OperationExecutor, ValidationResult
 ├── schema.ts      the JSON Schema subset, checked without a dependency
 ├── history.ts     snapshot undo/redo
-└── numbers.ts     parseQuantity: lakh, crore, k, %, ₹, (negative)
+├── numbers.ts     parseQuantity: lakh, crore, k, %, ₹, (negative)
+└── webmcp.ts      the WebMCP projection, for any component's agent
 
 source/beta-components/data-grid/agent/       grid-specific, framework-free
 ├── operations.ts  the 21, and what backs each
@@ -427,7 +428,8 @@ source/beta-components/data-grid/agent/       grid-specific, framework-free
 ├── coerce.ts      values, dates, options, near-matching
 ├── validate.ts    the five layers, explanations, dry runs
 ├── executors.ts   GridApi-backed registry
-└── engine.ts      createGridAgent, history, saved views
+├── engine.ts      createGridAgent, history, saved views
+└── webmcp.ts      registerGridTool: the grid's name, words and numbers
 
 eval/grid/v0/      fixture.json, cases.jsonl
 tools/eval/        harness.ts, report.cjs, __tests__/corpus.test.ts
@@ -435,6 +437,175 @@ tools/eval/        harness.ts, report.cjs, __tests__/corpus.test.ts
 
 Nothing under `agent/` imports React, so a command can be validated on a server
 before it is ever sent to a browser.
+
+## Asking in words: `<DataGrid ai />`
+
+A person types a sentence; the grid moves. The whole integration is a provider
+and a prop:
+
+```tsx
+import { GramproAIProvider } from "@/components/shared";
+import { DataGrid } from "@/components/data-grid";
+
+<GramproAIProvider adapter={myAdapter} suggestions={["Who earns over 150k?"]}>
+  <DataGrid data={rows} columns={cols} ai semantics={SEMANTICS} agentPolicy={POLICY} />
+</GramproAIProvider>
+```
+
+`adapter` is one function. No model is bundled, downloaded or named:
+
+```ts
+type AgentAdapter = (request: {
+  utterance: string;        // what the person typed
+  contract: unknown;        // what this grid can do, right now
+  responseSchema: JsonSchema;
+  signal?: AbortSignal;
+}) => Promise<unknown>;      // the response envelope, unvalidated
+```
+
+Whatever it returns goes straight to `agent.respond()`. A model that invents a
+column, picks an operator the type does not have, or answers with prose gets
+refused by the same five layers a form faces, and the person sees the
+validator's words rather than a guess. **The adapter proposes; it never acts.**
+
+### Without a provider there is no feature
+
+`ai` with no `<GramproAIProvider>` above it renders the grid exactly as before —
+no box, no network, no bytes. That is the opt-in: an application that never
+configures an adapter cannot accidentally ship one. `createGridAgent` is also
+only called when `ai` is on, so a grid nobody will ask questions of does not pay
+to derive column statistics.
+
+### What the box does with each answer
+
+| The validator says | The person sees |
+| --- | --- |
+| `done` | what was applied, in the grid's own words, plus any coercion note — `scale-applied: Read "150k" as 150000` |
+| `clarify` | the model's question, with the grid untouched |
+| `needs-confirmation` | the confirmation, and a **Yes, do it** button — irreversible work never runs on a sentence alone |
+| `rejected` | the reason, the layer that refused it, and any suggested column |
+| `declined` | why this grid cannot do that |
+
+A failure to *reach* the adapter is reported separately from the adapter
+refusing, so a network error never reads as "your wording was wrong".
+
+### What leaves the page, and how to stop it
+
+The adapter receives the **runtime contract**, and the contract contains real
+values from the grid. A category column with few distinct values has them
+listed — that is deliberate, and it is what lets a model map the word "Kerala"
+onto the `region` column instead of guessing. But it means that enabling `ai`
+with a remote adapter sends a sample of the host's data to whoever that adapter
+calls. Say so in your own privacy documentation.
+
+Three controls, in order of precision:
+
+| Control | Effect |
+| --- | --- |
+| `semantics: { email: { pii: true } }` | **The column is denied entirely** and *carries no summary* — a summary is the data in miniature, so a PII column contributes no values. On by default via `policy.denyPii`. |
+| `policy.deny: ["email"]` | The same, for columns that are not personal data but should not be described. |
+| `stats: false` on `createGridAgent` | No column is summarised at all. The contract still describes types and operators, so the model keeps working; it loses the value hints that help it resolve words to columns. |
+
+The safe default is to mark personal columns `pii` and leave the rest. A column
+that is already restricted by `policy.denyFilter` **is still summarised** —
+`denyFilter` governs what may be done with a column, not whether it may be
+described. Use `deny` or `pii` when the values themselves are the concern.
+
+A local adapter — one that never leaves the browser — makes all of this moot,
+which is the main argument for the browser-local direction.
+
+### Keys belong on a server
+
+The demo's adapter posts to the application's own endpoint, which holds the key
+and builds the prompt. Putting a model key in client JavaScript publishes it to
+every visitor, so the library has no key handling and no provider of its own —
+swapping one model for another is a change to the host's adapter alone.
+
+## WebMCP: letting a browser agent drive the grid
+
+WebMCP lets a page hand its own tools to whatever agent is driving the browser.
+One call registers the grid:
+
+```tsx
+import { createGridAgent, registerGridTool } from "@/components/data-grid";
+
+const agent = createGridAgent({ api: apiRef.current, options, semantics, policy });
+const result = registerGridTool(agent);
+
+if (!result.registered) console.info(result.reason);
+```
+
+That is the whole integration. It registers **one** tool, `operate_grid`, whose
+input schema *is* `agent.schema()` — so a grid with different columns, operator
+sets or policy advertises different arguments with no extra work.
+
+One tool, not twenty-one, because the operation list is not the agent's
+interface: the generated intent schema is, since that is where the contract and
+the five layers already meet. Twenty-one separately exposed operations would be
+twenty-one schemas to keep in step with a contract that already describes
+itself.
+
+### It adds no second path
+
+`execute` runs the production pipeline and nothing else — validate, stop on
+anything irreversible, then execute. There is no repair, no retry and no
+WebMCP-only branch. An agent that sends something the grid cannot do gets the
+same refusal, with the same `code` and `layer`, that a form would have got, and
+nothing mutates:
+
+| An agent sends | Layer | Result |
+| --- | --- | --- |
+| a column that does not exist | reference | `unknown-column`, with the nearest real column suggested |
+| an operator the column's type lacks | schema | `enum` — and a policy-denied column has no branch to target in the first place |
+| a filter on a `denyFilter` column | policy | `not-filterable` |
+| `export` with no confirmation | — | `needs-confirmation`; the download does not happen |
+| `{ "intents": [] }` | — | `missing-intents`, before the validator is reached |
+
+An agent does not get to skip a confirmation a person would see.
+
+### Browser support, honestly
+
+The specification is a [Draft Community Group
+Report](https://webmachinelearning.github.io/webmcp/) and is not on the W3C
+standards track. It is implemented in Chromium only, behind
+`--enable-features=WebMCPTesting`, the `chrome://flags/#enable-webmcp-testing`
+flag, or an origin-trial token. Three details cost a wrong run each:
+
+- it is `document.modelContext`; `navigator.modelContext` was the early
+  spelling and has been deprecated since Chromium 150,
+- Chrome passes `inputSchema` and the call arguments to the agent as JSON
+  *strings*, and returns the result as a JSON string,
+- `registerTool` throws on a duplicate name, and React StrictMode runs effects
+  twice in development — so register once, behind a ref.
+
+`registerGridTool` returns rather than throws when the surface is absent,
+because that is the normal case today: the grid renders either way and the
+agent affordance is simply not there. `webmcpAvailable()` answers the same
+question without registering, and both guard `document` rather than assuming
+it, so importing this during server rendering is safe.
+
+### Any component, not just the grid
+
+The mechanism is component-agnostic and lives in
+`shared/core/agent/webmcp.ts`. `registerAgentTool` takes anything satisfying
+`ProjectableAgent` — `schema()`, `validate()`, `execute()` — plus `describe`
+and `summarise` for the parts that are specific to a component.
+`registerGridTool` is a thirty-line binding over it, and a DatePicker binding
+would be the same size once that component has operations.
+
+Because the projection owns no semantics, a `modelContext` can be injected: a
+host that wants a tool registered somewhere other than `document` — a test, a
+polyfill, an in-page registry so a UI can exercise the same descriptor on a
+browser without WebMCP — passes one in.
+
+### Where it fits against a model
+
+WebMCP and a natural-language model answer different questions and do not
+compete. WebMCP serves an agent that is **already** driving the browser, and
+requires the library to ship no model at all. A model would serve a *user*
+typing into the application's own UI. Both converge on the same validator and
+the same executors, which is what makes having both sane rather than
+duplicative — and it is why neither needs to be a core dependency.
 
 ## Answering as something other than a command
 

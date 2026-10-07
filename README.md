@@ -13,6 +13,14 @@ npx gbs-add-block@latest -a DataGrid --beta
 The source lands in `component-lib/`. There is no runtime package to depend on,
 and nothing to wait for upstream when you need a change.
 
+> **Upgrading from 2.1.0 or 2.2.0 — one line to change.** Component CSS no
+> longer lives in a cascade layer, because a layer loses to any unlayered reset
+> and that broke Tailwind v3 and Bootstrap outright. Delete any
+> `@layer gbs, utilities;` you added, and import the generated barrel:
+> `@import "./component-lib/gbs.css";` — with Tailwind v4, after the framework
+> and `layer(components)`. The installer prints the line you need, and
+> [`CHANGELOG.md`](CHANGELOG.md) has the detail.
+
 ## What "agent-native" means here
 
 Most component libraries are built for a human reading documentation. These are
@@ -68,7 +76,7 @@ genuinely headless, and the component READMEs document it under "Headless use".
 
 ## Documentation
 
-[gramprokit.vercel.app](https://gramprokit.vercel.app) — usage and props per
+[kit.gramproindia.com](https://kit.gramproindia.com) — usage and props per
 component.
 
 In this repository:
@@ -110,35 +118,74 @@ version. What is built and tested:
 
 - 27 beta components, source-first, zero runtime dependencies
 - Passports for all 27, generated and drift-checked
-- The DataGrid agent runtime, with 21 operations and a 230-case corpus
-- A model evaluation harness — no model shipped yet
+- The DataGrid agent runtime: 21 operations, five validation layers, snapshot
+  undo, and a frozen 231-case evaluation corpus
+- **`<DataGrid ai />`** — a natural-language box, driven by an adapter the
+  application supplies. No model is bundled, downloaded or named.
+- **WebMCP** — one tool, `operate_grid`, exposing the same validated boundary to
+  a browser agent. Needs no model at all.
+- A model evaluation harness, with the measurements that justify both
 
-Still open: a browser-local model behind an `ai` prop, operations for DatePicker
-and Combobox, and the remaining authored passport metadata. The roadmap and its
-unresolved questions are in
+Every producer — a model, a browser agent, a form — proposes. The validator
+authorizes. The executor mutates state. That boundary is the architecture, and
+it is why no AI path gets a second route into the component.
+
+Still open: operations for DatePicker and Combobox (both are controlled
+components with no imperative write API, which the executor abstraction is meant
+to solve but has not yet proven), and the remaining authored passport metadata.
+The roadmap and its unresolved questions are in
 [`docs/agent-native-architecture.md`](docs/agent-native-architecture.md).
 
-## Cascade layers (since 2.1.0)
+## Styles
 
-**The application owns CSS cascade order.** Component rules live in a layer of
-their own, `gbs`, and the stylesheets no longer declare a global layer order.
+Install a component and the CLI writes `gbs.css` next to it, importing every
+component stylesheet you actually installed. Add one line to your global CSS:
 
-Previously every `styles.css` opened with
-`@layer theme, base, components, utilities;` — a leaf file asserting the order
-of the whole document. Whichever stylesheet the bundler emitted first silently
-won that argument. It also meant a Tailwind v3 build failed outright, and
-Bootstrap's Reboot could not be put in front of the components.
+```css
+@import "./component-lib/gbs.css";
+```
 
-- Tailwind **v3** projects now build. Utilities override components there too,
-  with no setup.
-- Tailwind **v4** projects add one line to their global CSS:
-  `@layer gbs, utilities;` — **without it, utilities no longer override
-  component styles.** This is the migration step.
-- Bootstrap, Normalize or any unlayered reset can now be placed before the
-  components: `@layer bootstrap, gbs, app, utilities;`
-- Projects with no CSS framework need no change.
+That is all, for Tailwind v3, Bootstrap, and projects with no CSS framework.
 
-See the Theming page, "Cascade layers", for the full model.
+**Tailwind v4** is the one exception, because it puts its own utilities in a
+cascade layer. Import ours after the framework, inside Tailwind's components
+layer, so utilities still win:
+
+```css
+@import "tailwindcss";
+@import "./component-lib/gbs.css" layer(components);
+```
+
+The installer detects which of these you need and prints it. `gbs.css` is
+rewritten on every install, so the list stays correct as you add components.
+
+**Why it works this way.** Component CSS ships *unlayered*. An unlayered rule
+beats every layered rule regardless of specificity, so a library that puts its
+rules in a cascade layer loses to any unlayered reset — Tailwind v3's preflight
+and Bootstrap's Reboot both qualify. Unlayered, our rules win on ordinary
+specificity (a class beats `*`), and your own CSS and utilities still override
+them the normal way. `layer(components)` on the import is native CSS, and is
+the standard way to place third-party CSS under Tailwind v4.
+
+If you forget it on v4, the failure is small and local: the component renders
+correctly, but a utility passed through `className` will not override it.
+
+### Scrollbars
+
+Every scrolling surface in the kit is thin by default, using the standard
+`scrollbar-width` / `scrollbar-color` properties. Restyle them all from `:root`:
+
+```css
+:root {
+  --gbs-scrollbar-width: auto;              /* auto | thin | none */
+  --gbs-scrollbar-thumb: var(--gbs-accent); /* defaults to a muted accent */
+  --gbs-scrollbar-track: transparent;
+}
+```
+
+Add `class="gbs-scroll"` to your own scrolling areas to match. Scroll containers
+the kit does not own keep the browser default — it never restyles scrollbars it
+was not asked to.
 
 ## Authors
 

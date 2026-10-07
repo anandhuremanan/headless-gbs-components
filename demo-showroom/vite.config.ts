@@ -3,12 +3,15 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+import { askEndpoint } from "./ask-endpoint.js";
 
 export default defineConfig({
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
+    // The demo's own model endpoint, so the API key never reaches the bundle.
+    askEndpoint(),
   ],
 
   resolve: {
@@ -24,6 +27,21 @@ export default defineConfig({
     },
   },
 
+  build: {
+    rollupOptions: {
+      input: {
+        // The showroom itself.
+        index: fileURLToPath(new URL("index.html", import.meta.url)),
+        /*
+         * The WebMCP verification page. Built as well as served in dev, so the
+         * real-Chrome driver can be pointed at a production bundle rather than
+         * only at the dev server.
+         */
+        webmcp: fileURLToPath(new URL("webmcp.html", import.meta.url)),
+      },
+    },
+  },
+
   server: {
     fs: {
       allow: [".."],
@@ -34,8 +52,11 @@ export default defineConfig({
     include: [
       "../source/**/__tests__/**/*.test.ts",
       "../tools/**/__tests__/**/*.test.ts",
-      // The WebMCP projection lives in this app rather than in the published
-      // package, so its tests live here too.
+      /*
+       * The WebMCP projection itself now lives in the library, with unit tests
+       * under `source/`. What stays here is the integration test that drives a
+       * real DataGrid through the registered tool.
+       */
       "./src/**/__tests__/**/*.test.ts",
     ],
   },

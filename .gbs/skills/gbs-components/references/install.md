@@ -157,11 +157,32 @@ Import the barrel in the component that uses it:
 import { Input, OtpInput } from "component-lib/input";
 ```
 
-Put the stylesheet in the project's global CSS, once — never in a component file:
+Put the styles in the project's global CSS, once — never in a component file.
+The CLI writes `component-lib/gbs.css` importing every stylesheet you installed
+and rewrites it on each install, so this one line stays correct as you add
+components:
 
 ```css
-@import "../component-lib/input/styles.css";
+@import "./component-lib/gbs.css";
 ```
+
+With **Tailwind v4 only**, import it after the framework and into Tailwind's
+components layer. Tailwind v4 puts its own utilities in a cascade layer, and an
+unlayered component rule would outrank them:
+
+```css
+@import "tailwindcss";
+@import "./component-lib/gbs.css" layer(components);
+```
+
+Both the order and the `layer()` matter. Imported before the framework, the
+layer registers first and Tailwind's preflight lands after it, stripping the
+component rules. Imported without `layer()`, `className` stops overriding them.
+Tailwind v3, Bootstrap and projects with no framework need neither — the
+installer prints whichever line applies to yours.
+
+Individual stylesheets remain importable (`component-lib/input/styles.css`) if
+you would rather curate the list yourself.
 
 Most repos set a path alias. The library's own READMEs are written with
 `@/components/<folder>`; the DataGrid README uses `component-lib/data-grid`.
@@ -173,7 +194,8 @@ Both mean the installed folder — follow whatever the host repo already uses.
 | --- | --- |
 | `component-lib/<folder>` | Components, hooks, types, locale defaults. **Use this.** |
 | `component-lib/<folder>/core` | Framework-free helpers; safe on a server. Documented per component. |
-| `component-lib/<folder>/styles.css` | The stylesheet. |
+| `component-lib/gbs.css` | Generated barrel of every installed stylesheet. **Import this.** |
+| `component-lib/<folder>/styles.css` | One component's stylesheet, if you curate the list yourself. |
 | `component-lib/shared` | Shared helpers, mostly used by the components themselves. |
 
 Anything deeper (`component-lib/input/react/Input`) is internal. It will resolve,

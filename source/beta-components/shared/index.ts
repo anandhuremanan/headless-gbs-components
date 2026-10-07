@@ -9,3 +9,9 @@ export { version as sharedVersion } from "./version";
 
 // Agent runtime: the component-agnostic operation/validation/history layer.
 export * from "./core/agent";
+export {
+  GramproAIProvider,
+  useAgentAdapter,
+  type GramproAIProviderProps,
+} from "./react/GramproAIProvider";
+export { useAskAgent, type AskableAgent, type AskExecution, type UseAskAgent } from "./react/useAskAgent";
