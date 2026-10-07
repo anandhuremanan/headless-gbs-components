@@ -1,4 +1,16 @@
-# GramproKit as an agent-native UI runtime
+# GramproKit: an agent-native UI runtime
+
+**This is the library's positioning, not an aspiration.** The passport, the
+runtime contract and the validator all ship. What does not ship yet is a model,
+and the ordering is deliberate: the contract and the safety layer come first, a
+model plugs into the front of them later. A library that shipped the model first
+would have nothing to stop it being confidently wrong.
+
+An earlier framing called these components "headless". That was wrong — they
+ship 27 stylesheets with a default look and dark mode, and headless means
+unstyled everywhere else in the ecosystem. The components have a headless
+*core*; the library is not headless. See the README.
+
 
 Architecture proposal. Status: **phases 1 and 2 are implemented; the rest is still
 proposal.** Claims are marked either *established* (verifiable, with a source) or

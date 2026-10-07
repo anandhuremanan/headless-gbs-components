@@ -132,6 +132,19 @@ describe("clarify is validated, not waved through", () => {
     expect(agent().respond({ result: "clarify", question: "eh" })).toMatchObject({ status: "rejected" });
   });
 
+  it("names a mis-nested envelope instead of printing [object Object]", () => {
+    const nested = agent().respond({ result: { clarify: "Which column did you mean?" } });
+    expect(nested).toMatchObject({ status: "rejected", code: "unknown-result" });
+    if (nested.status !== "rejected") return;
+    expect(nested.reason).not.toContain("[object Object]");
+    expect(nested.reason).toContain("an object");
+    expect(nested.reason).toContain('Did you mean { "result": "clarify"');
+
+    expect(agent().respond({ result: 42 }).reason).toContain("a number");
+    expect(agent().respond({ result: ["a"] }).reason).toContain("a list");
+    expect(agent().respond({ result: null }).reason).toContain("null");
+  });
+
   it("refuses a declined with no reason", () => {
     expect(agent().respond({ result: "declined" })).toMatchObject({ status: "rejected" });
   });
@@ -205,6 +218,52 @@ describe("scoring is post-coercion", () => {
     });
     expect(result.correct).toBe(true);
     expect(result.exactMatch).toBe(false);
+  });
+
+  it("reads a quantity written in words, since the prompt forbids converting it", async () => {
+    const entry = {
+      id: "t-words",
+      category: "test",
+      utterance: "Revenue above one crore",
+      expect: "accept",
+      intents: [{ action: "filter", column: "revenue", operator: "gt", value: 10000000 }],
+    };
+    const result = await score(entry, {
+      result: "command",
+      intents: [{ action: "filter", column: "revenue", operator: "gt", value: "one crore" }],
+    });
+    expect(result.correct).toBe(true);
+  });
+
+  it("flags a wrong answer that still showed the right rows, without crediting it", async () => {
+    /*
+     * On this fixture nothing is dated in the future, so `after <date>` and
+     * `between <date> and today` select the same rows by different states.
+     */
+    const entry = {
+      id: "t-rows",
+      category: "test",
+      utterance: "Signed up in the last 30 days",
+      expect: "accept",
+      intents: [
+        { action: "filter", column: "signedUp", operator: "between", value: "2026-09-06", value2: "2026-10-06" },
+      ],
+    };
+    const result = await score(entry, {
+      result: "command",
+      intents: [{ action: "filter", column: "signedUp", operator: "after", value: "2026-09-06" }],
+    });
+    expect(result.correct).toBe(false);
+    expect(result.rowSetMatch).toBe(true);
+    expect(result.failure).toBe("wrong_operator");
+  });
+
+  it("does not flag row equivalence when the rows really differ", async () => {
+    const result = await score(acceptCase, {
+      result: "command",
+      intents: [{ action: "filter", column: "region", operator: "equals", value: "Karnataka" }],
+    });
+    expect(result.rowSetMatch).toBe(false);
   });
 
   it("is no more permissive than the executor", async () => {

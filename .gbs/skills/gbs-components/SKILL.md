@@ -1,6 +1,6 @@
 ---
 name: gbs-components
-description: Builds UI with the GBS headless component library (gbs-add-block). Use when adding or changing UI in apps that have a component-lib/ folder.
+description: Builds UI with the GramproKit component library (gbs-add-block). Use when adding or changing UI in apps that have a component-lib/ folder.
 autoAttach: ["src/**/*.tsx", "src/**/*.jsx", "app/**/*.tsx", "components/**/*.tsx"]
 ---
 

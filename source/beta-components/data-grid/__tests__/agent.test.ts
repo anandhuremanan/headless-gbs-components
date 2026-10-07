@@ -486,6 +486,22 @@ describe("coercion", () => {
     expect(result.warnings.map((w) => w.code)).toContain("currency-mismatch");
   });
 
+  it("reads a quantity written in words", () => {
+    // The coercion layer exists so a model never has to do this arithmetic,
+    // and the prompt tells it to pass the words through untouched.
+    expect(parseQuantity("one crore")).toMatchObject({ value: 10000000, scale: "crore" });
+    expect(parseQuantity("ten lakh")).toMatchObject({ value: 1000000 });
+    expect(parseQuantity("five hundred")).toMatchObject({ value: 500 });
+    expect(parseQuantity("twenty five lakh")).toMatchObject({ value: 2500000 });
+    expect(parseQuantity("twenty-five")).toMatchObject({ value: 25 });
+    expect(parseQuantity("ninety nine")).toMatchObject({ value: 99 });
+    expect(parseQuantity("twenty percent")).toMatchObject({ value: 20, percent: true });
+    expect(parseQuantity("zero")).toMatchObject({ value: 0 });
+    // An article is not a number: reading junk as 1 is worse than refusing it.
+    expect(parseQuantity("a squillion")).toBeNull();
+    expect(parseQuantity("a crore")).toBeNull();
+  });
+
   it("reads written quantities the same way every time", () => {
     expect(parseQuantity("1 lakh")).toMatchObject({ value: 100000, scale: "lakh" });
     expect(parseQuantity("2 crore")).toMatchObject({ value: 20000000 });

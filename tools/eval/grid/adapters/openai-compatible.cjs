@@ -31,9 +31,9 @@ const PROVIDERS = {
   gemini: {
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
     env: "GOOGLE_API_KEY",
-    defaultModel: "gemini-3-flash",
+    defaultModel: "gemini-3.5-flash-lite",
     constrained: "json_schema",
-    note: "free tier, no card: the roomiest option for a full 230-case run",
+    note: "free tier, no card: the roomiest option for a full 230-case run. Lite answers in ~1s; the full Flash models reason first, so they are slower and need a bigger token budget",
   },
   groq: {
     baseUrl: "https://api.groq.com/openai/v1",
@@ -90,7 +90,15 @@ function build(providerName, modelId, id) {
             "that needs no credentials (`--model=baseline`).";
     },
 
-    async complete({ system, user, schema, decoding, temperature = 0, maxTokens = 1024, signal }) {
+    /*
+     * 4096, not 1024. A reasoning model counts its thinking against the same
+     * budget, and a budget that runs out mid-thought returns truncated content
+     * with `finish_reason: "length"` — which looks exactly like a model that
+     * cannot produce JSON. Output here is a few hundred tokens at most, so a
+     * generous ceiling costs nothing and removes a whole class of false
+     * failure.
+     */
+    async complete({ system, user, schema, decoding, temperature = 0, maxTokens = 4096, signal }) {
       const body = {
         model,
         temperature,
@@ -141,8 +149,21 @@ function build(providerName, modelId, id) {
         }
 
         const payload = await response.json();
+        const choice = payload.choices?.[0];
+        const finishReason = choice?.finish_reason;
+
+        // Truncation is ours to fix, not the model's to be blamed for.
+        if (finishReason === "length") {
+          throw new Error(
+            `${providerName} truncated the answer at ${maxTokens} tokens ` +
+              `(finish_reason: length). Raise the budget — a reasoning model spends it ` +
+              "thinking before it writes anything.",
+          );
+        }
+
         return {
-          text: payload.choices?.[0]?.message?.content ?? "",
+          text: choice?.message?.content ?? "",
+          finishReason,
           latencyMs: Number(process.hrtime.bigint() - started) / 1e6,
           usage: payload.usage
             ? { inputTokens: payload.usage.prompt_tokens, outputTokens: payload.usage.completion_tokens }

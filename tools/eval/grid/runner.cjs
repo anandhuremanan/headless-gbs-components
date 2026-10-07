@@ -289,7 +289,11 @@ const loadHardSetVersion = () => hardSetFile().version;
 function writeResult(result) {
   fs.mkdirSync(RESULTS_DIR, { recursive: true });
   const stamp = result.meta.timestamp.replace(/[:.]/g, "-");
-  const file = path.join(RESULTS_DIR, `${stamp}-${result.meta.model}.json`);
+  // A model id like `gemini:gemini-3.5-flash-lite` is a legal argument and an
+  // illegal Windows filename — the colon silently truncates the name and loses
+  // the extension, so the run writes a file nothing can find.
+  const slug = result.meta.model.replace(/[^A-Za-z0-9._-]+/g, "-");
+  const file = path.join(RESULTS_DIR, `${stamp}-${slug}.json`);
   fs.writeFileSync(file, `${JSON.stringify(result, null, 2)}\n`);
   fs.writeFileSync(path.join(RESULTS_DIR, "latest.md"), `${renderMarkdown(result)}\n`);
   return file;

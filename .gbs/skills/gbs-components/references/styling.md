@@ -1,8 +1,8 @@
 # Styling
 
-"Headless" here means the components own behaviour and accessibility and ship a
-default look you can replace at three levels: CSS variables, slot classes, and
-state attributes.
+These components are styled. They ship a default look, and you replace it at
+three levels: CSS variables, slot classes, and state attributes. Nothing is
+`!important` and nothing needs overriding by specificity.
 
 ## 1. Stylesheets are per component
 

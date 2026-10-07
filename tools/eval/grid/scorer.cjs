@@ -52,9 +52,10 @@ const canonicalIntents = (list) => list.map(canonicalIntent);
 
 /** A fresh grid whose side effects are recorded rather than performed. */
 function createMounter(harness, fixture) {
+  const rowKey = fixture.getRowId;
   return () => {
     const effects = [];
-    const { agent } = harness.mount(fixture, {
+    const { agent, api } = harness.mount(fixture, {
       wrapApi: (api) => {
         const wrapped = { ...api };
         for (const method of SIDE_EFFECTS) {
@@ -65,7 +66,24 @@ function createMounter(harness, fixture) {
         return wrapped;
       },
     });
-    return { agent, effects };
+    /*
+     * The ids of the rows the grid would actually show.
+     *
+     * This is the weaker, more forgiving notion of "same answer", and it earns
+     * its place: `after 2026-09-06` and `between 2026-09-06 and today` are
+     * different states that select identical rows on data with no future
+     * dates. The state comparison stays authoritative — the two filters are
+     * not equivalent in general — but a model that lands on the same rows by
+     * another route is nearer to right than one that lands somewhere else, and
+     * a benchmark that cannot tell those apart is hiding something useful.
+     */
+    const visibleRows = () =>
+      api
+        .getRows("filtered")
+        .map((row) => String(row[rowKey]))
+        .sort();
+
+    return { agent, api, effects, visibleRows };
   };
 }
 
@@ -76,7 +94,7 @@ function createMounter(harness, fixture) {
  * corpus records whether one was demanded separately.
  */
 async function applyIntents(mounter, setup, intents) {
-  const { agent, effects } = mounter();
+  const { agent, effects, visibleRows } = mounter();
 
   for (const step of setup ?? []) {
     const result = await agent.execute(step, { confirm: true });
@@ -97,6 +115,7 @@ async function applyIntents(mounter, setup, intents) {
   return {
     ok: true,
     state: run.state,
+    rows: visibleRows(),
     commands: checked.commands,
     confirmed: checked.status === "needs-confirmation",
     warnings: checked.warnings,
@@ -141,6 +160,10 @@ const canonicalState = (state) => ({
 const sameOutcome = (a, b) =>
   stable(canonicalState(a.state)) === stable(canonicalState(b.state)) &&
   stable(a.effects) === stable(b.effects);
+
+/** Same visible rows and same side effects, by whatever route. */
+const sameRows = (a, b) =>
+  stable(a.rows) === stable(b.rows) && stable(a.effects) === stable(b.effects);
 
 /* ---------------------------------------------------------------- taxonomy */
 
@@ -411,6 +434,13 @@ async function scoreCase({ entry, responseText, latencyMs, usage, mounter }) {
   }
 
   const want = await applyIntents(mounter, entry.setup, entry.intents);
+
+  /*
+   * Wrong by state, but did it still show the right rows? Reported, never
+   * credited: this is diagnosis, not a softer pass mark.
+   */
+  const rowSetMatch = want.ok && applied.ok ? sameRows(want, applied) : false;
+
   return {
     ...base,
     responseKind: kind,
@@ -418,6 +448,7 @@ async function scoreCase({ entry, responseText, latencyMs, usage, mounter }) {
     validated: true,
     outcome: "incorrect_accept",
     correct: false,
+    rowSetMatch,
     failure: want.ok ? classifyDifference(want.commands.map((c) => c.intent), actualIntents) : "execution_mismatch",
     expected: want.ok ? canonicalIntents(want.commands.map((c) => c.intent)) : null,
     actual: canonicalIntents(actualIntents),
@@ -433,6 +464,7 @@ module.exports = {
   canonicalIntents,
   classifyDifference,
   canonicalState,
+  sameRows,
   parseResponse,
   stable,
   SIDE_EFFECTS,

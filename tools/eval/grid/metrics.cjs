@@ -104,6 +104,12 @@ function summarise(records, { hardSet = [] } = {}) {
       ),
       /* Correct refusals that came from malformed output rather than reasoning. */
       rejectionsViaMalformedOutput: count((r) => r.viaSchemaFailure === true),
+      /*
+       * Wrong by state, right by rows. A high number here means the model
+       * understood the request and expressed it another way — a different
+       * problem from not understanding it, and a different fix.
+       */
+      rowSetEquivalent: count((r) => r.rowSetMatch === true),
     },
     hardSet: hard.length === 0 ? null : { total: hard.length, accuracy: pct(hard.filter((r) => r.correct).length, hard.length) },
     byCategory,
@@ -178,6 +184,14 @@ function renderMarkdown(run) {
     `| Rejection code match | ${show(summary.secondary.rejectionCodeMatchRate)} |`,
     "",
   );
+
+  if (summary.secondary.rowSetEquivalent > 0) {
+    lines.push(
+      `${summary.secondary.rowSetEquivalent} wrong answer(s) still showed the expected rows — ` +
+        "the right rows by another route, counted as wrong but worth knowing.",
+      "",
+    );
+  }
 
   if (summary.hardSet) {
     lines.push(`Hard set: **${show(summary.hardSet.accuracy)}** over ${summary.hardSet.total} cases.`, "");

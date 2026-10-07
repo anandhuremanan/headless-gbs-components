@@ -255,9 +255,35 @@ export function createGridAgent<T>(input: GridAgentOptions<T>): GridAgent<T> {
       (entry) => entry.properties?.result?.const === envelope.result,
     );
     if (!branch) {
+      /*
+       * `String()` on an object gives "[object Object]", which tells a reader
+       * nothing. A nested envelope — `{ result: { clarify: "..." } }` — is a
+       * real and recoverable mistake, so name it.
+       */
+      const value = envelope.result;
+      const shape =
+        typeof value === "string"
+          ? `"${value}"`
+          : Array.isArray(value)
+            ? "a list"
+            : value === null
+              ? "null"
+              : typeof value === "object"
+                ? "an object"
+                : `a ${typeof value}`;
+      // Only an object can plausibly be a mis-nested envelope; a list cannot.
+      const key =
+        value !== null && typeof value === "object" && !Array.isArray(value)
+          ? Object.keys(value)[0]
+          : undefined;
+      const nested =
+        key && ["command", "clarify", "declined"].includes(key)
+          ? ` Did you mean { "result": "${key}", ... }?`
+          : "";
       return {
         status: "rejected",
-        reason: `"${String(envelope.result)}" is not one of command, clarify or declined.`,
+        reason:
+          `"result" must be the string "command", "clarify" or "declined"; got ${shape}.${nested}`,
         code: "unknown-result",
         layer: "schema",
         issues: [],

@@ -74,6 +74,47 @@ const SCALES: ReadonlyArray<readonly [string, number]> = [
 
 const PERCENT_WORDS = ["percent", "percentage", "pct", "pc"];
 
+/*
+ * Numbers written as words.
+ *
+ * "Revenue above one crore" is a sentence people type, and it used to fail
+ * here — which was worse than it sounds, because the layer above tells a model
+ * to pass quantities through *exactly as written* rather than convert them. So
+ * the model did as it was told and the conversion it had been relieved of
+ * simply never happened.
+ *
+ * Deliberately bounded: cardinals up to ninety-nine, and the scale words
+ * already in `SCALES` do the rest ("five hundred", "ten lakh", "two crore").
+ * `a`/`an` are left out — "a crore" is natural Indian English, but mapping a
+ * bare article to 1 would turn any stray "a" into a number, and silently
+ * reading junk as 1 is worse than refusing it.
+ */
+const ONES: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7,
+  eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13,
+  fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18,
+  nineteen: 19,
+};
+
+const TENS: Record<string, number> = {
+  twenty: 20, thirty: 30, forty: 40, fifty: 50,
+  sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+};
+
+/** Replaces number words with digits, so the rest of the parser sees digits. */
+function digitiseWords(text: string): string {
+  const tens = Object.keys(TENS).join("|");
+  const ones = Object.keys(ONES).join("|");
+
+  return text
+    // Compounds first: "twenty five" and "twenty-five" are one number.
+    .replace(new RegExp(`\\b(${tens})[\\s-](${ones})\\b`, "g"), (_, ten, one) =>
+      String(TENS[ten] + ONES[one]),
+    )
+    .replace(new RegExp(`\\b(${tens})\\b`, "g"), (word) => String(TENS[word]))
+    .replace(new RegExp(`\\b(${ones})\\b`, "g"), (word) => String(ONES[word]));
+}
+
 export interface ParseQuantityOptions {
   /** Which character separates the fractional part. Default `"."`. */
   decimal?: "." | ",";
@@ -95,7 +136,7 @@ export function parseQuantity(
       : null;
   }
 
-  let text = input.trim().toLowerCase();
+  let text = digitiseWords(input.trim().toLowerCase());
   if (text === "") return null;
 
   let negative = false;

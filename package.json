@@ -1,7 +1,7 @@
 {
   "name": "gbs-add-block",
   "version": "2.2.0",
-  "description": "React Component Library",
+  "description": "GramproKit \u2014 an agent-native UI runtime for React. Components you own, with a machine-readable contract.",
   "type": "module",
   "files": [
     "index.cjs",
@@ -23,7 +23,15 @@
     "passport:check": "node tools/passport/cli.cjs --check",
     "eval:grid": "node tools/eval/grid/cli.cjs"
   },
-  "keywords": [],
+  "keywords": [
+    "react",
+    "components",
+    "agent-native",
+    "ui-runtime",
+    "copy-in",
+    "data-grid",
+    "accessibility"
+  ],
   "author": "Anandhu Remanan",
   "license": "ISC",
   "dependencies": {

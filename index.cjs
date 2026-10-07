@@ -435,9 +435,10 @@ const writeAgentsPointer = async (root) => {
   const block = [
     BLOCK_START,
     "",
-    "## GBS components",
+    "## GramproKit components",
     "",
-    "This project uses the GBS headless component library. Before adding or",
+    "This project uses GramproKit components (gbs-add-block). They are copied",
+    "into the project with their styles, so you own them. Before adding or",
     "changing UI, read `" + skillPath + "` and follow it.",
     "",
     "It covers the import rule (components are copied into `component-lib/`, not",
