@@ -1,7 +1,7 @@
 {
   "name": "gbs-add-block",
   "version": "2.2.0",
-  "description": "GramproKit \u2014 an agent-native UI runtime for React. Components you own, with a machine-readable contract.",
+  "description": "GramproKit — an agent-native UI runtime for React. Components you own, with a machine-readable contract.",
   "type": "module",
   "files": [
     "index.cjs",
@@ -42,6 +42,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "@huggingface/transformers": "^4.3.1",
     "@types/fs-extra": "^11.0.4",
     "typescript": "^6.0.3"
   },

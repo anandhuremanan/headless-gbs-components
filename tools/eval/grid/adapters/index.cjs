@@ -26,6 +26,8 @@ const ADAPTERS = {
   oracle: () => require("./oracle.cjs"),
   anthropic: () => require("./anthropic.cjs"),
   ollama: () => require("./ollama.cjs"),
+  /* The intended destination: local weights, no server. */
+  transformersjs: () => require("./transformersjs.cjs"),
 };
 
 /** Local candidates, by the Ollama tag that serves them. */
@@ -53,6 +55,15 @@ function resolve(id) {
   if (ADAPTERS[id]) return ADAPTERS[id]();
   if (LOCAL_MODELS[id]) return ADAPTERS.ollama().withModel(LOCAL_MODELS[id], id);
 
+  // transformersjs:<hf-model-id>[@dtype]
+  if (id.startsWith("transformersjs:")) {
+    const [, rest] = id.split(":");
+    const at = rest.lastIndexOf("@");
+    const model = at > 0 ? rest.slice(0, at) : rest;
+    const dtype = at > 0 ? rest.slice(at + 1) : undefined;
+    return ADAPTERS.transformersjs().withModel(model, id, dtype);
+  }
+
   if (ALIASES[id]) {
     const alias = ALIASES[id];
     if (alias.adapter) return ADAPTERS[alias.adapter]().withModel(alias.modelId, id);
@@ -68,7 +79,8 @@ function resolve(id) {
       `  tiers:     ${Object.keys(ADAPTERS).join(", ")}\n` +
       `  aliases:   ${Object.keys(ALIASES).join(", ")}\n` +
       `  hosted:    ${Object.keys(PROVIDERS).join(", ")} (or provider:model-id)\n` +
-      `  local:     ${Object.keys(LOCAL_MODELS).join(", ")}`,
+      `  local:     ${Object.keys(LOCAL_MODELS).join(", ")}\n` +
+      "  in-process: transformersjs, or transformersjs:<hf-model-id>[@dtype]",
   );
 }
 

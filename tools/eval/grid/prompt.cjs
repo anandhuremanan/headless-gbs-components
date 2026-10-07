@@ -23,7 +23,28 @@
  * summaries only, and `assertNoRows` in the runner proves it per case.
  */
 
-const PROMPT_VERSION = "grid-intent-v1";
+const PROMPT_VERSIONS = {
+  /** The response schema, serialised in full. Verbose, and works unconstrained. */
+  v1: "grid-intent-v1",
+  /**
+   * The same semantics without the JSON Schema: ~4,300 tokens becomes ~1,700.
+   *
+   * Two reasons, and the second is the one that matters. A constrained decoder
+   * already holds the schema as a token mask, so repeating it in the prompt
+   * buys nothing. And a 1B model in a browser must read every one of those
+   * tokens before it can answer — at 4,300 that is seconds of prefill on a
+   * phone, which is the difference between a feature and a demo.
+   *
+   * Nothing semantic is dropped. Operator sets, option values and column types
+   * are all still here; what goes is one serialisation of them. Each operation
+   * gains its argument names instead, derived from the same definitions the
+   * schema was generated from.
+   */
+  v2: "grid-intent-v2",
+};
+
+/** What a caller gets if it does not ask for a version. */
+const PROMPT_VERSION = PROMPT_VERSIONS.v1;
 
 /** Relative date phrases the coercion layer resolves. Kept in step with coerce.ts. */
 const DATE_PHRASES =
@@ -110,6 +131,39 @@ function describeOperations(contract, operations) {
     .join("\n");
 }
 
+/** `filter(column, operator, value, [value2])` — optional arguments bracketed. */
+function signatureOf(definition) {
+  const input = definition.input;
+  if (!input || !input.properties) return `${definition.name}()`;
+  const required = new Set(input.required ?? []);
+  const args = Object.keys(input.properties).map((key) => (required.has(key) ? key : `[${key}]`));
+  return `${definition.name}(${args.join(", ")})`;
+}
+
+function describeOperationsWithArguments(contract, operations) {
+  return contract.operations
+    .map((name) => `  ${signatureOf(operations[name])} — ${operations[name].summary}`)
+    .join("\n");
+}
+
+/*
+ * What v2 says in place of the schema: the three envelope shapes, and one
+ * worked example per argument kind. With the signatures above, that is enough
+ * to infer the rest — and it costs about a hundred tokens rather than 2,700.
+ */
+const SHAPE = [
+  "OUTPUT SHAPE",
+  '  { "result": "command", "intents": [ {"action": "...", ...}, ... ] }',
+  '  { "result": "clarify", "question": "..." }',
+  '  { "result": "declined", "reason": "..." }',
+  "",
+  "  Each intent names an action from the list above and fills its arguments:",
+  '    { "action": "filter", "column": "revenue", "operator": "gt", "value": "1 lakh" }',
+  '    { "action": "sort", "column": "revenue", "direction": "desc" }',
+  '    { "action": "export", "format": "csv", "scope": "filtered" }',
+  '    { "action": "undo" }',
+].join("\n");
+
 const RULES = [
   "Use only the column ids, operators and option values listed above. Nothing else exists.",
   "Pass values through as the person wrote them. Do NOT convert units, scales, percentages or currency: " +
@@ -136,7 +190,15 @@ const RULES = [
  * @param {string} input.utterance
  * @returns {{ system: string, user: string, promptVersion: string }}
  */
-function buildPrompt({ contract, responseSchema, operations, utterance }) {
+function buildPrompt({ contract, responseSchema, operations, utterance, version = "v1" }) {
+  const promptVersion = PROMPT_VERSIONS[version];
+  if (!promptVersion) {
+    throw new Error(
+      `Unknown prompt version "${version}". Known: ${Object.keys(PROMPT_VERSIONS).join(", ")}`,
+    );
+  }
+  const terse = version === "v2";
+
   const system = [
     "You turn a person's request into operations on one data grid.",
     "",
@@ -154,16 +216,26 @@ function buildPrompt({ contract, responseSchema, operations, utterance }) {
     describeState(contract),
     "",
     "Operations available on this grid:",
-    describeOperations(contract, operations),
+    terse
+      ? describeOperationsWithArguments(contract, operations)
+      : describeOperations(contract, operations),
     "",
     "RULES",
     RULES.map((rule, i) => `  ${i + 1}. ${rule}`).join("\n"),
     "",
-    "Your answer must validate against this JSON Schema:",
-    JSON.stringify(responseSchema),
-  ].join("\n");
+    terse ? SHAPE : "Your answer must validate against this JSON Schema:",
+    terse ? null : JSON.stringify(responseSchema),
+  ]
+    .filter((part) => part !== null)
+    .join("\n");
 
-  return { system, user: utterance, promptVersion: PROMPT_VERSION };
+  return { system, user: utterance, promptVersion };
 }
 
-module.exports = { buildPrompt, PROMPT_VERSION, DATE_PHRASES };
+module.exports = {
+  buildPrompt,
+  PROMPT_VERSION,
+  PROMPT_VERSIONS,
+  DATE_PHRASES,
+  signatureOf,
+};

@@ -21,6 +21,7 @@ function parse(argv) {
     else if (arg === "--unconstrained") options.decoding = "unconstrained";
     else if (key === "concurrency") options.concurrency = Number(value);
     else if (key === "rpm") options.rpm = Number(value);
+    else if (key === "prompt") options.promptVersion = value.replace(/^grid-intent-/, "");
     else if (key === "limit") options.limit = Number(value);
     else if (key === "only") options.only = value.split(",");
     else if (arg === "--hard") options.only = ["hard"];
@@ -49,6 +50,8 @@ Usage: npm run eval:grid -- [--model=<id>] [options]
   --limit=N         first N cases
   --concurrency=N   parallel requests (default 4)
   --rpm=N           cap requests per minute, shared across workers
+  --prompt=v1|v2    v1 carries the JSON Schema (~4,300 tokens); v2 omits it
+                    (~1,800) and relies on constrained decoding for the shape
   --no-write        do not write eval/results/
   --list-models     print the model ids a provider's key actually serves
 
@@ -126,6 +129,7 @@ ${adapter.provider} (${data.length} models), default \`${adapter.modelId}\`:`);
         decoding,
         concurrency: options.concurrency,
         ...(options.rpm ? { rpm: options.rpm } : {}),
+        ...(options.promptVersion ? { promptVersion: options.promptVersion } : {}),
         ...(options.limit ? { limit: options.limit } : {}),
         ...(options.only ? { only: options.only } : {}),
         ...(options.write === false ? { write: false } : {}),

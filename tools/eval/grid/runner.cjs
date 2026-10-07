@@ -21,7 +21,7 @@ const harness = require("../harness.ts");
 // variables win, so CI secrets are never shadowed by a stale local file.
 const loadedFromEnvFile = require("../../env.cjs").load(harness.ROOT);
 const { GRID_OPERATIONS } = require("../../../source/beta-components/data-grid/agent/index.ts");
-const { buildPrompt, PROMPT_VERSION } = require("./prompt.cjs");
+const { buildPrompt, PROMPT_VERSIONS } = require("./prompt.cjs");
 const { createMounter, scoreCase } = require("./scorer.cjs");
 const { summarise, checkPolicy, renderMarkdown } = require("./metrics.cjs");
 const { resolve: resolveAdapter } = require("./adapters/index.cjs");
@@ -96,7 +96,7 @@ async function mapWithConcurrency(items, limit, worker) {
 }
 
 /** Prepare one case: mount, run setup, build the prompt from the state it left. */
-async function prepareCase(entry, mounter, fixture, forbidden) {
+async function prepareCase(entry, mounter, fixture, forbidden, version = "v1") {
   const { agent } = mounter();
   for (const step of entry.setup ?? []) {
     const result = await agent.execute(step, { confirm: true });
@@ -112,6 +112,7 @@ async function prepareCase(entry, mounter, fixture, forbidden) {
     responseSchema,
     operations: GRID_OPERATIONS,
     utterance: entry.utterance,
+    version,
   });
   assertNoRows(prompt.system, forbidden, entry.id);
   return { prompt, contract, responseSchema };
@@ -120,6 +121,7 @@ async function prepareCase(entry, mounter, fixture, forbidden) {
 async function run({
   model,
   decoding = "unconstrained",
+  promptVersion = "v1",
   temperature = 0,
   maxTokens = 1024,
   concurrency = 4,
@@ -167,7 +169,7 @@ async function run({
    * on a free tier can mean a day's quota gone for a typo.
    */
   if (cases.length > 1 && adapter.provider !== "harness" && adapter.provider !== "local") {
-    const first = await prepareCase(cases[0], mounter, fixture, forbidden);
+    const first = await prepareCase(cases[0], mounter, fixture, forbidden, promptVersion);
     try {
       await adapter.complete({
         system: first.prompt.system,
@@ -193,7 +195,9 @@ async function run({
   const throttle = createThrottle(rpm);
   let done = 0;
   const records = await mapWithConcurrency(cases, concurrency, async (entry) => {
-    const { prompt, contract, responseSchema } = await prepareCase(entry, mounter, fixture, forbidden);
+    const { prompt, contract, responseSchema } = await prepareCase(
+      entry, mounter, fixture, forbidden, promptVersion,
+    );
 
     let completion;
     try {
@@ -254,7 +258,7 @@ async function run({
     maxTokens,
     concurrency,
     rpm,
-    promptVersion: PROMPT_VERSION,
+    promptVersion: PROMPT_VERSIONS[promptVersion],
     corpusVersion: CORPUS_VERSION,
     contractVersion: mounter().agent.contract().contractVersion,
     passportVersion: passport.passportVersion,

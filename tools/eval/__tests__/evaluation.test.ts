@@ -20,7 +20,7 @@ import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
 
-const { buildPrompt, PROMPT_VERSION } = require("../grid/prompt.cjs");
+const { buildPrompt, PROMPT_VERSION, PROMPT_VERSIONS, signatureOf } = require("../grid/prompt.cjs");
 const scorer = require("../grid/scorer.cjs");
 const metrics = require("../grid/metrics.cjs");
 const runner = require("../grid/runner.cjs");
@@ -33,13 +33,14 @@ const fixture = harness.loadFixture();
 const mounter = scorer.createMounter(harness, fixture);
 const agent = () => mounter().agent;
 
-const promptFor = (utterance: string) => {
+const promptFor = (utterance: string, version = "v1") => {
   const live = agent();
   return buildPrompt({
     contract: live.contract(),
     responseSchema: live.responseSchema(),
     operations: GRID_OPERATIONS,
     utterance,
+    version,
   });
 };
 
@@ -59,6 +60,48 @@ describe("prompt", () => {
   it("is versioned, and the version travels with the result", () => {
     expect(PROMPT_VERSION).toBe("grid-intent-v1");
     expect(promptFor("x").promptVersion).toBe(PROMPT_VERSION);
+  });
+
+  it("drops the schema in v2 without dropping the semantics", () => {
+    const v1 = promptFor("Show Kerala", "v1").system;
+    const v2 = promptFor("Show Kerala", "v2").system;
+
+    // The schema is two thirds of v1; constrained decoding already holds it.
+    expect(v2.length).toBeLessThan(v1.length * 0.45);
+    expect(v1).toContain('"$schema"');
+    expect(v2).not.toContain('"$schema"');
+
+    // Everything a model needs to pick correctly is still there.
+    for (const kept of [
+      "tier (Tier)",
+      "filter: in isEmpty isNotEmpty",
+      "RESTRICTED: cannot be filtered or sorted.",
+      "stored as a fraction",
+      "last quarter",
+    ]) {
+      expect(v2, kept).toContain(kept);
+    }
+
+    // And the argument names the schema used to carry are now inline.
+    expect(v2).toContain("filter(column, operator, [value], [value2])");
+    expect(v2).toContain("OUTPUT SHAPE");
+  });
+
+  it("derives operation signatures rather than hand-listing them", () => {
+    expect(signatureOf(GRID_OPERATIONS.sort)).toBe("sort(column, direction, [append])");
+    expect(signatureOf(GRID_OPERATIONS.undo)).toBe("undo()");
+    expect(signatureOf(GRID_OPERATIONS.export)).toBe("export(format, [scope], [fileName])");
+  });
+
+  it("names each version, and refuses one it does not know", () => {
+    expect(PROMPT_VERSIONS.v1).toBe("grid-intent-v1");
+    expect(PROMPT_VERSIONS.v2).toBe("grid-intent-v2");
+    expect(promptFor("x", "v2").promptVersion).toBe("grid-intent-v2");
+    expect(() => promptFor("x", "v3")).toThrow(/Unknown prompt version/);
+  });
+
+  it("keeps v1 byte-identical, so old results stay comparable", () => {
+    expect(promptFor("Show Kerala").system).toBe(promptFor("Show Kerala", "v1").system);
   });
 
   it("injects the generated schema, not a hand-written one", () => {
@@ -468,6 +511,33 @@ describe("adapters", () => {
     expect(adapters.BENCHMARK_ORDER).toContain("ceiling");
   });
 
+  it("resolve the in-process local adapter, with an overridable model and dtype", () => {
+    const local = adapters.resolve("transformersjs");
+    expect(local.provider).toBe("transformersjs");
+    expect(local.modelId).toBe("onnx-community/Qwen2.5-0.5B-Instruct");
+    expect(local.dtype).toBe("q4f16");
+
+    const bigger = adapters.resolve("transformersjs:onnx-community/Qwen2.5-Coder-1.5B-Instruct@q4");
+    expect(bigger.modelId).toBe("onnx-community/Qwen2.5-Coder-1.5B-Instruct");
+    expect(bigger.dtype).toBe("q4");
+  });
+
+  it("keeps hundreds of megabytes of weights out of the repository", () => {
+    const { cacheDir } = adapters.resolve("transformersjs");
+    const repo = require("../harness.ts").ROOT;
+    expect(cacheDir.startsWith(repo)).toBe(false);
+  });
+
+  it("does not claim constrained decoding it has not wired up", async () => {
+    // `@huggingface/transformers-structured-output` would provide it; until it
+    // is installed and measured, saying so would put a false decodingMode in a
+    // result file.
+    expect(adapters.resolve("transformersjs").supportsConstrained).toBe(false);
+    await expect(
+      runner.run({ model: "transformersjs", decoding: "constrained", write: false }),
+    ).rejects.toThrow(/would be a lie in the result file/);
+  });
+
   it("say what is missing instead of failing obscurely", async () => {
     for (const [id, variable] of [
       ["frontier", "ANTHROPIC_API_KEY"],
@@ -546,6 +616,78 @@ describe("adapters", () => {
 
 /* ------------------------------------------------------------------- metrics */
 
+/*
+ * The point of these: prove the pipeline handles what a small local model
+ * really emits, without the adapter being allowed to tidy it up first. No
+ * model is loaded — the text is what a 0.5B model plausibly returns, pushed
+ * through the real validator and the real scorer.
+ */
+describe("a local model's raw output goes through the normal pipeline", () => {
+  const kerala = {
+    id: "grid-001",
+    category: "filter-simple",
+    utterance: "Show customers from Kerala",
+    expect: "accept",
+    intents: [{ action: "filter", column: "region", operator: "equals", value: "Kerala" }],
+  };
+
+  it("scores a clean answer correct", async () => {
+    const result = await scorer.scoreCase({
+      entry: kerala,
+      responseText:
+        '{"result":"command","intents":[{"action":"filter","column":"region","operator":"equals","value":"Kerala"}]}',
+      latencyMs: 1200,
+      mounter,
+    });
+    expect(result).toMatchObject({ outcome: "semantic_correct", correct: true });
+  });
+
+  it("unwraps a fenced block, which is a formatting slip rather than a wrong answer", async () => {
+    const result = await scorer.scoreCase({
+      entry: kerala,
+      responseText: [
+        "```json",
+        '{"result":"command","intents":[{"action":"filter","column":"region","operator":"equals","value":"Kerala"}]}',
+        "```",
+      ].join("\n"),
+      latencyMs: 1200,
+      mounter,
+    });
+    expect(result.correct).toBe(true);
+  });
+
+  it("marks prose around the JSON as a schema failure, and does not dig it out", async () => {
+    // A small model often explains itself. The adapter is forbidden from
+    // repairing that, so it has to count — this is the failure mode
+    // constrained decoding exists to remove, and hiding it would hide the
+    // reason for adding it.
+    const result = await scorer.scoreCase({
+      entry: kerala,
+      responseText: [
+        "Sure! Here is the command you need:",
+        '{"result":"command","intents":[{"action":"filter","column":"region","operator":"equals","value":"Kerala"}]}',
+      ].join("\n"),
+      latencyMs: 1200,
+      mounter,
+    });
+    expect(result.correct).toBe(false);
+    expect(result.failure).toBe("schema_failure");
+    expect(result.schemaValid).toBe(false);
+  });
+
+  it("refuses a hallucinated column, rather than guessing what was meant", async () => {
+    const result = await scorer.scoreCase({
+      entry: kerala,
+      responseText:
+        '{"result":"command","intents":[{"action":"filter","column":"state","operator":"equals","value":"Kerala"}]}',
+      latencyMs: 1200,
+      mounter,
+    });
+    expect(result.correct).toBe(false);
+    expect(result.rejectionCode).toBe("unknown-column");
+  });
+});
+
 describe("metrics", () => {
   const records = [
     { id: "a", category: "x", expect: "accept", outcome: "semantic_correct", correct: true, schemaValid: true, validated: true, latencyMs: 10 },
@@ -598,6 +740,9 @@ describe("a run is reproducible", () => {
       temperature: 0,
     });
     expect(result.meta.timestamp).toMatch(/^\d{4}-\d\d-\d\dT/);
+
+    const terse = await runner.run({ model: "baseline", write: false, limit: 3, promptVersion: "v2" });
+    expect(terse.meta.promptVersion).toBe("grid-intent-v2");
     expect(result.meta.runtime).toContain("node");
     expect(result.meta.hardSetVersion).toBe("grid-hard-v0");
     expect(result.meta.libraryVersion).toEqual(expect.any(String));
