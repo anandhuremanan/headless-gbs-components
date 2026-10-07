@@ -449,20 +449,115 @@ describe("rejections and clarifications", () => {
     expect(onClear.outcome).not.toBe("false_accept");
   });
 
-  it("credits a question where the case says asking is reasonable", async () => {
-    const result = await score(
-      {
-        id: "t-clarifyok",
-        category: "test",
-        utterance: "Churn risk between 0.2",
-        expect: "reject",
-        code: "missing-value2",
-        intents: [{ action: "filter", column: "churnRisk", operator: "between", value: 0.2 }],
-        clarifyOk: true,
-      },
-      { result: "clarify", question: "Between 0.2 and what upper bound?" },
-    );
+  /*
+   * The four outcomes the harness must keep apart. The distinction that
+   * matters: on a case where the request *cannot* be determined, asking is the
+   * only right answer — guessing earns nothing even when the validator catches
+   * the guess, and refusing earns nothing either, because one question would
+   * have recovered the answer.
+   */
+  const requiredCase = {
+    id: "t-required",
+    category: "test",
+    utterance: "Filter by state",
+    expect: "reject",
+    code: "unknown-column",
+    clarify: "required",
+    intents: [{ action: "filter", column: "state", operator: "equals", value: "Kerala" }],
+  };
+
+  const acceptableCase = {
+    id: "t-acceptable",
+    category: "test",
+    utterance: "Churn risk between 0.2",
+    expect: "reject",
+    code: "missing-value2",
+    clarify: "acceptable",
+    intents: [{ action: "filter", column: "churnRisk", operator: "between", value: 0.2 }],
+  };
+
+  const question = { result: "clarify", question: "Which value did you mean exactly?" };
+
+  it("credits a question when clarification is required", async () => {
+    const result = await score(requiredCase, question);
     expect(result).toMatchObject({ outcome: "correct_clarification", correct: true });
+    expect(result.clarifyRequired).toBe(true);
+  });
+
+  it("gives a refusal no credit when clarification is required", async () => {
+    const result = await score(requiredCase, { result: "declined", reason: "No such column." });
+    expect(result).toMatchObject({ outcome: "missed_clarification", correct: false });
+  });
+
+  it("gives a guess no credit when required, even if the validator caught it", async () => {
+    const result = await score(requiredCase, {
+      result: "command",
+      intents: [{ action: "filter", column: "state", operator: "equals", value: "Kerala" }],
+    });
+    // The validator refusing is the architecture working, not the producer
+    // answering well — and nothing ran, so this is not a false accept either.
+    expect(result).toMatchObject({ outcome: "missed_clarification", correct: false });
+    expect(result.outcome).not.toBe("false_accept");
+    expect(result.outcome).not.toBe("correct_rejection");
+  });
+
+  it("gives unintelligible output no credit when required", async () => {
+    const result = await scorer.scoreCase({
+      entry: requiredCase,
+      responseText: "I am not sure what you want here!",
+      latencyMs: 1,
+      mounter,
+    });
+    expect(result.correct).toBe(false);
+  });
+
+  it("credits either answer when clarification is merely acceptable", async () => {
+    expect(await score(acceptableCase, question)).toMatchObject({
+      outcome: "correct_clarification",
+      correct: true,
+    });
+    expect(
+      await score(acceptableCase, { result: "declined", reason: "Needs an upper bound." }),
+    ).toMatchObject({ outcome: "correct_rejection", correct: true });
+  });
+
+  it("credits a question or any listed reading on an ambiguous case", async () => {
+    const ambiguousCase = {
+      id: "t-ambiguous",
+      category: "test",
+      utterance: "High risk customers in Karnataka",
+      expect: "ambiguous",
+      clarify: "acceptable",
+      intents: [
+        { action: "filter", column: "region", operator: "equals", value: "Karnataka" },
+        { action: "filter", column: "churnRisk", operator: "gt", value: 0.5 },
+      ],
+      alternatives: [
+        [
+          { action: "filter", column: "region", operator: "equals", value: "Karnataka" },
+          { action: "filter", column: "churnRisk", operator: "gt", value: 0.4 },
+        ],
+      ],
+    };
+
+    expect(await score(ambiguousCase, question)).toMatchObject({
+      outcome: "correct_clarification",
+      correct: true,
+    });
+    // On an ambiguous case no reading is *the* answer, so even the one listed
+    // first is an acceptable reading rather than a correct one. That naming is
+    // the point: a case with several defensible readings has no single truth.
+    for (const reading of [ambiguousCase.intents, ambiguousCase.alternatives[0]]) {
+      expect(await score(ambiguousCase, { result: "command", intents: reading })).toMatchObject({
+        outcome: "acceptable_reading",
+        correct: true,
+      });
+    }
+  });
+
+  it("still penalises a question on a case with one clear reading", async () => {
+    const result = await score(acceptCase, question);
+    expect(result).toMatchObject({ outcome: "unnecessary_clarification", correct: false });
   });
 
   it("treats unparseable output on a reject case as a refusal, but records how", async () => {
@@ -528,10 +623,14 @@ describe("adapters", () => {
     expect(cacheDir.startsWith(repo)).toBe(false);
   });
 
-  it("does not claim constrained decoding it has not wired up", async () => {
-    // `@huggingface/transformers-structured-output` would provide it; until it
-    // is installed and measured, saying so would put a false decodingMode in a
-    // result file.
+  it("does not advertise constrained decoding that has never run", async () => {
+    /*
+     * The llguidance wiring is present in the adapter, but every constrained
+     * generation dies on "Token 0 does not satisfy the constraint". Code
+     * existing is not the same as the capability working, and the flag is what
+     * stamps `decodingMode: "constrained"` into a result record — so it stays
+     * false until a run completes. Flip both together, never just the flag.
+     */
     expect(adapters.resolve("transformersjs").supportsConstrained).toBe(false);
     await expect(
       runner.run({ model: "transformersjs", decoding: "constrained", write: false }),
@@ -735,7 +834,7 @@ describe("a run is reproducible", () => {
       provider: "local",
       decodingMode: "unconstrained",
       promptVersion: "grid-intent-v1",
-      corpusVersion: "grid-v0",
+      corpusVersion: "grid-v1",
       contractVersion: "1.0.0",
       temperature: 0,
     });
@@ -760,7 +859,7 @@ describe("a run is reproducible", () => {
           decodingMode: "unconstrained",
           temperature: 0,
           promptVersion: "grid-intent-v1",
-          corpusVersion: "grid-v0",
+          corpusVersion: "grid-v1",
           contractVersion: "1.0.0",
           passportVersion: "1.0.0",
           runtime: "node",

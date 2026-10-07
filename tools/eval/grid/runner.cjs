@@ -26,7 +26,16 @@ const { createMounter, scoreCase } = require("./scorer.cjs");
 const { summarise, checkPolicy, renderMarkdown } = require("./metrics.cjs");
 const { resolve: resolveAdapter } = require("./adapters/index.cjs");
 
-const CORPUS_VERSION = "grid-v0";
+/*
+ * Frozen 2026-10-07 at 231 cases.
+ *
+ * v1 is v0 plus one adjudication pass: ten cases were relabelled where the
+ * corpus had asserted one reading of a request that the Grid contract does not
+ * determine, one vacuous case was rewritten, and one was added to keep the
+ * coverage the relabelling displaced. Results from v0 and v1 are not
+ * comparable — this string is what stops them sharing a table.
+ */
+const CORPUS_VERSION = "grid-v1";
 const RESULTS_DIR = path.join(harness.ROOT, "eval", "results", "grid");
 
 /**
@@ -193,6 +202,8 @@ async function run({
   }
 
   const throttle = createThrottle(rpm);
+  let observedBackend;
+  let observedLoadMs;
   let done = 0;
   const records = await mapWithConcurrency(cases, concurrency, async (entry) => {
     const { prompt, contract, responseSchema } = await prepareCase(
@@ -211,7 +222,7 @@ async function run({
         temperature,
         maxTokens,
         ...(adapter.needsOracle
-          ? { oracle: { intents: entry.intents, expect: entry.expect } }
+          ? { oracle: { intents: entry.intents, expect: entry.expect, clarify: entry.clarify } }
           : {}),
       });
     } catch (error) {
@@ -232,6 +243,9 @@ async function run({
       };
     }
 
+    observedBackend ??= completion.backend;
+    observedLoadMs ??= completion.loadMs;
+
     const record = await scoreCase({
       entry,
       responseText: completion.text,
@@ -248,16 +262,33 @@ async function run({
   const summary = summarise(records, { hardSet });
   const policy = checkPolicy(summary, loadPolicy());
 
+  /*
+   * A run that mostly failed in transport is not a low score, it is a broken
+   * setup — and a headline number computed from it is a lie that outlives the
+   * run. One Gemini run reported "18.7% accuracy" when 183 of 230 requests had
+   * been rate-limited away; the figure is still in a result file.
+   */
+  const adapterErrors = records.filter((record) => record.failure === "adapter_error").length;
+  const errorRate = records.length === 0 ? 1 : adapterErrors / records.length;
+  const VOID_ABOVE = 0.2;
+  const runStatus = errorRate > VOID_ABOVE ? "void" : "scored";
+
   const meta = {
     timestamp: new Date().toISOString(),
     model,
     modelId: adapter.modelId,
     provider: adapter.provider,
+    adapter: adapter.id,
     decodingMode: decoding,
+    ...(adapter.dtype ? { dtype: adapter.dtype } : {}),
+    ...(observedBackend ? { backend: observedBackend } : {}),
+    ...(observedLoadMs !== undefined ? { modelLoadMs: Math.round(observedLoadMs) } : {}),
     temperature,
     maxTokens,
     concurrency,
     rpm,
+    runStatus,
+    adapterErrors,
     promptVersion: PROMPT_VERSIONS[promptVersion],
     corpusVersion: CORPUS_VERSION,
     contractVersion: mounter().agent.contract().contractVersion,

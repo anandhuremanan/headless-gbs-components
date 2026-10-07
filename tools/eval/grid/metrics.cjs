@@ -21,6 +21,7 @@ const OUTCOMES = [
   "incorrect_accept",
   "incorrect_rejection",
   "unnecessary_clarification",
+  "missed_clarification",
   "false_accept",
   "schema_failure",
   "harness_error",
@@ -90,6 +91,16 @@ function summarise(records, { hardSet = [] } = {}) {
         count((r) => r.outcome === "unnecessary_clarification"),
         accept.length + reject.length,
       ),
+      /*
+       * Cases where the request could not be determined and the producer
+       * answered anyway — by guessing, or by refusing instead of asking. The
+       * complement of unnecessary clarification, and the more serious of the
+       * two: one wastes a question, this one loses the answer.
+       */
+      missedClarificationRate: pct(
+        count((r) => r.outcome === "missed_clarification"),
+        count((r) => r.clarifyRequired === true),
+      ),
       schemaValidity: pct(count((r) => r.schemaValid), total),
       validatorAcceptanceRate: pct(count((r) => r.validated), total),
       /* Of the commands that validated, how many produced the expected state. */
@@ -152,12 +163,21 @@ function renderMarkdown(run) {
   const lines = [];
 
   lines.push(`# Grid intent evaluation — ${meta.modelId}`, "");
+
+  if (meta.runStatus === "void") {
+    lines.push(
+      `> **VOID — not a score.** ${meta.adapterErrors} of ${summary.total} request(s) failed in`,
+      "> transport, so the figures below describe a broken setup rather than the model.",
+      "",
+    );
+  }
   lines.push(
     "| | |",
     "| --- | --- |",
     `| Model | \`${meta.modelId}\` (${meta.provider}) |`,
-    `| Adapter | \`${meta.model}\` |`,
-    `| Decoding | ${meta.decodingMode} |`,
+    `| Adapter | \`${meta.adapter ?? meta.model}\` |`,
+    `| Decoding | ${meta.decodingMode}${meta.dtype ? ` · dtype ${meta.dtype}` : ""}${meta.backend ? ` · ${meta.backend}` : ""} |`,
+    `| Run status | ${meta.runStatus ?? "scored"}${meta.adapterErrors ? ` (${meta.adapterErrors} adapter error(s))` : ""} |`,
     `| Prompt | \`${meta.promptVersion}\` |`,
     `| Corpus | \`${meta.corpusVersion}\` (${summary.total} cases) |`,
     `| Contract | \`${meta.contractVersion}\` · passport \`${meta.passportVersion}\` |`,
@@ -177,6 +197,7 @@ function renderMarkdown(run) {
     `| Correct clarification rate | ${show(summary.secondary.correctClarificationRate)} |`,
     `| **False accept rate** | **${show(summary.secondary.falseAcceptRate)}** |`,
     `| Unnecessary clarification rate | ${show(summary.secondary.unnecessaryClarificationRate)} |`,
+    `| Missed clarification rate | ${show(summary.secondary.missedClarificationRate)} |`,
     `| Schema validity | ${show(summary.secondary.schemaValidity)} |`,
     `| Validator acceptance | ${show(summary.secondary.validatorAcceptanceRate)} |`,
     `| Execution correct (of validated) | ${show(summary.secondary.executionCorrect)} |`,

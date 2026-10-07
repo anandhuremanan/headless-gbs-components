@@ -277,10 +277,27 @@ no credentials (`--model=baseline`).
 Output lands in `eval/results/grid/<timestamp>-<model>.json`, with the latest
 run rendered to `eval/results/grid/latest.md`.
 
-## First results
+## Corpus versions
+
+The corpus is **`grid-v1`**, frozen 2026-10-07 at 231 cases. The hard set is
+`grid-hard-v0`, 42 members, unchanged.
+
+`grid-v1` is `grid-v0` plus one adjudication pass. Ten cases asserted a single
+reading of a request the Grid contract does not determine — "high risk" with no
+threshold defined, "export this" with no format and no default for one — and a
+producer that asked instead of guessing was scored wrong for it. One case
+(grid-139) was vacuous, because the column it asked to move to the end was
+already there. One (grid-231) was added to keep the `empty-export` coverage the
+relabelling displaced.
+
+**Numbers from v0 and v1 do not belong in the same table.** Every result file
+records its `corpusVersion`; that is what the field is for.
+
+## First results (corpus `grid-v0`, superseded)
 
 Run on 2026-10-06, `grid-intent-v1`, corpus `grid-v0` (230 cases), contract
-`1.0.0`, unconstrained.
+`1.0.0`, unconstrained. Kept for the record — these predate the v1 relabelling,
+so the accept/reject figures are not comparable with anything measured since.
 
 | Tier | End-to-end | False accept | Hard set | Status |
 | --- | ---: | ---: | ---: | --- |

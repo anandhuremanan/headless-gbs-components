@@ -34,6 +34,9 @@ export default defineConfig({
     include: [
       "../source/**/__tests__/**/*.test.ts",
       "../tools/**/__tests__/**/*.test.ts",
+      // The WebMCP projection lives in this app rather than in the published
+      // package, so its tests live here too.
+      "./src/**/__tests__/**/*.test.ts",
     ],
   },
 });

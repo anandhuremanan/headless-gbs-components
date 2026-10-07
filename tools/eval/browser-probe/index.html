@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>probe: starting</title>
+    <style>
+      :root { color-scheme: light dark; --fg: #111; --dim: #666; --bg: #fff; --line: #e3e3e3; }
+      @media (prefers-color-scheme: dark) {
+        :root { --fg: #e8e8e8; --dim: #999; --bg: #121212; --line: #2c2c2c; }
+      }
+      body {
+        margin: 0; padding: 24px; background: var(--bg); color: var(--fg);
+        font: 13px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      h1 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+      p.sub { margin: 0 0 20px; color: var(--dim); }
+      section { margin-bottom: 20px; }
+      h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--dim);
+           margin: 0 0 6px; font-weight: 600; }
+      pre { margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px;
+            white-space: pre-wrap; word-break: break-word; max-height: 420px; overflow: auto; }
+      #log { min-height: 180px; }
+      #status { color: var(--dim); }
+      #progress { color: var(--dim); min-height: 1.6em; }
+    </style>
+  </head>
+  <body>
+    <h1>Qwen2.5-0.5B-Instruct · WebGPU latency probe</h1>
+    <p class="sub">
+      One case (grid-001), prompt grid-intent-v2, no server inference. Latency only — not accuracy.
+    </p>
+
+    <section>
+      <h2>Measurements</h2>
+      <pre id="log"></pre>
+      <div id="progress"></div>
+      <div id="status">running…</div>
+    </section>
+
+    <section>
+      <h2>Raw model output (exactly as generated)</h2>
+      <pre id="raw">—</pre>
+    </section>
+
+    <section>
+      <h2>Result</h2>
+      <pre id="json">—</pre>
+    </section>
+
+    <script type="module" src="./probe.ts"></script>
+  </body>
+</html>

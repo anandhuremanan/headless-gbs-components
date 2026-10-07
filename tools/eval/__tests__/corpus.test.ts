@@ -53,6 +53,12 @@ describe("corpus shape", () => {
       expect(Array.isArray(entry.intents), entry.id).toBe(true);
       expect(entry.intents.length, entry.id).toBeGreaterThan(0);
       if (entry.expect === "reject") expect(entry.code, entry.id).toEqual(expect.any(String));
+      if (entry.clarify !== undefined) {
+        expect(["required", "acceptable"], entry.id).toContain(entry.clarify);
+      }
+      // The old boolean could not say whether asking was required or merely
+      // allowed, so nothing should still be using it.
+      expect((entry as Record<string, unknown>).clarifyOk, entry.id).toBeUndefined();
     }
   });
 
@@ -111,7 +117,15 @@ describe("ambiguous cases have more than one defensible reading", () => {
   const ambiguous = cases.filter((entry) => entry.expect === "ambiguous");
 
   it.each(ambiguous.map((entry) => [entry.id, entry] as const))("%s", async (_id, entry) => {
-    expect(entry.alternatives?.length, `${entry.id} needs alternatives`).toBeGreaterThan(0);
+    /*
+     * An ambiguous case needs a second expressible reading — unless the only
+     * safe answer is to ask, which is itself the point of some of them.
+     */
+    const hasAlternatives = (entry.alternatives?.length ?? 0) > 0;
+    expect(
+      hasAlternatives || entry.clarify !== undefined,
+      `${entry.id} needs alternatives, or clarify to say asking is the answer`,
+    ).toBe(true);
     for (const reading of [entry.intents, ...(entry.alternatives ?? [])]) {
       const agent = await run(entry);
       const result = agent.validate(reading);

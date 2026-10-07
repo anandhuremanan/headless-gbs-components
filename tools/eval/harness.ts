@@ -78,6 +78,22 @@ export interface EvalCase {
   alternatives?: unknown[][];
   /** For `accept`: the command must come back needing confirmation. */
   confirm?: boolean;
+  /**
+   * How a clarifying question scores on this case.
+   *
+   *   "required"    the request cannot be answered from the contract — a value
+   *                 is missing, or a required argument has no default. Asking
+   *                 is the only correct answer; guessing earns nothing, and so
+   *                 does refusing, because more information would have opened
+   *                 the door.
+   *   "acceptable"  asking is correct, and so is the case's stated outcome.
+   *
+   * Absent means a question is an unnecessary clarification. Replaces the
+   * earlier boolean `clarifyOk`, which could not express the difference.
+   */
+  clarify?: "required" | "acceptable";
+  /** Commands that are also right, on a case whose stated outcome is a refusal. */
+  alsoAccept?: unknown[][];
   note?: string;
 }
 
